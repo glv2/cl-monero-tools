@@ -6,10 +6,16 @@
 
 (defpackage :monero-tools
   (:use :cl :alexandria :babel :base64 :bordeaux-threads :cffi :json :split-sequence)
-  (:export #:available-mnemonic-seed-languages
+  (:export #:*rpc-host*
+           #:*rpc-port*
+           #:*rpc-user*
+           #:*rpc-password*
+           #:available-mnemonic-seed-languages
            #:base58-encode
            #:base58-decode
            #:bruteforce-wallet-keys
+           #:bytes->hex-string
+           #:bytes->integer
            #:chacha8
            #:decode-address
            #:fast-hash
@@ -17,6 +23,9 @@
            #:generate-keys
            #:generate-secret-key
            #:get-wallet-keys
+           #:geta
+           #:hex-string->bytes
+           #:integer->bytes
            #:json-rpc
            #:make-integrated-address
            #:mnemonic-seed->secret-key
@@ -27,4 +36,5 @@
            #:secret-key->public-key
            #:secret-spend-key->address
            #:secret-spend-key->secret-view-key
-           #:slow-hash))
+           #:slow-hash
+           #:string->bytes))

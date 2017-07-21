@@ -6,10 +6,7 @@
 
 (defpackage :monero-tools/tests
   (:use :cl :fiveam :monero-tools)
-  (:import-from :monero-tools
-                #:geta
-                #:bytes->hex-string
-                #:hex-string->bytes))
+  (:import-from :monero-tools))
 
 (in-package :monero-tools/tests)
 
