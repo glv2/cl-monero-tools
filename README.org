@@ -1,3 +1,112 @@
 #+TITLE: Monero tools
 
 Common Lisp toolbox to work with the Monero cryptocurrency.
+
+* Installation
+
+To load the *monero-tools* library, put it in a directory where your
+Common Lisp implementation can see it, and use the usual:
+
+#+BEGIN_SRC lisp
+(asdf:load-system "monero-tools")
+#+END_SRC
+
+or
+
+#+BEGIN_SRC lisp
+(ql:quickload "monero-tools")
+#+END_SRC
+
+*monero-tools* requires the following libraries:
+ - alexandria
+ - babel
+ - bordeaux-threads
+ - cffi
+ - cl-base64
+ - cl-json
+ - dexador
+ - ironclad
+ - split-sequence
+ - trivial-features
+
+*monero-tools* also depends on the *cncrypto* library (C code of the
+cryptographic primitives used by the Monero cryptocurrency). The
+*monero-tools* system will try to compile it if necessary using GCC or
+CLANG.
+
+If it doesn't work on your machine (e.g. compiler not found), you will
+have to compile the *cncrypto* library by hand and put it the /lib/
+subdirectory of *monero-tools*.
+
+The name of the library depends on the architecture and the operating
+system:
+ - /libcncrypto32.so/ on a 32-bit Unix-like system
+ - /libcncrypto64.so/ on a 64-bit Unix-like system
+ - /libcncrypto32.dll/ on a 32-bit Windows system
+ - /libcncrypto64.dll/ on a 64-bit Windows system
+
+For example on a 64-bit Unix-like system:
+
+#+BEGIN_SRC shell
+cd /path-of-monero-tools/lib
+gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
+#+END_SRC
+
+* Tools
+** Address
+
+ - decode-address
+ - make-integrated-address
+ - public-keys->address
+ - secret-spend-key->address
+
+** Cryptography
+
+ - fast-hash
+ - slow-hash
+ - chacha8
+ - generate-chacha8-key
+ - generate-secret-key
+ - generate-keys
+ - secret-key->public-key
+ - secret-spend-key->secret-view-key
+ - recover-keys
+
+** Mnemonic seed
+
+ - available-mnemonic-seed-languages
+ - mnemonic-seed->secret-key
+ - secret-key->mnemonic-seed
+
+** RPC
+
+ - =*rpc-host*=
+ - =*rpc-port*=
+ - =*rpc-user*=
+ - =*rpc-password*=
+ - rpc
+ - json-rpc
+
+** Utils
+
+ - base58-encode
+ - base58-decode
+ - bytes->hex-string
+ - hex-string->bytes
+ - bytes->integer
+ - integer->bytes
+ - string->bytes
+ - geta
+
+** Wallet file
+
+ - get-wallet-keys
+ - bruteforce-wallet-keys
+
+* Tests
+
+The tests require the *fiveam* library.
+
+#+BEGIN_SRC lisp
+(asdf:test-system "monero-tools")
+#+END_SRC
