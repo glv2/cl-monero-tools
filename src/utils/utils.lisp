@@ -7,22 +7,6 @@
 (in-package :monero-tools)
 
 
-(defun read-varint (data &optional (offset 0))
-  "Read a variable length integer starting at OFFSET in DATA.
-The second returned value is the size of the integer in bytes."
-  (let ((n 0)
-        (size 0))
-    (do ((l (length data))
-         (i offset (1+ i))
-         (j 0 (+ j 7)))
-        ((= i l))
-      (let ((b (aref data i)))
-        (incf n (ash (logand b #x7f) j))
-        (incf size)
-        (when (zerop (logand b #x80))
-          (return))))
-    (values n size)))
-
 (defun bytes->integer (bytes &key (start 0) end big-endian)
   "Convert a sequence of BYTES to an integer."
   (ironclad:octets-to-integer bytes :start start :end end :big-endian big-endian))
@@ -63,7 +47,7 @@ supplied, put the bytes in it starting at index START."
          (index-hs 0 (+ index-hs 2))
          (hex-string (make-string (* (- end start) 2))))
         ((>= index-bv end) hex-string)
-      (let ((s (format nil "~2,'0x" (aref byte-vector index-bv))))
+      (let ((s (format nil "~(~2,'0x~)" (aref byte-vector index-bv))))
         (replace hex-string s :start1 index-hs)))))
 
 (defun geta (alist key &key (test #'eql))

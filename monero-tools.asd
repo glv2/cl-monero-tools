@@ -27,6 +27,9 @@
   :in-order-to ((test-op (test-op "monero-tools/tests")))
   :components ((:module "src"
                 :components ((:file "package")
+                             (:module "blockchain"
+                              :depends-on ("crypto" "package" "serialization" "utils")
+                              :components ((:file "transaction")))
                              (:module "crypto"
                               :depends-on ("package" "utils")
                               :components ((:file "crypto")
@@ -45,16 +48,19 @@
                                            (:file "russian" :depends-on ("mnemonic"))
                                            (:file "spanish" :depends-on ("mnemonic"))))
                              (:module "rpc"
-                              :depends-on ("package" "utils")
+                              :depends-on ("blockchain" "package" "serialization" "utils")
                               :components ((:file "rpc")
                                            (:file "server" :depends-on ("rpc"))
                                            (:file "wallet" :depends-on ("rpc"))))
+                             (:module "serialization"
+                              :depends-on ("crypto" "package" "utils")
+                              :components ((:file "serialization")))
                              (:module "utils"
                               :depends-on ("package")
                               :components ((:file "base58" :depends-on ("utils"))
                                            (:file "utils")))
                              (:module "wallet"
-                              :depends-on ( "crypto" "package" "utils")
+                              :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
                                            (:file "wallet")))))))
 
