@@ -17,7 +17,11 @@
            #:bytes->hex-string
            #:bytes->integer
            #:chacha8
+           #:compute-miner-transaction-hash
+           #:compute-transaction-hash
            #:decode-address
+           #:deserialize-block
+           #:deserialize-transaction
            #:fast-hash
            #:generate-chacha8-key
            #:generate-keys
@@ -36,5 +40,7 @@
            #:secret-key->public-key
            #:secret-spend-key->address
            #:secret-spend-key->secret-view-key
+           #:serialize-block
+           #:serialize-transaction
            #:slow-hash
            #:string->bytes))

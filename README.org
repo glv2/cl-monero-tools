@@ -60,6 +60,11 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
  - public-keys->address
  - secret-spend-key->address
 
+** Blockchain
+
+ - compute-transaction-hash
+ - compute-miner-transaction-hash
+
 ** Cryptography
 
  - fast-hash
@@ -86,6 +91,13 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
  - =*rpc-password*=
  - rpc
  - json-rpc
+
+** Serialization
+
+ - deserialize-block
+ - deserialize-transaction
+ - serialize-block
+ - serialize-transaction
 
 ** Utils
 

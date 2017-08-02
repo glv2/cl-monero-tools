@@ -252,6 +252,11 @@
                                             ring-size vin-size vout-size))))
         (values (append prefix signatures) (+ prefix-size signatures-size))))))
 
+(defun deserialize-transaction (data &optional (offset 0))
+  "Return the transaction whose serialization starts at OFFSET in DATA.
+The second returned value in the size of the serialized transaction."
+  (read-transaction data offset))
+
 
 ;;; Blocks
 
@@ -268,3 +273,8 @@
                ((header #'read-block-header)
                 (miner-transaction #'read-transaction)
                 (transaction-hashes #'read-vector #'read-hash))))
+
+(defun deserialize-block (data &optional (offset 0))
+  "Return the block whose serialization starts at OFFSET in DATA.
+The second returned value in the size of the serialized block."
+  (read-block data offset))

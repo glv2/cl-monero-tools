@@ -17,9 +17,10 @@
         for writer-parameters = (cddr spec)
         collect `(let* ((,id ,(intern (string-upcase (symbol-name name)) :keyword))
                         (,data (apply ,writer (geta ,object ,id) (list ,@writer-parameters))))
-                   (setf ,result (concatenate '(simple-array (unsigned-byte 8) (*))
-                                              ,result
-                                              ,data)))
+                   (when ,data
+                     (setf ,result (concatenate '(simple-array (unsigned-byte 8) (*))
+                                                ,result
+                                                ,data))))
           into forms
         finally (return `(let ((,result #()))
                            ,@forms
@@ -173,9 +174,10 @@
              (serialize object
                         ((ss #'write-custom-vector #'write-custom-vector #'write-key)
                          (cc #'write-key)))))
-    (serialize object
-               ((range-sigs #'write-custom-vector #'write-range-sig)
-                (mgs #'write-custom-vector #'write-mg)))))
+    (when object
+      (serialize object
+                 ((range-sigs #'write-custom-vector #'write-range-sig)
+                  (mgs #'write-custom-vector #'write-mg))))))
 
 (defun write-rct-signatures (object)
   (flet ((write-pseudo-outputs (object type)
@@ -218,6 +220,10 @@
                    ((prefix #'write-transaction-prefix)
                     (rct-signatures #'write-rct-signatures))))))
 
+(defun serialize-transaction (transaction)
+  "Return a TRANSACTION as a byte vector."
+  (write-transaction transaction))
+
 
 ;;; Blocks
 
@@ -234,3 +240,7 @@
              ((header #'write-block-header)
               (miner-transaction #'write-transaction)
               (transaction-hashes #'write-vector #'write-hash))))
+
+(defun serialize-block (block)
+  "Return a BLOCK as a byte vector."
+  (write-block block))
