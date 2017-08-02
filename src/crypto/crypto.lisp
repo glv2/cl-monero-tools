@@ -135,6 +135,23 @@
         (dotimes (i +hash-length+ hash)
           (setf (aref hash i) (mem-aref raw-hash :unsigned-char i)))))))
 
+(defcfun ("tree_hash" cn-tree-hash) :void
+  (hashes :pointer)
+  (count :unsigned-int)
+  (root-hash :pointer))
+
+(defun tree-hash (data count)
+  "Tree hash function for the transactions Merkle tree."
+  (let ((length (length data)))
+    (with-foreign-objects ((raw-data :unsigned-char length)
+                           (raw-hash :unsigned-char +hash-length+))
+      (dotimes (i length)
+        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+      (cn-tree-hash raw-data count raw-hash)
+      (let ((hash (make-array +hash-length+ :element-type '(unsigned-byte 8))))
+        (dotimes (i +hash-length+ hash)
+          (setf (aref hash i) (mem-aref raw-hash :unsigned-char i)))))))
+
 #+cncrypto-prefer-ffi
 (defun hash-to-scalar (data)
   "Make a scalar usable with the ED25519 curve from DATA and return it

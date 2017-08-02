@@ -29,7 +29,8 @@
                 :components ((:file "package")
                              (:module "blockchain"
                               :depends-on ("crypto" "package" "serialization" "utils")
-                              :components ((:file "transaction")))
+                              :components ((:file "block" :depends-on ("transaction"))
+                                           (:file "transaction")))
                              (:module "crypto"
                               :depends-on ("package" "utils")
                               :components ((:file "crypto")

@@ -62,13 +62,19 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 
 ** Blockchain
 
- - compute-transaction-hash
+ - compute-block-hash
+ - compute-block-hash-from-data
  - compute-miner-transaction-hash
+ - compute-miner-transaction-hash-from-data
+ - compute-transaction-hash
+ - compute-transaction-hash-from-data
+ - compute-transaction-tree-hash
 
 ** Cryptography
 
  - fast-hash
  - slow-hash
+ - tree-hash
  - chacha8
  - generate-chacha8-key
  - generate-secret-key

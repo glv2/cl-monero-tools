@@ -17,8 +17,13 @@
            #:bytes->hex-string
            #:bytes->integer
            #:chacha8
+           #:compute-block-hash
+           #:compute-block-hash-from-data
            #:compute-miner-transaction-hash
+           #:compute-miner-transaction-hash-from-data
            #:compute-transaction-hash
+           #:compute-transaction-hash-from-data
+           #:compute-transaction-tree-hash
            #:decode-address
            #:deserialize-block
            #:deserialize-transaction
@@ -43,4 +48,5 @@
            #:serialize-block
            #:serialize-transaction
            #:slow-hash
-           #:string->bytes))
+           #:string->bytes
+           #:tree-hash))

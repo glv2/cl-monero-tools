@@ -71,11 +71,12 @@
     (geta answer :blob)))
 
 (defun server-get-block-transaction-hashes (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let* ((block-data (hex-string->bytes (server-get-block-data block-id
-                                                               :host host
-                                                               :port port
-                                                               :user user
-                                                               :password password)))
-         (miner-transaction-hash (compute-miner-transaction-hash block-data))
-         (regular-transaction-hashes (geta (read-block block-data 0) :tx-hashes)))
+  (let* ((answer (server-get-block block-id
+                                   :host host
+                                   :port port
+                                   :user user
+                                   :password password))
+         (block-data (hex-string->bytes (geta answer :blob)))
+         (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
+         (regular-transaction-hashes (geta answer :tx--hashes)))
     (concatenate 'list (list miner-transaction-hash) regular-transaction-hashes)))
