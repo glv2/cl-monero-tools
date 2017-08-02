@@ -32,7 +32,6 @@
                       :user user
                       :password password))
          (transactions (map 'list #'decode-json-from-string (geta answer :txs--as--json))))
-    (print answer)
     (map 'list (lambda (tx) (remove :rctsig--prunable tx :key #'car)) transactions)))
 
 (defun server-get-transaction-data (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))

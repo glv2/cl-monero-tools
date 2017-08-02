@@ -54,7 +54,9 @@
                                            (:file "wallet" :depends-on ("rpc"))))
                              (:module "serialization"
                               :depends-on ("crypto" "package" "utils")
-                              :components ((:file "serialization")))
+                              :components ((:file "constants")
+                                           (:file "deserialization" :depends-on ("constants"))
+                                           (:file "serialization" :depends-on ("constants"))))
                              (:module "utils"
                               :depends-on ("package")
                               :components ((:file "base58" :depends-on ("utils"))
