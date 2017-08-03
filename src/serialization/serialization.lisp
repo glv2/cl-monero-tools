@@ -22,225 +22,219 @@
                                                 ,result
                                                 ,data))))
           into forms
-        finally (return `(let ((,result #()))
+        finally (return `(let ((,result (make-array 0 :element-type '(unsigned-byte 8))))
                            ,@forms
                            ,result))))
 
 
 ;;; Basic types
 
-(defun write-single-byte (object)
+(defun serialize-single-byte (object)
   (make-array 1 :element-type '(unsigned-byte 8) :initial-element object))
 
-(defun write-bytes (object)
-  (hex-string->bytes object))
+(defun serialize-bytes (object)
+  object)
 
-(defun write-varint (object)
+(defun serialize-integer (object)
   (let* ((size (max 1 (ceiling (integer-length object) 7)))
          (data (make-array size :element-type '(unsigned-byte 8))))
     (dotimes (i size data)
       (setf (aref data i) (logior (logand object #x7f) (if (< i (- size 1)) #x80 0)))
       (setf object (ash object -7)))))
 
-(defun write-vector (objects element-writer &rest element-writer-parameters)
+(defun serialize-vector (objects element-writer &rest element-writer-parameters)
   (let* ((size (length objects))
-         (result (write-varint size)))
+         (result (serialize-integer size)))
     (dotimes (i size result)
       (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
         (setf result (concatenate '(simple-array (unsigned-byte 8) (*)) result data))))))
 
-(defun write-custom-vector (objects element-writer &rest element-writer-parameters)
+(defun serialize-custom-vector (objects element-writer &rest element-writer-parameters)
   (let ((size (length objects))
-        (result #()))
+        (result (make-array 0 :element-type '(unsigned-byte 8))))
     (dotimes (i size result)
       (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
         (setf result (concatenate '(simple-array (unsigned-byte 8) (*)) result data))))))
 
-(defun write-byte-vector (object)
-  (write-vector (hex-string->bytes object) #'write-single-byte))
+(defun serialize-byte-vector (object)
+  (concatenate '(simple-array (unsigned-byte 8) (*))
+               (serialize-integer (length object))
+               object))
 
-(defun write-key (object)
-  (write-bytes object))
+(defun serialize-key (object)
+  (serialize-bytes object))
 
-(defun write-hash (object)
-  (write-bytes object))
+(defun serialize-hash (object)
+  (serialize-bytes object))
 
 
 ;;; Transaction outputs
 
-(defun write-txout-to-script (object)
+(defun serialize-txout-to-script (object)
   (serialize object
-             ((keys #'write-vector #'write-key)
-              (script #'write-byte-vector))))
+             ((keys #'serialize-vector #'serialize-key)
+              (script #'serialize-byte-vector))))
 
-(defun write-txout-to-scripthash (object)
-  (write-hash object))
+(defun serialize-txout-to-scripthash (object)
+  (serialize-hash object))
 
-(defun write-txout-to-key (object)
-  (write-key object))
+(defun serialize-txout-to-key (object)
+  (serialize-key object))
 
-(defun write-txout-target (object)
+(defun serialize-txout-target (object)
   (let ((type (caar object))
         (target (cdar object)))
     (cond ((eq type :script)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txout-to-script-tag+)
-                        (write-txout-to-script target)))
+                        (serialize-txout-to-script target)))
           ((eq type :scripthash)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txout-to-scripthash-tag+)
-                        (write-txout-to-scripthash target)))
+                        (serialize-txout-to-scripthash target)))
           ((eq type :key)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txout-to-key-tag+)
-                        (write-txout-to-key target))))))
+                        (serialize-txout-to-key target))))))
 
-(defun write-txout (object)
+(defun serialize-txout (object)
   (serialize object
-             ((amount #'write-varint)
-              (target #'write-txout-target))))
+             ((amount #'serialize-integer)
+              (target #'serialize-txout-target))))
 
 
 ;;; Transaction inputs
 
-(defun write-txin-gen (object)
+(defun serialize-txin-gen (object)
   (serialize object
-             ((height #'write-varint))))
+             ((height #'serialize-integer))))
 
-(defun write-txin-to-script (object)
+(defun serialize-txin-to-script (object)
   (serialize object
-             ((prev #'write-hash)
-              (prevout #'write-varint)
-              (sigset #'write-byte-vector))))
+             ((prev #'serialize-hash)
+              (prevout #'serialize-integer)
+              (sigset #'serialize-byte-vector))))
 
-(defun write-txin-to-scripthash (object)
+(defun serialize-txin-to-scripthash (object)
   (serialize object
-             ((prev #'write-hash)
-              (prevout #'write-varint)
-              (script #'write-txout-to-script)
-              (sigset #'write-byte-vector))))
+             ((prev #'serialize-hash)
+              (prevout #'serialize-integer)
+              (script #'serialize-txout-to-script)
+              (sigset #'serialize-byte-vector))))
 
-(defun write-txin-to-key (object)
+(defun serialize-txin-to-key (object)
   (serialize object
-             ((amount #'write-varint)
-              (key-offsets #'write-vector #'write-varint)
-              (key-image #'write-bytes))))
+             ((amount #'serialize-integer)
+              (key-offsets #'serialize-vector #'serialize-integer)
+              (key-image #'serialize-bytes))))
 
-(defun write-txin-target (object)
+(defun serialize-txin-target (object)
   (let ((type (caar object))
         (target (cdar object)))
     (cond ((eq type :gen)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txin-gen-tag+)
-                        (write-txin-gen target)))
+                        (serialize-txin-gen target)))
           ((eq type :script)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txin-to-script-tag+)
-                        (write-txin-to-script target)))
+                        (serialize-txin-to-script target)))
           ((eq type :scripthash)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txin-to-scripthash-tag+)
-                        (write-txin-to-scripthash target)))
+                        (serialize-txin-to-scripthash target)))
           ((eq type :key)
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (vector +txin-to-key-tag+)
-                        (write-txin-to-key target))))))
+                        (serialize-txin-to-key target))))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
 
-(defun write-signatures (object)
-  (write-custom-vector object #'write-custom-vector #'write-bytes))
+(defun serialize-signatures (object)
+  (serialize-custom-vector object #'serialize-custom-vector #'serialize-bytes))
 
 
 ;;; Ring confidential transaction signatures
 
-(defun write-rct-sig-prunable (object)
-  (labels ((write-key64 (object)
-             (write-custom-vector object #'write-key))
+(defun serialize-rct-sig-prunable (object)
+  (labels ((serialize-key64 (object)
+             (serialize-custom-vector object #'serialize-key))
 
-           (write-boro-sig (object)
+           (serialize-boro-sig (object)
              (serialize object
-                        ((s0 #'write-key64)
-                         (s1 #'write-key64)
-                         (ee #'write-key))))
+                        ((s0 #'serialize-key64)
+                         (s1 #'serialize-key64)
+                         (ee #'serialize-key))))
 
-           (write-range-sig (object)
+           (serialize-range-sig (object)
              (serialize object
-                        ((boro-sig #'write-boro-sig)
-                         (ci #'write-key64))))
+                        ((boro-sig #'serialize-boro-sig)
+                         (ci #'serialize-key64))))
 
-           (write-mg (object)
+           (serialize-mg (object)
              (serialize object
-                        ((ss #'write-custom-vector #'write-custom-vector #'write-key)
-                         (cc #'write-key)))))
+                        ((ss #'serialize-custom-vector #'serialize-custom-vector #'serialize-key)
+                         (cc #'serialize-key)))))
     (when object
       (serialize object
-                 ((range-sigs #'write-custom-vector #'write-range-sig)
-                  (mgs #'write-custom-vector #'write-mg))))))
+                 ((range-sigs #'serialize-custom-vector #'serialize-range-sig)
+                  (mgs #'serialize-custom-vector #'serialize-mg))))))
 
-(defun write-rct-signatures (object)
-  (flet ((write-pseudo-outputs (object type)
+(defun serialize-rct-signatures (object)
+  (flet ((serialize-pseudo-outputs (object type)
            (unless (eq type +rct-type-simple+)
-             (write-custom-vector object #'write-key)))
+             (serialize-custom-vector object #'serialize-key)))
 
-         (write-ecdh-tuple (object)
+         (serialize-ecdh-tuple (object)
            (serialize object
-                      ((mask #'write-key)
-                       (amount #'write-key)))))
+                      ((mask #'serialize-key)
+                       (amount #'serialize-key)))))
     (let ((type (geta object :type)))
       (concatenate '(simple-array (unsigned-byte 8) (*))
                    (vector type)
                    (unless (eq type +rct-type-null+)
                      (serialize object
-                                ((fee #'write-varint)
-                                 (pseudo-outputs #'write-pseudo-outputs type)
-                                 (ecdh-info #'write-custom-vector #'write-ecdh-tuple)
-                                 (out-pk #'write-custom-vector #'write-key)
-                                 (rct-sig-prunable #'write-rct-sig-prunable))))))))
+                                ((fee #'serialize-integer)
+                                 (pseudo-outputs #'serialize-pseudo-outputs type)
+                                 (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
+                                 (out-pk #'serialize-custom-vector #'serialize-key)
+                                 (rct-sig-prunable #'serialize-rct-sig-prunable))))))))
 
 
 ;;; Transactions
 
-(defun write-transaction-prefix (object)
+(defun serialize-transaction-prefix (object)
   (serialize object
-             ((version #'write-varint)
-              (unlock-time #'write-varint)
-              (inputs #'write-vector #'write-txin-target)
-              (outputs #'write-vector #'write-txout)
-              (extra #'write-byte-vector))))
+             ((version #'serialize-integer)
+              (unlock-time #'serialize-integer)
+              (inputs #'serialize-vector #'serialize-txin-target)
+              (outputs #'serialize-vector #'serialize-txout)
+              (extra #'serialize-byte-vector))))
 
-(defun write-transaction (object)
+(defun serialize-transaction (object)
   (let ((version (geta (geta object :prefix) :version)))
     (if (= 1 version)
         (serialize object
-                   ((prefix #'write-transaction-prefix)
-                    (signatures #'write-signatures)))
+                   ((prefix #'serialize-transaction-prefix)
+                    (signatures #'serialize-signatures)))
         (serialize object
-                   ((prefix #'write-transaction-prefix)
-                    (rct-signatures #'write-rct-signatures))))))
-
-(defun serialize-transaction (transaction)
-  "Return a TRANSACTION as a byte vector."
-  (write-transaction transaction))
+                   ((prefix #'serialize-transaction-prefix)
+                    (rct-signatures #'serialize-rct-signatures))))))
 
 
 ;;; Blocks
 
-(defun write-block-header (object)
+(defun serialize-block-header (object)
   (serialize object
-             ((major-version #'write-varint)
-              (minor-version #'write-varint)
-              (timestamp #'write-varint)
-              (previous-block-hash #'write-hash)
-              (nonce #'write-bytes))))
+             ((major-version #'serialize-integer)
+              (minor-version #'serialize-integer)
+              (timestamp #'serialize-integer)
+              (previous-block-hash #'serialize-hash)
+              (nonce #'serialize-bytes))))
 
-(defun write-block (object)
+(defun serialize-block (object)
   (serialize object
-             ((header #'write-block-header)
-              (miner-transaction #'write-transaction)
-              (transaction-hashes #'write-vector #'write-hash))))
-
-(defun serialize-block (block)
-  "Return a BLOCK as a byte vector."
-  (write-block block))
+             ((header #'serialize-block-header)
+              (miner-transaction #'serialize-transaction)
+              (transaction-hashes #'serialize-vector #'serialize-hash))))

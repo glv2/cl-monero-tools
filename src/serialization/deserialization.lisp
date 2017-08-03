@@ -31,13 +31,13 @@
 
 ;;; Basic types
 
-(defun read-single-byte (data offset)
+(defun deserialize-single-byte (data offset)
   (values (aref data offset) 1))
 
-(defun read-bytes (data offset size)
-  (values (bytes->hex-string (subseq data offset (+ offset size))) size))
+(defun deserialize-bytes (data offset size)
+  (values (subseq data offset (+ offset size)) size))
 
-(defun read-varint (data offset)
+(defun deserialize-integer (data offset)
   (let ((n 0)
         (size 0))
     (do ((l (length data))
@@ -51,8 +51,9 @@
           (return))))
     (values n size)))
 
-(defun read-vector (data offset element-reader &rest element-reader-parameters)
-  (multiple-value-bind (size s0) (read-varint data offset)
+(defun deserialize-vector (data offset element-reader &rest element-reader-parameters)
+  (multiple-value-bind (size s0)
+      (deserialize-integer data offset)
     (let ((total-size s0)
           (result (make-array size)))
       (dotimes (i size)
@@ -62,7 +63,7 @@
           (incf total-size s)))
       (values result total-size))))
 
-(defun read-custom-vector (data offset size element-reader &rest element-reader-parameters)
+(defun deserialize-custom-vector (data offset size element-reader &rest element-reader-parameters)
   (let ((result (make-array size))
         (total-size 0))
     (dotimes (i size)
@@ -72,150 +73,151 @@
         (incf total-size s)))
     (values result total-size)))
 
-(defun read-byte-vector (data offset)
-  (multiple-value-bind (bytes size)
-      (read-vector data offset #'read-single-byte)
-    (values (bytes->hex-string bytes) size)))
+(defun deserialize-byte-vector (data offset)
+  (multiple-value-bind (size s0)
+      (deserialize-integer data offset)
+    (let ((bytes (subseq data (+ offset s0) (+ offset s0 size))))
+      (values bytes (+ s0 size)))))
 
-(defun read-key (data offset)
-  (read-bytes data offset +ed25519-key-length+))
+(defun deserialize-key (data offset)
+  (deserialize-bytes data offset +ed25519-key-length+))
 
-(defun read-hash (data offset)
-  (read-bytes data offset +hash-length+))
+(defun deserialize-hash (data offset)
+  (deserialize-bytes data offset +hash-length+))
 
 
 ;;; Transaction outputs
 
-(defun read-txout-to-script (data offset)
+(defun deserialize-txout-to-script (data offset)
   (deserialize data offset
-               ((keys #'read-vector #'read-key)
-                (script #'read-byte-vector))))
+               ((keys #'deserialize-vector #'deserialize-key)
+                (script #'deserialize-byte-vector))))
 
-(defun read-txout-to-scripthash (data offset)
-  (read-hash data offset))
+(defun deserialize-txout-to-scripthash (data offset)
+  (deserialize-hash data offset))
 
-(defun read-txout-to-key (data offset)
-  (read-key data offset))
+(defun deserialize-txout-to-key (data offset)
+  (deserialize-key data offset))
 
-(defun read-txout-target (data offset)
+(defun deserialize-txout-target (data offset)
   (let ((type (aref data offset)))
     (multiple-value-bind (target size)
         (cond ((eq type +txout-to-script-tag+)
                (deserialize data (+ offset 1)
-                            ((script #'read-txout-to-script))))
+                            ((script #'deserialize-txout-to-script))))
               ((eq type +txout-to-scripthash-tag+)
                (deserialize data (+ offset 1)
-                            ((scripthash #'read-txout-to-scripthash))))
+                            ((scripthash #'deserialize-txout-to-scripthash))))
               ((eq type +txout-to-key-tag+)
                (deserialize data (+ offset 1)
-                            ((key #'read-txout-to-key)))))
+                            ((key #'deserialize-txout-to-key)))))
       (values target (+ 1 size)))))
 
-(defun read-txout (data offset)
+(defun deserialize-txout (data offset)
   (deserialize data offset
-               ((amount #'read-varint)
-                (target #'read-txout-target))))
+               ((amount #'deserialize-integer)
+                (target #'deserialize-txout-target))))
 
 
 ;;; Transaction inputs
 
-(defun read-txin-gen (data offset)
+(defun deserialize-txin-gen (data offset)
   (deserialize data offset
-               ((height #'read-varint))))
+               ((height #'deserialize-integer))))
 
-(defun read-txin-to-script(data offset)
+(defun deserialize-txin-to-script(data offset)
   (deserialize data offset
-               ((prev #'read-hash)
-                (prevout #'read-varint)
-                (sigset #'read-byte-vector))))
+               ((prev #'deserialize-hash)
+                (prevout #'deserialize-integer)
+                (sigset #'deserialize-byte-vector))))
 
-(defun read-txin-to-scripthash (data offset)
+(defun deserialize-txin-to-scripthash (data offset)
   (deserialize data offset
-               ((previous #'read-hash)
-                (prevout #'read-varint)
-                (script #'read-txout-to-script)
-                (sigset #'read-byte-vector))))
+               ((previous #'deserialize-hash)
+                (prevout #'deserialize-integer)
+                (script #'deserialize-txout-to-script)
+                (sigset #'deserialize-byte-vector))))
 
-(defun read-txin-to-key (data offset)
+(defun deserialize-txin-to-key (data offset)
   (deserialize data offset
-               ((amount #'read-varint)
-                (key-offsets #'read-vector #'read-varint)
-                (key-image #'read-bytes +ed25519-key-length+))))
+               ((amount #'deserialize-integer)
+                (key-offsets #'deserialize-vector #'deserialize-integer)
+                (key-image #'deserialize-bytes +ed25519-key-length+))))
 
-(defun read-txin-target (data offset)
+(defun deserialize-txin-target (data offset)
   (let ((type (aref data offset)))
     (multiple-value-bind (target size)
         (cond ((eq type +txin-gen-tag+)
                (deserialize data (+ offset 1)
-                            ((gen #'read-txin-gen))))
+                            ((gen #'deserialize-txin-gen))))
               ((eq type +txin-to-script-tag+)
                (deserialize data (+ offset 1)
-                            ((script #'read-txin-to-script))))
+                            ((script #'deserialize-txin-to-script))))
               ((eq type +txin-to-scripthash-tag+)
                (deserialize data (+ offset 1)
-                            ((scripthash #'read-txin-to-scripthash))))
+                            ((scripthash #'deserialize-txin-to-scripthash))))
               ((eq type +txin-to-key-tag+)
                (deserialize data (+ offset 1)
-                            ((key #'read-txin-to-key)))))
+                            ((key #'deserialize-txin-to-key)))))
       (values target (+ 1 size)))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
 
-(defun read-signatures (data offset ring-size vin-size)
-  (read-custom-vector data offset vin-size
-                      #'read-custom-vector ring-size
-                      #'read-bytes (* 2 +ed25519-key-length+)))
+(defun deserialize-signatures (data offset ring-size vin-size)
+  (deserialize-custom-vector data offset vin-size
+                      #'deserialize-custom-vector ring-size
+                      #'deserialize-bytes (* 2 +ed25519-key-length+)))
 
 
 ;;; Ring confidential transaction signatures
 
-(defun read-rct-sig-prunable (data offset ring-size vin-size vout-size type)
-  (labels ((read-key64 (data offset)
-             (read-custom-vector data offset 64 #'read-key))
+(defun deserialize-rct-sig-prunable (data offset ring-size vin-size vout-size type)
+  (labels ((deserialize-key64 (data offset)
+             (deserialize-custom-vector data offset 64 #'deserialize-key))
 
-           (read-boro-sig (data offset)
+           (deserialize-boro-sig (data offset)
              (deserialize data offset
-                          ((s0 #'read-key64)
-                           (s1 #'read-key64)
-                           (ee #'read-key))))
+                          ((s0 #'deserialize-key64)
+                           (s1 #'deserialize-key64)
+                           (ee #'deserialize-key))))
 
-           (read-range-sig (data offset)
+           (deserialize-range-sig (data offset)
              (deserialize data offset
-                          ((boro-sig #'read-boro-sig)
-                           (ci #'read-key64))))
+                          ((boro-sig #'deserialize-boro-sig)
+                           (ci #'deserialize-key64))))
 
-           (read-mg (data offset)
+           (deserialize-mg (data offset)
              (deserialize data offset
-                          ((ss #'read-custom-vector ring-size
-                               #'read-custom-vector (+ 1 (if (eq type +rct-type-simple+) 1 vin-size))
-                               #'read-key)
-                           (cc #'read-key)))))
+                          ((ss #'deserialize-custom-vector ring-size
+                               #'deserialize-custom-vector (+ 1 (if (eq type +rct-type-simple+) 1 vin-size))
+                               #'deserialize-key)
+                           (cc #'deserialize-key)))))
     (deserialize data offset
-                 ((range-sigs #'read-custom-vector vout-size #'read-range-sig)
-                  (mgs #'read-custom-vector (if (eq type +rct-type-simple+) vin-size 1)
-                       #'read-mg)))))
+                 ((range-sigs #'deserialize-custom-vector vout-size #'deserialize-range-sig)
+                  (mgs #'deserialize-custom-vector (if (eq type +rct-type-simple+) vin-size 1)
+                       #'deserialize-mg)))))
 
-(defun read-rct-signatures (data offset ring-size vin-size vout-size)
-  (flet ((read-pseudo-outputs (data offset type vin-size)
+(defun deserialize-rct-signatures (data offset ring-size vin-size vout-size)
+  (flet ((deserialize-pseudo-outputs (data offset type vin-size)
            (if (eq type +rct-type-simple+)
-               (read-custom-vector data offset vin-size #'read-key)
+               (deserialize-custom-vector data offset vin-size #'deserialize-key)
                (values nil 0)))
 
-         (read-ecdh-tuple (data offset)
+         (deserialize-ecdh-tuple (data offset)
            (deserialize data offset
-                        ((mask #'read-key)
-                         (amount #'read-key)))))
-    (let ((type (read-single-byte data offset)))
+                        ((mask #'deserialize-key)
+                         (amount #'deserialize-key)))))
+    (let ((type (deserialize-single-byte data offset)))
       (if (eq type +rct-type-null+)
           (values (list (cons :type type)) 1)
           (multiple-value-bind (sig size)
               (deserialize data (+ offset 1)
-                           ((fee #'read-varint)
-                            (pseudo-outputs #'read-pseudo-outputs type vin-size)
-                            (ecdh-info #'read-custom-vector vout-size #'read-ecdh-tuple)
-                            (out-pk #'read-custom-vector vout-size #'read-key)
-                            (rct-sig-prunable #'read-rct-sig-prunable
+                           ((fee #'deserialize-integer)
+                            (pseudo-outputs #'deserialize-pseudo-outputs type vin-size)
+                            (ecdh-info #'deserialize-custom-vector vout-size #'deserialize-ecdh-tuple)
+                            (out-pk #'deserialize-custom-vector vout-size #'deserialize-key)
+                            (rct-sig-prunable #'deserialize-rct-sig-prunable
                                               ring-size vin-size vout-size type)))
             (values (append (list (cons :type type)) sig)
                     (+ 1 size)))))))
@@ -223,18 +225,20 @@
 
 ;;; Transactions
 
-(defun read-transaction-prefix (data offset)
+(defun deserialize-transaction-prefix (data offset)
   (deserialize data offset
-               ((version #'read-varint)
-                (unlock-time #'read-varint)
-                (inputs #'read-vector #'read-txin-target)
-                (outputs #'read-vector #'read-txout)
-                (extra #'read-byte-vector))))
+               ((version #'deserialize-integer)
+                (unlock-time #'deserialize-integer)
+                (inputs #'deserialize-vector #'deserialize-txin-target)
+                (outputs #'deserialize-vector #'deserialize-txout)
+                (extra #'deserialize-byte-vector))))
 
-(defun read-transaction (data offset)
+(defun deserialize-transaction (data offset)
+  "Return the transaction whose serialization starts at OFFSET in DATA.
+The second returned value in the size of the serialized transaction."
   (multiple-value-bind (prefix prefix-size)
       (deserialize data offset
-                   ((prefix #'read-transaction-prefix)))
+                   ((prefix #'deserialize-transaction-prefix)))
     (let* ((p (geta prefix :prefix))
            (version (geta p :version))
            (vin (geta p :inputs))
@@ -246,35 +250,27 @@
       (multiple-value-bind (signatures signatures-size)
           (if (= 1 version)
               (deserialize data (+ offset prefix-size)
-                           ((signatures #'read-signatures ring-size vin-size)))
+                           ((signatures #'deserialize-signatures ring-size vin-size)))
               (deserialize data (+ offset prefix-size)
-                           ((rct-signatures #'read-rct-signatures
+                           ((rct-signatures #'deserialize-rct-signatures
                                             ring-size vin-size vout-size))))
         (values (append prefix signatures) (+ prefix-size signatures-size))))))
-
-(defun deserialize-transaction (data &optional (offset 0))
-  "Return the transaction whose serialization starts at OFFSET in DATA.
-The second returned value in the size of the serialized transaction."
-  (read-transaction data offset))
 
 
 ;;; Blocks
 
-(defun read-block-header (data offset)
+(defun deserialize-block-header (data offset)
   (deserialize data offset
-               ((major-version #'read-varint)
-                (minor-version #'read-varint)
-                (timestamp #'read-varint)
-                (previous-block-hash #'read-hash)
-                (nonce #'read-bytes 4))))
+               ((major-version #'deserialize-integer)
+                (minor-version #'deserialize-integer)
+                (timestamp #'deserialize-integer)
+                (previous-block-hash #'deserialize-hash)
+                (nonce #'deserialize-bytes 4))))
 
-(defun read-block (data offset)
-  (deserialize data offset
-               ((header #'read-block-header)
-                (miner-transaction #'read-transaction)
-                (transaction-hashes #'read-vector #'read-hash))))
-
-(defun deserialize-block (data &optional (offset 0))
+(defun deserialize-block (data offset)
   "Return the block whose serialization starts at OFFSET in DATA.
 The second returned value in the size of the serialized block."
-  (read-block data offset))
+  (deserialize data offset
+               ((header #'deserialize-block-header)
+                (miner-transaction #'deserialize-transaction)
+                (transaction-hashes #'deserialize-vector #'deserialize-hash))))
