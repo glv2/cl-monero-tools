@@ -50,8 +50,8 @@
                                            (:file "spanish" :depends-on ("mnemonic"))))
                              (:module "rpc"
                               :depends-on ("blockchain" "package" "serialization" "utils")
-                              :components ((:file "rpc")
-                                           (:file "server" :depends-on ("rpc"))
+                              :components ((:file "daemon" :depends-on ("rpc"))
+                                           (:file "rpc")
                                            (:file "wallet" :depends-on ("rpc"))))
                              (:module "serialization"
                               :depends-on ("crypto" "package" "utils")

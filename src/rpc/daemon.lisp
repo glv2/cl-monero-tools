@@ -7,14 +7,14 @@
 (in-package :monero-tools)
 
 
-(defun server-get-info (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-info-from-daemon (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (json-rpc "get_info"
             :host host
             :port port
             :user user
             :password password))
 
-(defun server-get-block-count (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-block-count-from-daemon (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let ((answer (json-rpc "getblockcount"
                           :host host
                           :port port
@@ -22,7 +22,7 @@
                           :password password)))
     (geta answer :count)))
 
-(defun server-get-transactions (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-transactions-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
                            (cons "decode_as_json" t)))
          (answer (rpc "gettransactions"
@@ -34,22 +34,26 @@
          (transactions (map 'list #'decode-json-from-string (geta answer :txs--as--json))))
     (map 'list (lambda (tx) (remove :rctsig--prunable tx :key #'car)) transactions)))
 
-(defun server-get-transaction-data (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-transaction-data-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))))
          (answer (rpc "gettransactions"
                       :parameters parameters
                       :host host
                       :port port
                       :user user
-                      :password password))
-         (transactions (map 'list (lambda (tx) (geta tx :as--hex)) (geta answer :txs))))
-    transactions))
+                      :password password)))
+    (map 'list
+         (lambda (tx)
+           (let ((data (geta tx :as--hex)))
+             (when data
+               (hex-string->bytes data))))
+         (geta answer :txs))))
 
-(defun server-get-block (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let* ((parameters (list (cons (etypecase block-id
-                                   (integer "height")
-                                   (string "hash"))
-                                 block-id))))
+(defun get-block-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((parameters (list (cons (etypecase block-id
+                                  (integer "height")
+                                  (string "hash"))
+                                block-id))))
     (json-rpc "getblock"
               :parameters parameters
               :host host
@@ -57,7 +61,7 @@
               :user user
               :password password)))
 
-(defun server-get-block-data (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-block-data-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons (etypecase block-id
                                    (integer "height")
                                    (string "hash"))
@@ -67,10 +71,12 @@
                            :host host
                            :port port
                            :user user
-                           :password password)))
-    (geta answer :blob)))
+                           :password password))
+         (data (geta answer :blob)))
+    (when data
+      (hex-string->bytes data))))
 
-(defun server-get-block-transaction-hashes (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-block-transaction-hashes-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((answer (server-get-block block-id
                                    :host host
                                    :port port
@@ -80,3 +86,22 @@
          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
          (regular-transaction-hashes (geta answer :tx--hashes)))
     (concatenate 'list (list miner-transaction-hash) regular-transaction-hashes)))
+
+(defun get-block-template-from-daemon (address reserve-size &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((parameters (list (cons "wallet_address" address)
+                          (cons "reserve_size" reserve-size))))
+    (json-rpc "getblocktemplate"
+              :parameters parameters
+              :host host
+              :port port
+              :user user
+              :password password)))
+
+(defun submit-block-to-daemon (block-data &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((parameters (list (bytes->hex-string block-data))))
+    (json-rpc "submitblock"
+              :parameters parameters
+              :host host
+              :port port
+              :user user
+              :password password)))
