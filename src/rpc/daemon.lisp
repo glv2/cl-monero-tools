@@ -77,11 +77,11 @@
       (hex-string->bytes data))))
 
 (defun get-block-transaction-hashes-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let* ((answer (server-get-block block-id
-                                   :host host
-                                   :port port
-                                   :user user
-                                   :password password))
+  (let* ((answer (get-block-from-daemon block-id
+                                        :host host
+                                        :port port
+                                        :user user
+                                        :password password))
          (block-data (hex-string->bytes (geta answer :blob)))
          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
          (regular-transaction-hashes (geta answer :tx--hashes)))

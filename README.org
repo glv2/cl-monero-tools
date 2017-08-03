@@ -62,6 +62,7 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 
 ** Blockchain
 
+ - acceptable-hash-p
  - compute-block-hash
  - compute-block-hash-from-data
  - compute-miner-transaction-hash

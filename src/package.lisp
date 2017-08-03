@@ -8,6 +8,7 @@
   (:use :cl :alexandria :babel :base64 :bordeaux-threads :cffi :json :split-sequence)
   (:export
    ;; blockchain
+   #:acceptable-hash-p
    #:compute-block-hash #:compute-block-hash-from-data
    #:compute-miner-transaction-hash #:compute-miner-transaction-hash-from-data
    #:compute-transaction-hash #:compute-transaction-hash-from-data

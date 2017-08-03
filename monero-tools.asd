@@ -168,7 +168,9 @@
                     (let ((tests (uiop:find-symbol* 'monero-tools-tests :monero-tools/tests)))
                       (uiop:symbol-call :fiveam 'run! tests)))
   :components ((:module "tests"
-                :components ((:file "crypto" :depends-on ("tests"))
+                :components ((:file "blockchain" :depends-on ("tests"))
+                             (:file "crypto" :depends-on ("tests"))
                              (:file "tests")
+                             (:file "serialization" :depends-on ("tests"))
                              (:file "utils" :depends-on ("tests"))
                              (:file "wallet" :depends-on ("tests"))))))

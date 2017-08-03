@@ -12,13 +12,13 @@
          (version (geta prefix :version)))
     (if (= 1 version)
         (fast-hash (serialize-transaction transaction))
-        (let* ((rct-sig (geta transaction :rct-signatures))
-               (base (remove-if (lambda (x) (eq (car x) :rct-sig-prunable)) rct-sig))
-               (prunable (geta rct-sig :rct-sig-prunable))
+        (let* ((rct-sig (geta transaction :rct-signature))
+               (base (remove-if (lambda (x) (eq (car x) :rct-signature-prunable)) rct-sig))
+               (prunable (geta rct-sig :rct-signature-prunable))
                (prefix-hash (fast-hash (serialize-transaction-prefix prefix)))
-               (base-hash (fast-hash (serialize-rct-signatures base)))
+               (base-hash (fast-hash (serialize-rct-signature base)))
                (prunable-hash (if prunable
-                                  (fast-hash (serialize-rct-sig-prunable prunable))
+                                  (fast-hash (serialize-rct-signature-prunable prunable))
                                   (make-array +hash-length+
                                               :element-type '(unsigned-byte 8)
                                               :initial-element 0))))
@@ -28,7 +28,7 @@
                                   prunable-hash))))))
 
 (defun compute-transaction-hash-from-data (transaction-data)
-  (compute-transaction-hash (deserialize-transaction transaction-data)))
+  (compute-transaction-hash (deserialize-transaction transaction-data 0)))
 
 (defun compute-miner-transaction-hash (block)
   (compute-transaction-hash (geta block :miner-transaction)))

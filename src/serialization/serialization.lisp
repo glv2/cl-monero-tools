@@ -70,120 +70,121 @@
 
 ;;; Transaction outputs
 
-(defun serialize-txout-to-script (object)
+(defun serialize-transaction-output-to-script (object)
   (serialize object
              ((keys #'serialize-vector #'serialize-key)
               (script #'serialize-byte-vector))))
 
-(defun serialize-txout-to-scripthash (object)
+(defun serialize-transaction-output-to-script-hash (object)
   (serialize-hash object))
 
-(defun serialize-txout-to-key (object)
+(defun serialize-transaction-output-to-key (object)
   (serialize-key object))
 
-(defun serialize-txout-target (object)
+(defun serialize-transaction-output-target (object)
   (let ((type (caar object))
         (target (cdar object)))
     (cond ((eq type :script)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txout-to-script-tag+)
-                        (serialize-txout-to-script target)))
-          ((eq type :scripthash)
+                        (vector +transaction-output-to-script-tag+)
+                        (serialize-transaction-output-to-script target)))
+          ((eq type :script-hash)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txout-to-scripthash-tag+)
-                        (serialize-txout-to-scripthash target)))
+                        (vector +transaction-output-to-script-hash-tag+)
+                        (serialize-transaction-output-to-script-hash target)))
           ((eq type :key)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txout-to-key-tag+)
-                        (serialize-txout-to-key target))))))
+                        (vector +transaction-output-to-key-tag+)
+                        (serialize-transaction-output-to-key target))))))
 
-(defun serialize-txout (object)
+(defun serialize-transaction-output (object)
   (serialize object
              ((amount #'serialize-integer)
-              (target #'serialize-txout-target))))
+              (target #'serialize-transaction-output-target))))
 
 
 ;;; Transaction inputs
 
-(defun serialize-txin-gen (object)
+(defun serialize-transaction-input-generation (object)
   (serialize object
              ((height #'serialize-integer))))
 
-(defun serialize-txin-to-script (object)
+(defun serialize-transaction-input-to-script (object)
   (serialize object
              ((prev #'serialize-hash)
               (prevout #'serialize-integer)
               (sigset #'serialize-byte-vector))))
 
-(defun serialize-txin-to-scripthash (object)
+(defun serialize-transaction-input-to-script-hash (object)
   (serialize object
              ((prev #'serialize-hash)
               (prevout #'serialize-integer)
-              (script #'serialize-txout-to-script)
+              (script #'serialize-transaction-output-to-script)
               (sigset #'serialize-byte-vector))))
 
-(defun serialize-txin-to-key (object)
+(defun serialize-transaction-input-to-key (object)
   (serialize object
              ((amount #'serialize-integer)
               (key-offsets #'serialize-vector #'serialize-integer)
               (key-image #'serialize-bytes))))
 
-(defun serialize-txin-target (object)
+(defun serialize-transaction-input-target (object)
   (let ((type (caar object))
         (target (cdar object)))
-    (cond ((eq type :gen)
+    (cond ((eq type :generation)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txin-gen-tag+)
-                        (serialize-txin-gen target)))
+                        (vector +transaction-input-generation-tag+)
+                        (serialize-transaction-input-generation target)))
           ((eq type :script)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txin-to-script-tag+)
-                        (serialize-txin-to-script target)))
-          ((eq type :scripthash)
+                        (vector +transaction-input-to-script-tag+)
+                        (serialize-transaction-input-to-script target)))
+          ((eq type :script-hash)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txin-to-scripthash-tag+)
-                        (serialize-txin-to-scripthash target)))
+                        (vector +transaction-input-to-script-hash-tag+)
+                        (serialize-transaction-input-to-script-hash target)))
           ((eq type :key)
            (concatenate '(simple-array (unsigned-byte 8) (*))
-                        (vector +txin-to-key-tag+)
-                        (serialize-txin-to-key target))))))
+                        (vector +transaction-input-to-key-tag+)
+                        (serialize-transaction-input-to-key target))))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
 
-(defun serialize-signatures (object)
+(defun serialize-signature (object)
   (serialize-custom-vector object #'serialize-custom-vector #'serialize-bytes))
 
 
 ;;; Ring confidential transaction signatures
 
-(defun serialize-rct-sig-prunable (object)
+(defun serialize-rct-signature-prunable (object)
   (labels ((serialize-key64 (object)
              (serialize-custom-vector object #'serialize-key))
 
-           (serialize-boro-sig (object)
+           (serialize-boromean-signature (object)
              (serialize object
                         ((s0 #'serialize-key64)
                          (s1 #'serialize-key64)
                          (ee #'serialize-key))))
 
-           (serialize-range-sig (object)
+           (serialize-range-proof (object)
              (serialize object
-                        ((boro-sig #'serialize-boro-sig)
-                         (ci #'serialize-key64))))
+                        ((boromean-signature #'serialize-boromean-signature)
+                         (pedersen-commitments #'serialize-key64))))
 
-           (serialize-mg (object)
+           (serialize-multilayered-group-signature (object)
              (serialize object
                         ((ss #'serialize-custom-vector #'serialize-custom-vector #'serialize-key)
                          (cc #'serialize-key)))))
     (when object
       (serialize object
-                 ((range-sigs #'serialize-custom-vector #'serialize-range-sig)
-                  (mgs #'serialize-custom-vector #'serialize-mg))))))
+                 ((range-proofs #'serialize-custom-vector #'serialize-range-proof)
+                  (multilayered-group-signatures #'serialize-custom-vector
+                                                 #'serialize-multilayered-group-signature))))))
 
-(defun serialize-rct-signatures (object)
+(defun serialize-rct-signature (object)
   (flet ((serialize-pseudo-outputs (object type)
-           (unless (eq type +rct-type-simple+)
+           (when (eq type +rct-type-simple+)
              (serialize-custom-vector object #'serialize-key)))
 
          (serialize-ecdh-tuple (object)
@@ -198,8 +199,8 @@
                                 ((fee #'serialize-integer)
                                  (pseudo-outputs #'serialize-pseudo-outputs type)
                                  (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
-                                 (out-pk #'serialize-custom-vector #'serialize-key)
-                                 (rct-sig-prunable #'serialize-rct-sig-prunable))))))))
+                                 (output-public-keys #'serialize-custom-vector #'serialize-key)
+                                 (rct-signature-prunable #'serialize-rct-signature-prunable))))))))
 
 
 ;;; Transactions
@@ -208,8 +209,8 @@
   (serialize object
              ((version #'serialize-integer)
               (unlock-time #'serialize-integer)
-              (inputs #'serialize-vector #'serialize-txin-target)
-              (outputs #'serialize-vector #'serialize-txout)
+              (inputs #'serialize-vector #'serialize-transaction-input-target)
+              (outputs #'serialize-vector #'serialize-transaction-output)
               (extra #'serialize-byte-vector))))
 
 (defun serialize-transaction (object)
@@ -217,10 +218,10 @@
     (if (= 1 version)
         (serialize object
                    ((prefix #'serialize-transaction-prefix)
-                    (signatures #'serialize-signatures)))
+                    (signature #'serialize-signature)))
         (serialize object
                    ((prefix #'serialize-transaction-prefix)
-                    (rct-signatures #'serialize-rct-signatures))))))
+                    (rct-signature #'serialize-rct-signature))))))
 
 
 ;;; Blocks
