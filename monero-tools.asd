@@ -35,6 +35,9 @@
                               :depends-on ("package" "utils")
                               :components ((:file "crypto")
                                            (:file "key" :depends-on ("crypto"))))
+                             (:module "mine"
+                              :depends-on ("blockchain" "package")
+                              :components ((:file "miner")))
                              (:module "mnemonic"
                               :depends-on ("package" "utils")
                               :components ((:file "chinese-simplified" :depends-on ("mnemonic"))

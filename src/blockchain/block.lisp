@@ -45,5 +45,5 @@
                              (timestamp #'deserialize-integer)
                              (previous-block-hash #'deserialize-hash)))))
 
-(defun check-block-hash (hash difficulty)
+(defun acceptable-hash-p (hash difficulty)
   (< (* (bytes->integer hash) difficulty) #.(expt 2 256)))
