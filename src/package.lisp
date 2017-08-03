@@ -6,47 +6,39 @@
 
 (defpackage :monero-tools
   (:use :cl :alexandria :babel :base64 :bordeaux-threads :cffi :json :split-sequence)
-  (:export #:*rpc-host*
-           #:*rpc-port*
-           #:*rpc-user*
-           #:*rpc-password*
-           #:available-mnemonic-seed-languages
-           #:base58-encode
-           #:base58-decode
-           #:bruteforce-wallet-keys
-           #:bytes->hex-string
-           #:bytes->integer
-           #:chacha8
-           #:compute-block-hash
-           #:compute-block-hash-from-data
-           #:compute-miner-transaction-hash
-           #:compute-miner-transaction-hash-from-data
-           #:compute-transaction-hash
-           #:compute-transaction-hash-from-data
-           #:compute-transaction-tree-hash
-           #:decode-address
-           #:deserialize-block
-           #:deserialize-transaction
-           #:fast-hash
-           #:generate-chacha8-key
-           #:generate-keys
-           #:generate-secret-key
-           #:get-wallet-keys
-           #:geta
-           #:hex-string->bytes
-           #:integer->bytes
-           #:json-rpc
-           #:make-integrated-address
-           #:mnemonic-seed->secret-key
-           #:public-keys->address
-           #:recover-keys
-           #:rpc
-           #:secret-key->mnemonic-seed
-           #:secret-key->public-key
-           #:secret-spend-key->address
-           #:secret-spend-key->secret-view-key
-           #:serialize-block
-           #:serialize-transaction
-           #:slow-hash
-           #:string->bytes
-           #:tree-hash))
+  (:export
+   ;; blockchain
+   #:compute-block-hash #:compute-block-hash-from-data
+   #:compute-miner-transaction-hash #:compute-miner-transaction-hash-from-data
+   #:compute-transaction-hash #:compute-transaction-hash-from-data
+   #:compute-transaction-tree-hash
+
+   ;; crypto
+   #:fast-hash #:slow-hash #:tree-hash
+   #:chacha8 #:generate-chacha8-key
+   #:generate-keys #:generate-secret-key
+   #:secret-key->public-key #:secret-spend-key->secret-view-key
+   #:recover-keys
+
+   ;; mnemonic
+   #:available-mnemonic-seed-languages
+   #:mnemonic-seed->secret-key #:secret-key->mnemonic-seed
+
+   ;; rpc
+   #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
+   #:rpc #:json-rpc
+
+   ;; serialization
+   #:serialize-block #:deserialize-block
+   #:serialize-transaction #:deserialize-transaction
+
+   ;; utils
+   #:base58-encode #:base58-decode
+   #:bytes->hex-string #:bytes->integer
+   #:hex-string->bytes #:integer->bytes #:string->bytes
+   #:geta
+
+   ;; wallet
+   #:decode-address #:make-integrated-address
+   #:public-keys->address #:secret-spend-key->address
+   #:get-wallet-keys #:bruteforce-wallet-keys))
