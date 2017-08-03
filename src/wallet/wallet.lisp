@@ -12,7 +12,7 @@
   (let* ((keys-file-data (read-file-into-byte-vector keys-file))
          (iv (subseq keys-file-data 0 +chacha8-iv-length+)))
     (multiple-value-bind (encrypted-data-length varint-size)
-        (read-varint keys-file-data +chacha8-iv-length+)
+        (deserialize-integer keys-file-data +chacha8-iv-length+)
       (let* ((encrypted-data (subseq keys-file-data
                                      (+ +chacha8-iv-length+ varint-size)
                                      (+ +chacha8-iv-length+ varint-size encrypted-data-length)))
@@ -21,7 +21,7 @@
         (unless (string= (subseq account-json-data 0 12) "{\"key_data\":")
           (error "Bad password."))
         (let* ((account-json (decode-json-from-string account-json-data))
-               (key-data (cdr (assoc :key--data account-json))))
+               (key-data (geta account-json :key--data )))
           (flet ((find-key-field (data key)
                    (let ((l (length key))
                          (i (search key data)))
