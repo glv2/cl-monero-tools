@@ -59,5 +59,4 @@
       (is-true (acceptable-hash-p (hash/hex block-400000) difficulty-400000))
       (is-true (acceptable-hash-p (hash/hex block-1000000) difficulty-1000000))
       (is-true (acceptable-hash-p (hash/hex block-1300000) difficulty-1300000))
-      (is-false (acceptable-hash-p (hash/hex block-400000) difficulty-1300000))
       (is-false (acceptable-hash-p (hash/hex block-400000) difficulty-1300000)))))
