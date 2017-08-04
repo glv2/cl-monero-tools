@@ -171,6 +171,7 @@
                 :components ((:file "blockchain" :depends-on ("tests"))
                              (:file "crypto" :depends-on ("tests"))
                              (:file "mine" :depends-on ("tests"))
+                             (:file "mnemonic" :depends-on ("tests"))
                              (:file "tests")
                              (:file "serialization" :depends-on ("tests"))
                              (:file "utils" :depends-on ("tests"))

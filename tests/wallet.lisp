@@ -149,19 +149,3 @@ testnet: no
                  (secret-spend-key->address/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306")))
     (is (string= "43oErH6q2FfVkVBXrkQt3yfYmmZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7"
                  (secret-spend-key->address/hex "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a")))))
-
-(test secret-key->mnemonic-seed
-  (flet ((secret-key->mnemonic-seed/hex (secret-key language)
-           (secret-key->mnemonic-seed (hex-string->bytes secret-key) language)))
-    (is (string-equal "dedicated dubbed coexist having damp ember feline inquest september nobody alley binocular lopped moat agreed wayside gotten bays layout nail vixen imagine weird yahoo moat"
-                      (secret-key->mnemonic-seed/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306" :english)))
-    (is (string-equal "brave visuel version tango davantage baobab quinze essai peau tellement balcon brevet tasse ordinaire rhume lueur oreille version stock agonie salon scoop rouge seuil peau"
-                      (secret-key->mnemonic-seed/hex "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a" :french)))))
-
-(test mnemonic-seed->secret-key
-  (flet ((mnemonic-seed->secret-key/hex (mnemonic-seed language)
-           (bytes->hex-string (mnemonic-seed->secret-key mnemonic-seed language))))
-    (is (string-equal "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
-                      (mnemonic-seed->secret-key/hex "dedicated dubbed coexist having damp ember feline inquest september nobody alley binocular lopped moat agreed wayside gotten bays layout nail vixen imagine weird yahoo moat" :english)))
-    (is (string-equal "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a"
-                      (mnemonic-seed->secret-key/hex "brave visuel version tango davantage baobab quinze essai peau tellement balcon brevet tasse ordinaire rhume lueur oreille version stock agonie salon scoop rouge seuil peau" :french)))))

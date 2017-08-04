@@ -56,7 +56,7 @@ key made of bytes."
   (if (/= (length seed) +seed-length+)
       (error "Bad seed length.")
       (let ((word-list-length (length word-list)))
-        (do ((bytes (make-array (* +seed-length+ 4/3)))
+        (do ((bytes (make-array (* +seed-length+ 4/3) :element-type '(unsigned-byte 8)))
              (i 0 (+ i 3))
              (j 0 (+ j 4)))
             ((>= i +seed-length+) bytes)
@@ -124,3 +124,25 @@ key made of bytes."
           (if (string/= (seed-checksum seed prefix-length) checksum)
               (error "Checksum verification failed.")
               (seed->bytes seed word-list))))))
+
+(defun encrypt-mnemonic-seed (mnemonic-seed password language)
+  "Encrypt a MNEMONIC-SEED with a PASSWORD and return the result as an
+encrypted mnemonic seed which looks just like a not encrypted mnemonic
+seed."
+  (let* ((plaintext (mnemonic-seed->secret-key mnemonic-seed language))
+         (m (ironclad::ed25519-decode-int plaintext))
+         (encryption-key (slow-hash (string->bytes password)))
+         (k (ironclad::ed25519-decode-int encryption-key))
+         (c (mod (+ m k) ironclad::+ed25519-l+))
+         (ciphertext (ironclad::ed25519-encode-int c)))
+    (secret-key->mnemonic-seed ciphertext language)))
+
+(defun decrypt-mnemonic-seed (mnemonic-seed password language)
+  "Decrypt an encrypted MNEMONIC-SEED with a PASSWORD."
+  (let* ((ciphertext (mnemonic-seed->secret-key mnemonic-seed language))
+         (c (ironclad::ed25519-decode-int ciphertext))
+         (decryption-key (slow-hash (string->bytes password)))
+         (k (ironclad::ed25519-decode-int decryption-key))
+         (m (mod (- c k) ironclad::+ed25519-l+))
+         (plaintext (ironclad::ed25519-encode-int m)))
+    (secret-key->mnemonic-seed plaintext language)))

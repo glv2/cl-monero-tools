@@ -89,6 +89,8 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
  - available-mnemonic-seed-languages
  - mnemonic-seed->secret-key
  - secret-key->mnemonic-seed
+ - encrypt-mnemonic-seed
+ - decrypt-mnemonic-seed
 
 ** RPC
 

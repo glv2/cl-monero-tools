@@ -24,6 +24,7 @@
    ;; mnemonic
    #:available-mnemonic-seed-languages
    #:mnemonic-seed->secret-key #:secret-key->mnemonic-seed
+   #:encrypt-mnemonic-seed #:decrypt-mnemonic-seed
 
    ;; rpc
    #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
