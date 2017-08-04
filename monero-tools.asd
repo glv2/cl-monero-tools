@@ -157,7 +157,7 @@
 
 (defsystem "monero-tools/tests"
   :name "monero-tools/tests"
-  :description "Tests for monreo-tools"
+  :description "Tests for monero-tools"
   :version "0.1"
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
