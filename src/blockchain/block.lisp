@@ -10,7 +10,7 @@
 (defun compute-block-hash (block &optional slow-hash)
   (let* ((block-data (serialize-block block))
          (block-data-hash (fast-hash block-data)))
-    ;; Exception for block 202612
+    ;; Exception for block 202612 because there was a bug in the tree hash function
     (when (equalp block-data-hash
                   #.(hex-string->bytes "3a8a2b3a29b50fc86ff73dd087ea43c6f0d6b8f936c849194d5c84c737903966"))
       (return-from compute-block-hash

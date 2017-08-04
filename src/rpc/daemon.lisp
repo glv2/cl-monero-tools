@@ -105,3 +105,12 @@
               :port port
               :user user
               :password password)))
+
+(defun send-raw-transaction-to-daemon (transaction-data &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((parameters (list (cons "tx_as_hex" (bytes->hex-string transaction-data)))))
+    (rpc "sendrawtransaction"
+         :parameters parameters
+         :host host
+         :port port
+         :user user
+         :password password)))
