@@ -8,6 +8,8 @@
 
 
 (defun compute-transaction-hash (transaction)
+  "Return the hash of a TRANSACTION. The TRANSACTION must be in
+alist format."
   (let* ((prefix (geta transaction :prefix))
          (version (geta prefix :version)))
     (if (= 1 version)
@@ -28,12 +30,18 @@
                                   prunable-hash))))))
 
 (defun compute-transaction-hash-from-data (transaction-data)
+  "Return the hash of the transaction represented by the
+TRANSACTION-DATA byte vector."
   (compute-transaction-hash (deserialize-transaction transaction-data 0)))
 
 (defun compute-miner-transaction-hash (block)
+  "Return the hash of a BLOCK's reward transaction. The BLOCK must be in
+alist format."
   (compute-transaction-hash (geta block :miner-transaction)))
 
 (defun compute-miner-transaction-hash-from-data (block-data)
+  "Return the hash of the reward transaction of the block represented
+by the BLOCK-DATA byte vector."
   (let* ((header-size (nth-value 1 (deserialize-block-header block-data 0)))
          (miner-transaction-size (nth-value 1 (deserialize-transaction block-data header-size))))
     (compute-transaction-hash-from-data (subseq block-data
@@ -41,6 +49,8 @@
                                                 (+ header-size miner-transaction-size)))))
 
 (defun compute-transaction-tree-hash (hashes)
+  "Return the root of the Merkle tree computed from a list of
+transaction HASHES."
   (let ((count (length hashes))
         (data (apply #'concatenate '(simple-array (unsigned-byte 8) (*)) (coerce hashes 'list))))
     (tree-hash data count)))

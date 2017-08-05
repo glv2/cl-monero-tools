@@ -51,7 +51,8 @@ supplied, put the bytes in it starting at index START."
         (replace hex-string s :start1 index-hs)))))
 
 (defun geta (alist key &key (test #'eql))
-  "Return the element of the ALIST specified by the KEY."
+  "Return the element of the ALIST specified by the KEY. GETA is
+SETF-able, it is equivalent to (cdr (assoc key alist :test test))."
   (cdr (assoc key alist :test test)))
 
 (defun (setf geta) (new-value alist key &key (test #'eql))

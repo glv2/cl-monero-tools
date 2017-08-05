@@ -12,9 +12,9 @@
 (defparameter *word-lists* (make-hash-table))
 
 (defclass word-list ()
-  ((language :initarg :language :accessor language)
-   (prefix-length :initarg :prefix-length :accessor prefix-length)
-   (words :initarg :words :accessor get-word-list)))
+  ((language :initarg :language :reader language)
+   (prefix-length :initarg :prefix-length :reader prefix-length)
+   (words :initarg :words :reader get-word-list)))
 
 (defun add-word-list (language prefix-length words)
   "Add a new LANGUAGE to *WORD-LISTS*, where the PREFIX-LENGTH first

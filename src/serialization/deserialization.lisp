@@ -231,6 +231,9 @@
 ;;; Transactions
 
 (defun deserialize-transaction-prefix (data offset)
+  "Return the transaction prefix whose serialization starts at OFFSET
+in DATA. The second returned value in the size of the serialized
+transaction prefix."
   (deserialize data offset
                ((version #'deserialize-integer)
                 (unlock-time #'deserialize-integer)
@@ -265,6 +268,9 @@ The second returned value in the size of the serialized transaction."
 ;;; Blocks
 
 (defun deserialize-block-header (data offset)
+  "Return the block header whose serialization starts at OFFSET in
+DATA. The second returned value in the size of the serialized block
+header."
   (deserialize data offset
                ((major-version #'deserialize-integer)
                 (minor-version #'deserialize-integer)

@@ -206,6 +206,7 @@
 ;;; Transactions
 
 (defun serialize-transaction-prefix (object)
+  "Return a transaction prefix OBJECT as a byte vector."
   (serialize object
              ((version #'serialize-integer)
               (unlock-time #'serialize-integer)
@@ -214,6 +215,7 @@
               (extra #'serialize-byte-vector))))
 
 (defun serialize-transaction (object)
+  "Return a transaction OBJECT as a byte vector."
   (let ((version (geta (geta object :prefix) :version)))
     (if (= 1 version)
         (serialize object
@@ -227,6 +229,7 @@
 ;;; Blocks
 
 (defun serialize-block-header (object)
+  "Return a block header OBJECT as a byte vector."
   (serialize object
              ((major-version #'serialize-integer)
               (minor-version #'serialize-integer)
@@ -235,6 +238,7 @@
               (nonce #'serialize-bytes))))
 
 (defun serialize-block (object)
+  "Return a block OBJECT as a byte vector."
   (serialize object
              ((header #'serialize-block-header)
               (miner-transaction #'serialize-transaction)

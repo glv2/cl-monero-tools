@@ -8,6 +8,9 @@
 
 
 (defun compute-block-hash (block &optional slow-hash)
+  "Return the hash of a BLOCK. The BLOCK must be in alist format. If
+SLOW-HASH is not NIL, compute the hash using slow-hash (used for the
+mining process) instead of fast-hash (used for the block id)."
   (let* ((block-data (serialize-block block))
          (block-data-hash (fast-hash block-data)))
     ;; Exception for block 202612 because there was a bug in the tree hash function
@@ -36,9 +39,16 @@
           (fast-hash (concatenate '(simple-array (unsigned-byte 8) (*)) size data))))))
 
 (defun compute-block-hash-from-data (block-data &optional slow-hash)
+  "Return the hash of the block represented by the BLOCK-DATA byte
+vector. If SLOW-HASH is not NIL, compute the hash using slow-hash
+(used for the mining process) instead of fast-hash (used for the block
+id)."
   (compute-block-hash (deserialize-block block-data 0) slow-hash))
 
 (defun get-nonce-offset (block-data)
+  "Return the offset in BLOCK-DATA indicating the beginning of the
+4 bytes long nonce of the block represented by the BLOCK-DATA byte
+vector."
   (nth-value 1 (deserialize block-data 0
                             ((major-version #'deserialize-integer)
                              (minor-version #'deserialize-integer)
@@ -46,4 +56,6 @@
                              (previous-block-hash #'deserialize-hash)))))
 
 (defun acceptable-hash-p (hash difficulty)
+  "Check if a block HASH (computed with slow-hash) is acceptable for
+a given DIFFICULTY level."
   (< (* (bytes->integer hash) difficulty) #.(expt 2 256)))
