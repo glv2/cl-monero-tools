@@ -50,20 +50,23 @@ from WORD-LIST."
                 (aref seed (+ j 1)) (elt word-list w2)
                 (aref seed (+ j 2)) (elt word-list w3))))))
 
-(defun seed->bytes (seed word-list)
+(defun seed->bytes (seed word-list prefix-length)
   "Convert a mnemonic seed made of words from WORD-LIST to a secret
 key made of bytes."
   (if (/= (length seed) +seed-length+)
       (error "Bad seed length.")
-      (let ((word-list-length (length word-list)))
+      (let ((word-list-length (length word-list))
+            (prefix= (lambda (word1 word2)
+                       (string= (subseq word1 0 (min prefix-length (length word1)))
+                                (subseq word2 0 (min prefix-length (length word2)))))))
         (do ((bytes (make-array (* +seed-length+ 4/3) :element-type '(unsigned-byte 8)))
              (i 0 (+ i 3))
              (j 0 (+ j 4)))
             ((>= i +seed-length+) bytes)
           ;; 3 base 1626 digits -> 8 base 16 digits
-          (let* ((w1 (position (aref seed i) word-list :test #'string=))
-                 (w2 (position (aref seed (+ i 1)) word-list :test #'string=))
-                 (w3 (position (aref seed (+ i 2)) word-list :test #'string=))
+          (let* ((w1 (position (aref seed i) word-list :test prefix=))
+                 (w2 (position (aref seed (+ i 1)) word-list :test prefix=))
+                 (w3 (position (aref seed (+ i 2)) word-list :test prefix=))
                  (val (+ w1
                          (* word-list-length
                             (mod (- w2 w1) word-list-length))
@@ -123,13 +126,16 @@ key made of bytes."
                (checksum (car (last words))))
           (if (string/= (seed-checksum seed prefix-length) checksum)
               (error "Checksum verification failed.")
-              (seed->bytes seed word-list))))))
+              (seed->bytes seed word-list prefix-length))))))
 
-(defun encrypt-mnemonic-seed (mnemonic-seed password language)
+(defun encrypt-mnemonic-seed (mnemonic-seed password &optional language)
   "Encrypt a MNEMONIC-SEED with a PASSWORD and return the result as an
 encrypted mnemonic seed which looks just like a not encrypted mnemonic
 seed."
-  (let* ((plaintext (mnemonic-seed->secret-key mnemonic-seed language))
+  (let* ((language (or language
+                       (let ((words (split-sequence #\space mnemonic-seed :remove-empty-subseqs t)))
+                         (find-seed-language (apply #'vector words)))))
+         (plaintext (mnemonic-seed->secret-key mnemonic-seed language))
          (m (ironclad::ed25519-decode-int plaintext))
          (encryption-key (slow-hash (string->bytes password)))
          (k (ironclad::ed25519-decode-int encryption-key))
@@ -137,9 +143,12 @@ seed."
          (ciphertext (ironclad::ed25519-encode-int c)))
     (secret-key->mnemonic-seed ciphertext language)))
 
-(defun decrypt-mnemonic-seed (mnemonic-seed password language)
+(defun decrypt-mnemonic-seed (mnemonic-seed password &optional language)
   "Decrypt an encrypted MNEMONIC-SEED with a PASSWORD."
-  (let* ((ciphertext (mnemonic-seed->secret-key mnemonic-seed language))
+  (let* ((language (or language
+                       (let ((words (split-sequence #\space mnemonic-seed :remove-empty-subseqs t)))
+                         (find-seed-language (apply #'vector words)))))
+         (ciphertext (mnemonic-seed->secret-key mnemonic-seed language))
          (c (ironclad::ed25519-decode-int ciphertext))
          (decryption-key (slow-hash (string->bytes password)))
          (k (ironclad::ed25519-decode-int decryption-key))
