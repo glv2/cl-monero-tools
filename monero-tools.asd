@@ -69,7 +69,7 @@
                              (:module "wallet"
                               :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
-                                           (:file "message" :depends-on ("address"))
+                                           (:file "signature" :depends-on ("address"))
                                            (:file "wallet")))))))
 
 (defun compile-cncrypto-library (&optional static)

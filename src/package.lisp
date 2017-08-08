@@ -45,4 +45,5 @@
    #:decode-address #:make-integrated-address
    #:public-keys->address #:secret-spend-key->address
    #:get-wallet-keys #:bruteforce-wallet-keys
-   #:sign-message #:valid-message-signature-p))
+   #:sign-message #:valid-message-signature-p
+   #:sign-file #:valid-file-signature-p))

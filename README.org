@@ -122,6 +122,8 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
  - bruteforce-wallet-keys
  - sign-message
  - valid-message-signature-p
+ - sign-file
+ - valid-file-signature-p
 
 * Tests
 

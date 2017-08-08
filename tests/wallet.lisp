@@ -164,3 +164,18 @@ testnet: no
     (dotimes (i 10)
       (let ((message (base58-encode (ironclad:random-data 100))))
         (is-true (valid-message-signature-p message address (sign-message message secret-spend-key)))))))
+
+(test valid-file-signature-p
+  (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
+        (file-1 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-1.dat"))
+        (file-2 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-2.dat")))
+    (is-true (valid-file-signature-p file-1 address "SigV1Nh4zdYvLpH4Q8Mgi9CAnf5FgK5ExjEmS1S8cQVAt4Qgs8Jx4GohCV9z8qSgfK1CzymMsCYuBELjjkLGUa6n6tBit"))
+    (is-true (valid-file-signature-p file-2 address "SigV1bcxztfKHU3hRaYrEiWjh3s5KCzDwL7bWKDTWzger6dSUD8pSjtkn7G8SpWjK7obDyJMe7JEx7okYYe23JFXWDhm6"))))
+
+(test sign-file
+  (let ((secret-spend-key (hex-string->bytes "d551999169b794459b4c8dc7da177067213a0eb2dd75cacf19e0fbc27dfc320e"))
+        (address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
+        (file-1 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-1.dat"))
+        (file-2 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-2.dat")))
+    (is-true (valid-file-signature-p file-1 address (sign-file file-1 secret-spend-key)))
+    (is-true (valid-file-signature-p file-2 address (sign-file file-2 secret-spend-key)))))
