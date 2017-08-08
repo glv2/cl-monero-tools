@@ -24,7 +24,8 @@
 
 ;;; Public key cryptography functions
 
-(defconstant +ed25519-key-length+ 32)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant +ed25519-key-length+ 32))
 
 (defcstruct cn-ge-p2
   (x :uint32 :count 10)
@@ -93,6 +94,9 @@
 (defcfun ("generate_random_bytes_not_thread_safe" cn-generate-random-bytes-not-thread-safe) :void
   (n :unsigned-int)
   (result :pointer))
+
+(defun random-scalar ()
+  (sc-reduce (ironclad:random-data +ed25519-key-length+)))
 
 
 ;;; Hash functions
@@ -203,8 +207,9 @@ as a byte vector."
 
 ;;; Data encryption/decryption functions
 
-(defconstant +chacha8-key-length+ 32)
-(defconstant +chacha8-iv-length+ 8)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant +chacha8-key-length+ 32)
+  (defconstant +chacha8-iv-length+ 8))
 
 (defcfun ("chacha8" cn-chacha8) :void
   (data :pointer)
@@ -217,8 +222,8 @@ as a byte vector."
 (defun chacha8 (data key iv)
   "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
   (check-type data (simple-array (unsigned-byte 8) (*)))
-  (check-type key (simple-array (unsigned-byte 8) (*)))
-  (check-type iv (simple-array (unsigned-byte 8) (*)))
+  (check-type key (simple-array (unsigned-byte 8) (#.+chacha8-key-length+)))
+  (check-type iv (simple-array (unsigned-byte 8) (#.+chacha8-iv-length+)))
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-key :unsigned-char +chacha8-key-length+)
@@ -239,8 +244,8 @@ as a byte vector."
 (defun chacha8 (data key iv)
   "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
   (check-type data (simple-array (unsigned-byte 8) (*)))
-  (check-type key (simple-array (unsigned-byte 8) (*)))
-  (check-type iv (simple-array (unsigned-byte 8) (*)))
+  (check-type key (simple-array (unsigned-byte 8) (#.+chacha8-key-length+)))
+  (check-type iv (simple-array (unsigned-byte 8) (#.+chacha8-iv-length+)))
   (let ((cipher (ironclad:make-cipher :chacha/8 :key key
                                                 :mode :stream
                                                 :initialization-vector iv))

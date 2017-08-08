@@ -20,12 +20,12 @@
 #-cncrypto-prefer-ffi
 (defun generate-secret-key ()
   "Generate a new random secret key."
-  (sc-reduce (ironclad:random-data 32)))
+  (random-scalar))
 
 #+cncrypto-prefer-ffi
 (defun secret-key->public-key (secret-key)
   "Compute the public key matching a SECRET-KEY."
-  (check-type secret-key (simple-array (unsigned-byte 8) (*)))
+  (check-type secret-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (with-foreign-objects ((raw-secret-key :unsigned-char +ed25519-key-length+)
                          (raw-public-key :unsigned-char +ed25519-key-length+)
                          (raw-point '(:struct cn-ge-p3)))
@@ -41,7 +41,7 @@
 #-cncrypto-prefer-ffi
 (defun secret-key->public-key (secret-key)
   "Compute the public key matching a SECRET-KEY."
-  (check-type secret-key (simple-array (unsigned-byte 8) (*)))
+  (check-type secret-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (let* ((g ironclad::+ed25519-b+)
          (x (ironclad::ed25519-decode-int secret-key))
          (r (mod x ironclad::+ed25519-l+))
@@ -50,13 +50,13 @@
 
 (defun secret-spend-key->secret-view-key (secret-spend-key)
   "Derive the secret view key from the SECRET-SPEND-KEY."
-  (check-type secret-spend-key (simple-array (unsigned-byte 8) (*)))
+  (check-type secret-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (fast-hash secret-spend-key))
 
 (defun recover-keys (secret-spend-key)
   "Compute the public-spend-key, secret-view-key and public-view-key
 from the SECRET-SPEND-KEY."
-  (check-type secret-spend-key (simple-array (unsigned-byte 8) (*)))
+  (check-type secret-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (let* ((secret-view-key (secret-spend-key->secret-view-key secret-spend-key))
          (public-spend-key (secret-key->public-key secret-spend-key))
          (public-view-key (secret-key->public-key secret-view-key)))

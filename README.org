@@ -53,13 +53,6 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 #+END_SRC
 
 * Tools
-** Address
-
- - decode-address
- - make-integrated-address
- - public-keys->address
- - secret-spend-key->address
-
 ** Blockchain
 
  - acceptable-hash-p
@@ -121,8 +114,14 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 
 ** Wallet file
 
+ - decode-address
+ - make-integrated-address
+ - public-keys->address
+ - secret-spend-key->address
  - get-wallet-keys
  - bruteforce-wallet-keys
+ - sign-message
+ - valid-message-signature-p
 
 * Tests
 

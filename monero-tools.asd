@@ -34,7 +34,8 @@
                              (:module "crypto"
                               :depends-on ("package" "utils")
                               :components ((:file "crypto")
-                                           (:file "key" :depends-on ("crypto"))))
+                                           (:file "key" :depends-on ("crypto"))
+                                           (:file "signature" :depends-on ("crypto" "key"))))
                              (:module "mine"
                               :depends-on ("blockchain" "package")
                               :components ((:file "miner")))
@@ -68,6 +69,7 @@
                              (:module "wallet"
                               :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
+                                           (:file "message" :depends-on ("address"))
                                            (:file "wallet")))))))
 
 (defun compile-cncrypto-library (&optional static)

@@ -149,3 +149,18 @@ testnet: no
                  (secret-spend-key->address/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306")))
     (is (string= "43oErH6q2FfVkVBXrkQt3yfYmmZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7"
                  (secret-spend-key->address/hex "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a")))))
+
+(test valid-message-signature-p
+  (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ"))
+    (is-true (valid-message-signature-p "Abcdefg" address "SigV1d75gTEYVHbHYr6WH9LxDEvVRafCL6va1tTnqJhZXXhnhUau6cfijjTF68ntbjZE94uHA3odbfGuviHaY3hwHmWQc"))
+    (is-true (valid-message-signature-p "This is a message" address "SigV1VsTCdRMjsTKDRcFEBdEcn9EMMuwCqavDr1XtyhTE53mW2Wc6yZyAag5epx68yAq3LibpLQocmAXZyMa6yewZdDjv"))
+    (is-true (valid-message-signature-p "a1b2c3d4e5f6g7h8i9" address "SigV164c36GEuQRYEg3RwEBD4wtLi7yPqi8i3a38BQAJvUupod51m38URzX14simDHYTC5EdUK9ePB51T4UEaSJwVBwCX"))
+    (is-true (valid-message-signature-p "Private Digital Currency" address "SigV1QV7kHxJPjVQQqqD192Z6BBF2AxaknFNTxYDc5RXhjFdHGYdHpEigkM45FxdmXTJ537aXSKDAvNP3ZeXRETKmur5U"))
+    (is-true (valid-message-signature-p "Monero is a secure, private, untraceable currency." address "SigV1a47xuvk2AwvCVZJNbLtjNiXSg8kMyezrLTck5Jufpa57HmpSiPcZqJKCbUUw4QB2MaWRqkwKvJ3nLXQ8fCDSdVCq"))))
+
+(test sign-message
+  (let ((secret-spend-key (hex-string->bytes "d551999169b794459b4c8dc7da177067213a0eb2dd75cacf19e0fbc27dfc320e"))
+        (address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ"))
+    (dotimes (i 10)
+      (let ((message (base58-encode (ironclad:random-data 100))))
+        (is-true (valid-message-signature-p message address (sign-message message secret-spend-key)))))))

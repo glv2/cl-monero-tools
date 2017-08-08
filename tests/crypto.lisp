@@ -132,3 +132,43 @@
                       (secret-key->public-key/hex "d5f7e654389be8829aeb51c4ed8a02474d1f72d0ed62484e9eeb403f0a9ae007")))
     (is (string-equal "59f5445dfe7ac2a13f93088caedccaf78b69a3460b70547fa249f2fb7f3dc5e3"
                       (secret-key->public-key/hex "be82dba0af095ecbd0cda2a1eb29a99ee8db1f30280164bfbb9c2375a884a308")))))
+
+(test valid-signature-p
+  (flet ((valid-signature-p/hex (data public-key signature)
+           (valid-signature-p (hex-string->bytes data)
+                              (hex-string->bytes public-key)
+                              (hex-string->bytes signature))))
+    (is-true (valid-signature-p/hex "57fd3427123988a99aae02ce20312b61a88a39692f3462769947467c6e4c3961"
+                                    "a5e61831eb296ad2b18e4b4b00ec0ff160e30b2834f8d1eda4f28d9656a2ec75"
+                                    "cd89c4cbb1697ebc641e77fdcd843ff9b2feaf37cfeee078045ef1bb8f0efe0bb5fd0131fbc314121d9c19e046aea55140165441941906a757e574b8b775c008"))
+    (is-false (valid-signature-p/hex "92c1259cddde43602eeac1ab825dc12ffc915c9cfe57abcca04c8405df338359"
+                                     "9fa6c7fd338517c7d45b3693fbc91d4a28cd8cc226c4217f3e2694ae89a6f3dc"
+                                     "b027582f0d05bacb3ebe4e5f12a8a9d65e987cc1e99b759dca3fee84289efa5124ad37550b985ed4f2db0ab6f44d2ebbc195a7123fd39441d3a57e0f70ecf608"))
+    (is-true (valid-signature-p/hex "f8628174b471912e7b51aceecd9373d22824065cee93ff899968819213d338c3"
+                                    "8a7d608934a96ae5f1f141f8aa45a2f0ba5819ad668b22d6a12ad6e366bbc467"
+                                    "d7e827fbc168a81b401be58c919b7bcf2d7934fe10da6082970a1eb9d98ca609c660855ae5617aeed466c5fd832daa405ee83aef69f0c2661bfa7edf91ca6201"))
+    (is-false (valid-signature-p/hex "ec9deeaca9ce8f248337213e1411276b9c41e8d4369fc60981b0385653c0f170"
+                                     "df7f028022cb1b960f2bd740d13c9e44d25c344e57f8978459ffa3c384cd541c"
+                                     "2c2c8e7c83b662b58e561871f4de4287576946f4e26545ba40e78354c6d0b36f69ea44892f39a46cf3fd5c2813cbc1c525dac199ada6fd5ca8e1e04cff947700"))
+    (is-false (valid-signature-p/hex "114e8fffb137c2ce87dd59eff7f4b8e6cc167fdd28c3ea77d345d2c8c00989a1"
+                                     "d257f46216be34be5589e0b12094e643d1b31bc3c50e006d044d1ea885b5007d"
+                                     "9579b6e8dc108633ac8b67004699921aef479b6e7ee9590073fbe1404ee4b3d533dec29fd35540f13ac531c3ae49abb62cbc11d36b0cc3353db77a294d8d3d92"))
+    (is-true (valid-signature-p/hex "ce03e1fa5476167c3ebce1a400ca1d2d375176b5cb9ed180913efa1a688ddc97"
+                                    "a05a3a6776f85c5d04c42fa2c6a731831c3d3a4e3a12f967f9ba0b1ecd1aee98"
+                                    "4992de4fec265113710ec3a211e86784581f96241f0305d069a1e4629b504d03b3a1561fd9e73597db89ba00beeb60d2107c1f835176949bd354e8a173d46705"))
+    (is-false (valid-signature-p/hex "7db838c96a3e1fb14156986aef37b70f932ee79d3cbc8233cdd76997eaa0c0c2"
+                                     "306593abefdbe99beec4752ebb135131a93e8361fc35f60a1c56fc4501c6782f"
+                                     "5bd47b285d25ede033bc5c2049edf3feb06fe29091e2c90ba25128c6c1a050713f28db1b9106013d22d5e0ba05bbaca43c4d30b6f0bbad8768e6cb89b205c20c"))
+    (is-false (valid-signature-p/hex "2d96536cad13a409d5a46a6bde1f5cf1d9255e741d5a17309248dd910e02d1c3"
+                                     "c2257e5386cdef44b989ce395532b8e03dde166ba26c18759e1c440738242fe4"
+                                     "2f5e7a5c690c0d3bb2974e47eaa159d0bb2205a636b8cd09736add9fe8d75bee4249b30f8e1b99c1dea45999842f5709d2ee1d8e450807319723625074c69605"))
+    (is-true (valid-signature-p/hex "40e0758cd9c9f8f8f7d0fbf351084863973a3622c92dab501ffdee610278f86a"
+                                    "f79812b95048683d47eb5435bdd97c5a39532c6693dc8b965af76d7f3ab88e92"
+                                    "a9ba1cb8bf2898e21c12bfd23788994fe20d45ef6f775c197ab157d7c2721100f2123c19395f13ff79941e4fc9ac33b2f70077a79c552b4ebc97a4321ae66e09"))))
+
+(test generate-signature
+  (dotimes (i 10)
+    (let* ((secret-key (generate-secret-key))
+           (public-key (secret-key->public-key secret-key))
+           (data (ironclad::random-data 150)))
+      (is-true (valid-signature-p data public-key (generate-signature data secret-key))))))

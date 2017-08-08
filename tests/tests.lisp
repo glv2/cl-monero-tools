@@ -5,8 +5,7 @@
 
 
 (defpackage :monero-tools/tests
-  (:use :cl :fiveam :monero-tools)
-  (:import-from :monero-tools))
+  (:use :cl :fiveam :monero-tools))
 
 (in-package :monero-tools/tests)
 
