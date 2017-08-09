@@ -228,6 +228,60 @@
                     (+ 1 size)))))))
 
 
+;;; Transaction extra data
+
+(defun deserialize-transaction-extra-nonce (data offset)
+  (multiple-value-bind (nonce-size s0)
+      (deserialize-integer data offset)
+    (let ((type (aref data s0)))
+      (multiple-value-bind (nonce s1)
+          (cond ((eq type +transaction-extra-nonce-payment-id-tag+)
+                 (deserialize data (+ offset s0 1)
+                              ((payment-id #'deserialize-bytes 32))))
+                ((eq type +transaction-extra-nonce-encrypted-payment-id-tag+)
+                 (deserialize data (+ offset s0 1)
+                              ((encrypted-payment-id #'deserialize-bytes 8))))
+                (t
+                 (deserialize data (+ offset s0)
+                              ((data #'deserialize-bytes
+                                     (min nonce-size
+                                          +transaction-extra-nonce-max-size+))))))
+        (values nonce (+ s0 s1))))))
+
+(defun deserialize-transaction-extra-data-field (data offset max-size)
+  (multiple-value-bind (type type-size)
+      (deserialize-integer data offset)
+    (multiple-value-bind (field field-size)
+        (cond ((eq type +transaction-extra-padding-tag+)
+               (deserialize data (+ offset type-size)
+                            ((padding #'deserialize-bytes
+                                      (min (- max-size type-size)
+                                           +transaction-extra-padding-max-size+)))))
+              ((eq type +transaction-extra-public-key-tag+)
+               (deserialize data (+ offset type-size)
+                            ((transaction-public-key #'deserialize-key))))
+              ((eq type +transaction-extra-nonce-tag+)
+               (deserialize data (+ offset type-size)
+                            ((nonce #'deserialize-transaction-extra-nonce)))))
+      (if field
+          (values field (+ type-size field-size))
+          (deserialize data offset
+                       ((unknown #'deserialize-bytes max-size)))))))
+
+(defun deserialize-transaction-extra-data (data offset)
+  (multiple-value-bind (extra-data extra-data-size)
+      (deserialize-byte-vector data offset)
+    (do ((fields-size (- extra-data-size (nth-value 1 (deserialize-integer data offset))))
+         (fields '())
+         (field-offset 0))
+        ((>= field-offset fields-size) (values (reverse fields) extra-data-size))
+      (multiple-value-bind (field field-size)
+          (deserialize-transaction-extra-data-field extra-data field-offset
+                                                    (- fields-size field-offset))
+        (push field fields)
+        (incf field-offset field-size)))))
+
+
 ;;; Transactions
 
 (defun deserialize-transaction-prefix (data offset)
@@ -239,7 +293,7 @@ transaction prefix."
                 (unlock-time #'deserialize-integer)
                 (inputs #'deserialize-vector #'deserialize-transaction-input-target)
                 (outputs #'deserialize-vector #'deserialize-transaction-output)
-                (extra #'deserialize-byte-vector))))
+                (extra #'deserialize-transaction-extra-data))))
 
 (defun deserialize-transaction (data offset)
   "Return the transaction whose serialization starts at OFFSET in DATA.

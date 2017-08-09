@@ -203,6 +203,53 @@
                                  (rct-signature-prunable #'serialize-rct-signature-prunable))))))))
 
 
+;;; Transaction extra data
+
+(defun serialize-transaction-extra-nonce (object)
+  (let* ((type (caar object))
+         (data (cdar object))
+         (nonce-data (cond ((eq type :payment-id)
+                            (concatenate '(simple-array (unsigned-byte 8) (*))
+                                         (vector +transaction-extra-nonce-payment-id-tag+)
+                                         (serialize-bytes data)))
+                           ((eq type :encrypted-payment-id)
+                            (concatenate '(simple-array (unsigned-byte 8) (*))
+                                         (vector +transaction-extra-nonce-encrypted-payment-id-tag+)
+                                         (serialize-bytes data)))
+                           (t
+                            (if (> (length data) +transaction-extra-nonce-max-size+)
+                                (error "Too much data in nonce")
+                                (serialize-bytes data))))))
+    (serialize-byte-vector nonce-data)))
+
+(defun serialize-transaction-extra-data-field (object)
+  (let ((type (caar object))
+        (data (cdar object)))
+    (cond ((eq type :padding)
+           (if (> (length data) +transaction-extra-padding-max-size+)
+               (error "Too much data in padding.")
+               (concatenate '(simple-array (unsigned-byte 8) (*))
+                            (serialize-integer +transaction-extra-padding-tag+)
+                            (serialize-bytes data))))
+          ((eq type :transaction-public-key)
+           (concatenate '(simple-array (unsigned-byte 8) (*))
+                        (serialize-integer +transaction-extra-public-key-tag+)
+                        (serialize-key data)))
+          ((eq type :nonce)
+           (concatenate '(simple-array (unsigned-byte 8) (*))
+                        (serialize-integer +transaction-extra-nonce-tag+)
+                        (serialize-transaction-extra-nonce data)))
+          ((eq type :unknown)
+           (serialize-bytes data)))))
+
+(defun serialize-transaction-extra-data (object)
+  (let ((result #()))
+    (dolist (field object)
+      (let ((data (serialize-transaction-extra-data-field field)))
+        (setf result (concatenate '(simple-array (unsigned-byte 8) (*)) result data))))
+    (serialize-byte-vector result)))
+
+
 ;;; Transactions
 
 (defun serialize-transaction-prefix (object)
@@ -212,7 +259,7 @@
               (unlock-time #'serialize-integer)
               (inputs #'serialize-vector #'serialize-transaction-input-target)
               (outputs #'serialize-vector #'serialize-transaction-output)
-              (extra #'serialize-byte-vector))))
+              (extra #'serialize-transaction-extra-data))))
 
 (defun serialize-transaction (object)
   "Return a transaction OBJECT as a byte vector."

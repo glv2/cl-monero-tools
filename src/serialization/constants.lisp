@@ -7,23 +7,27 @@
 (in-package :monero-tools)
 
 
-;;; Transaction outputs
+;;; Blocks
 
-(defconstant +transaction-output-to-script-tag+ 0)
-(defconstant +transaction-output-to-script-hash-tag+ 1)
-(defconstant +transaction-output-to-key-tag+ 2)
+(defconstant +block-tag+ 187)
 
 
-;;; Transaction inputs
+;;; Transactions
 
+(defconstant +transaction-tag+ 204)
+
+;; Transaction inputs
 (defconstant +transaction-input-generation-tag+ 255)
 (defconstant +transaction-input-to-script-tag+ 0)
 (defconstant +transaction-input-to-script-hash-tag+ 1)
 (defconstant +transaction-input-to-key-tag+ 2)
 
+;; Transaction outputs
+(defconstant +transaction-output-to-script-tag+ 0)
+(defconstant +transaction-output-to-script-hash-tag+ 1)
+(defconstant +transaction-output-to-key-tag+ 2)
 
-;;; Ring confidential transaction signatures
-
+;; Ring confidential transaction signatures
 (defconstant +rct-type-null+ 0)
 (defconstant +rct-type-full+ 1)
 (defconstant +rct-type-simple+ 2)
@@ -40,12 +44,12 @@
 (defconstant +rct-boromean-signature-tag+ 154)
 (defconstant +rct-rct-signature-tag+ 155)
 
-
-;;; Transactions
-
-(defconstant +transaction-tag+ 204)
-
-
-;;; Blocks
-
-(defconstant +block-tag+ 187)
+;; Transaction extra data
+(defconstant +transaction-extra-padding-tag+ 0)
+(defconstant +transaction-extra-public-key-tag+ 1)
+(defconstant +transaction-extra-nonce-tag+ 2)
+(defconstant +transaction-extra-merge-mining-tag+ 3)
+(defconstant +transaction-extra-nonce-payment-id-tag+ 0)
+(defconstant +transaction-extra-nonce-encrypted-payment-id-tag+ 1)
+(defconstant +transaction-extra-padding-max-size+ 254)
+(defconstant +transaction-extra-nonce-max-size+ 254)
