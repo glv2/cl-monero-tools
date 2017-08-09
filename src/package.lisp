@@ -22,6 +22,9 @@
    #:recover-keys
    #:generate-signature #:valid-signature-p
 
+   ;; mine
+   #:miner
+
    ;; mnemonic
    #:available-mnemonic-seed-languages
    #:mnemonic-seed->secret-key #:secret-key->mnemonic-seed

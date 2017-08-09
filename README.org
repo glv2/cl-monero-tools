@@ -66,33 +66,40 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 
 ** Cryptography
 
- - fast-hash
- - slow-hash
- - tree-hash
  - chacha8
+ - fast-hash
  - generate-chacha8-key
- - generate-secret-key
  - generate-keys
+ - generate-secret-key
+ - recover-keys
  - secret-key->public-key
  - secret-spend-key->secret-view-key
- - recover-keys
+ - slow-hash
+ - tree-hash
+
+** Mining
+
+ - miner
 
 ** Mnemonic seed
 
  - available-mnemonic-seed-languages
+ - decrypt-mnemonic-seed
+ - encrypt-mnemonic-seed
  - mnemonic-seed->secret-key
  - secret-key->mnemonic-seed
- - encrypt-mnemonic-seed
- - decrypt-mnemonic-seed
 
-** RPC
+** Remote procedure call
 
  - =*rpc-host*=
+ - =*rpc-password*=
  - =*rpc-port*=
  - =*rpc-user*=
- - =*rpc-password*=
- - rpc
  - json-rpc
+ - rpc
+
+There are some examples of functions using RPCs in
+src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
 ** Serialization
 
@@ -103,27 +110,27 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 
 ** Utils
 
- - base58-encode
  - base58-decode
+ - base58-encode
  - bytes->hex-string
- - hex-string->bytes
  - bytes->integer
+ - geta
+ - hex-string->bytes
  - integer->bytes
  - string->bytes
- - geta
 
-** Wallet file
+** Wallet
 
+ - bruteforce-wallet-keys
  - decode-address
+ - get-wallet-keys
  - make-integrated-address
  - public-keys->address
  - secret-spend-key->address
- - get-wallet-keys
- - bruteforce-wallet-keys
- - sign-message
- - valid-message-signature-p
  - sign-file
+ - sign-message
  - valid-file-signature-p
+ - valid-message-signature-p
 
 * Tests
 

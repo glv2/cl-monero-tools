@@ -19,6 +19,6 @@
         (template-3 "0100d186c49a05e2914694b698fb417eebaebad3fed4d13e8f670119c95c6e3fa83c1d4531152000000000013f01ff0309efc02b029c0988ea47eafe15303fe7b37e8f4e15a51273681ecaf2b678745d5161d875a3c096b102021b1c293db480f77f6cfa676bc648cbc9dc41c8721fd2c9a16829d5efd75b884a8087a70e02e17ecb617676a95153fa9dd5fcfdb8bb94bb9eb494025c2575633318c9ad6dbb80c2d72f02109215edd47b2a7994315a3079a03c72ec5a8ab20df0cc5e7a44b6143d85cbc980a8d6b907029537e0e736baa6c8c9890e73a2d01e0194f627ae51619c138729441fa046d6f08088aca3cf0202de5f602b8c1da008da4692d017b1955e5cd41655d13e037e8e40cc61edecbca58090cad2c60e021ef910e155d7216724158f1a6cce3ce9f0e25216b7c0f064328dde2fbabd63e480e08d84ddcb010274450959e6dcce686e7fdb8e319cfca01360a93be70eb91ab6b870384366ba1e80c0caf384a30202bca1c2f25f636a8fa5ce5a9fc7c10e5a29aa9ee5d9c42ada34a1a3fc3ec95bc121010c39712ea3adf6e6fe08ebc970ef277e48b80867208ed2e60e862417a715ba7700")
         (difficulty-3 60))
     (flet ((miner/hex (template difficulty)
-             (monero-tools::miner (hex-string->bytes template) 0 0 difficulty)))
+             (miner (hex-string->bytes template) 0 0 difficulty)))
       (is-true (acceptable-hash-p (nth-value 1 (miner/hex template-1 difficulty-1)) difficulty-1))
       (is-true (acceptable-hash-p (nth-value 1 (miner/hex template-3 difficulty-3)) difficulty-3)))))
