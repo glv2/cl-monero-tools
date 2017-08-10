@@ -49,6 +49,7 @@
    #:decode-address #:make-integrated-address
    #:public-keys->address #:secret-spend-key->address
    #:encrypt-payment-id #:decrypt-payment-id
+   #:output-for-address-p
    #:get-wallet-keys #:bruteforce-wallet-keys
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p))

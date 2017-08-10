@@ -128,6 +128,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - encrypt-payment-id
  - get-wallet-keys
  - make-integrated-address
+ - output-for-address-p
  - public-keys->address
  - secret-spend-key->address
  - sign-file

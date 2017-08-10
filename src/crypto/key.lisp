@@ -70,9 +70,28 @@ from the SECRET-SPEND-KEY."
   (let ((secret-spend-key (generate-secret-key)))
     (recover-keys secret-spend-key)))
 
-(defun derive-key (public-key private-key)
-  "Compute a shared secret from a user's PUBLIC-KEY and your PRIVATE-KEY."
+(defun derive-key (public-key secret-key)
+  "Compute a shared secret from a user's PUBLIC-KEY and your SECRET-KEY."
   (let* ((p (ironclad::ed25519-decode-point public-key))
-         (s (ironclad::ed25519-decode-int private-key))
+         (s (ironclad::ed25519-decode-int secret-key))
          (k (ge-mul8 (ironclad::ed25519-scalar-mult p s))))
     (ironclad::ed25519-encode-point k)))
+
+(defun derivation->scalar (derivation output-index)
+  (let ((data (concatenate '(simple-array (unsigned-byte 8) (*))
+                           derivation (write-varint output-index))))
+    (hash-to-scalar data)))
+
+(defun derive-public-key (derivation output-index public-key)
+  (let* ((g ironclad::+ed25519-b+)
+         (x (ironclad::ed25519-decode-int (derivation->scalar derivation output-index)))
+         (p1 (ironclad::ed25519-decode-point public-key))
+         (p2 (ironclad::ed25519-scalar-mult g x))
+         (p3 (ironclad::ed25519-edwards-add p1 p2)))
+    (ironclad::ed25519-encode-point p3)))
+
+(defun derive-secret-key (derivation output-index secret-key)
+  (let* ((x (ironclad::ed25519-decode-int (derivation->scalar derivation output-index)))
+         (s (ironclad::ed25519-decode-int secret-key))
+         (k (mod (+ x s) ironclad::+ed25519-l+)))
+    (ironclad::ed25519-encode-int k)))

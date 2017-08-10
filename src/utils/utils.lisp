@@ -7,16 +7,45 @@
 (in-package :monero-tools)
 
 
-(defun bytes->integer (bytes &key (start 0) end big-endian)
-  "Convert a sequence of BYTES to an integer."
-  (ironclad:octets-to-integer bytes :start start :end end :big-endian big-endian))
+(defun read-varint (bytes &key (start 0))
+  "Read the variable size integer encoded in BYTES."
+  (let ((n 0)
+        (size 0))
+    (do ((l (length bytes))
+         (i start (1+ i))
+         (j 0 (+ j 7)))
+        ((= i l))
+      (let ((b (aref bytes i)))
+        (incf n (ash (logand b #x7f) j))
+        (incf size)
+        (when (zerop (logand b #x80))
+          (return))))
+    (values n size)))
 
-(defun integer->bytes (n &key buffer (start 0) size big-endian)
+(defun write-varint (n)
+  "Return the variable size integer encoding of an integer N."
+  (let* ((size (max 1 (ceiling (integer-length n) 7)))
+         (bytes (make-array size :element-type '(unsigned-byte 8))))
+    (dotimes (i size bytes)
+      (setf (aref bytes i) (logior (logand n #x7f) (if (< i (- size 1)) #x80 0)))
+      (setf n (ash n -7)))))
+
+(defun bytes->integer (bytes &key (start 0) end big-endian varint)
+  "Convert a sequence of BYTES to an integer."
+  (if varint
+      (read-varint bytes :start start)
+      (let ((end (or end (length bytes)))
+            (n (ironclad:octets-to-integer bytes :start start :end end :big-endian big-endian)))
+        (values n (- end start)))))
+
+(defun integer->bytes (n &key buffer (start 0) size big-endian varint)
   "Convert an integer N to a sequence of SIZE bytes. If BUFFER is
 supplied, put the bytes in it starting at index START."
-  (let ((bytes (if size
-                   (ironclad:integer-to-octets n :big-endian big-endian :n-bits (* 8 size))
-                   (ironclad:integer-to-octets n :big-endian big-endian))))
+  (let ((bytes (if varint
+                   (write-varint n)
+                   (if size
+                       (ironclad:integer-to-octets n :big-endian big-endian :n-bits (* 8 size))
+                       (ironclad:integer-to-octets n :big-endian big-endian)))))
     (if buffer
         (replace buffer bytes :start1 start)
         bytes)))

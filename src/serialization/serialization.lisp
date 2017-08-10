@@ -36,11 +36,7 @@
   object)
 
 (defun serialize-integer (object)
-  (let* ((size (max 1 (ceiling (integer-length object) 7)))
-         (data (make-array size :element-type '(unsigned-byte 8))))
-    (dotimes (i size data)
-      (setf (aref data i) (logior (logand object #x7f) (if (< i (- size 1)) #x80 0)))
-      (setf object (ash object -7)))))
+  (integer->bytes object :varint t))
 
 (defun serialize-vector (objects element-writer &rest element-writer-parameters)
   (let* ((size (length objects))
