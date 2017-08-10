@@ -233,13 +233,17 @@
 (defun deserialize-transaction-extra-nonce (data offset)
   (multiple-value-bind (nonce-size s0)
       (deserialize-integer data offset)
-    (let ((type (aref data s0)))
+    (let ((type (aref data (+ offset s0))))
       (multiple-value-bind (nonce s1)
-          (cond ((eq type +transaction-extra-nonce-payment-id-tag+)
-                 (deserialize data (+ offset s0 1)
+          (cond ((and (eq type +transaction-extra-nonce-payment-id-tag+)
+                      (= nonce-size 33))
+                 (incf s0)
+                 (deserialize data (+ offset s0)
                               ((payment-id #'deserialize-bytes 32))))
-                ((eq type +transaction-extra-nonce-encrypted-payment-id-tag+)
-                 (deserialize data (+ offset s0 1)
+                ((and (eq type +transaction-extra-nonce-encrypted-payment-id-tag+)
+                      (= nonce-size 9))
+                 (incf s0)
+                 (deserialize data (+ offset s0)
                               ((encrypted-payment-id #'deserialize-bytes 8))))
                 (t
                  (deserialize data (+ offset s0)
@@ -266,7 +270,7 @@
       (if field
           (values field (+ type-size field-size))
           (deserialize data offset
-                       ((unknown #'deserialize-bytes max-size)))))))
+                       ((data #'deserialize-bytes max-size)))))))
 
 (defun deserialize-transaction-extra-data (data offset)
   (multiple-value-bind (extra-data extra-data-size)

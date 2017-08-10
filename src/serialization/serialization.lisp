@@ -239,7 +239,7 @@
            (concatenate '(simple-array (unsigned-byte 8) (*))
                         (serialize-integer +transaction-extra-nonce-tag+)
                         (serialize-transaction-extra-nonce data)))
-          ((eq type :unknown)
+          ((eq type :data)
            (serialize-bytes data)))))
 
 (defun serialize-transaction-extra-data (object)
