@@ -20,6 +20,7 @@
    #:generate-keys #:generate-secret-key
    #:secret-key->public-key #:secret-spend-key->secret-view-key
    #:recover-keys
+   #:derive-key
    #:generate-signature #:valid-signature-p
 
    ;; mine
@@ -47,6 +48,7 @@
    ;; wallet
    #:decode-address #:make-integrated-address
    #:public-keys->address #:secret-spend-key->address
+   #:encrypt-payment-id #:decrypt-payment-id
    #:get-wallet-keys #:bruteforce-wallet-keys
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p))

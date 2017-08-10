@@ -133,6 +133,31 @@
     (is (string-equal "59f5445dfe7ac2a13f93088caedccaf78b69a3460b70547fa249f2fb7f3dc5e3"
                       (secret-key->public-key/hex "be82dba0af095ecbd0cda2a1eb29a99ee8db1f30280164bfbb9c2375a884a308")))))
 
+(test derive-key
+  (flet ((derive-key/hex (public-key secret-key)
+           (bytes->hex-string (derive-key (hex-string->bytes public-key)
+                                          (hex-string->bytes secret-key)))))
+    (is (string-equal "4e0bd2c41325a1b89a9f7413d4d05e0a5a4936f241dccc3c7d0c539ffe00ef67"
+                      (derive-key/hex "fdfd97d2ea9f1c25df773ff2c973d885653a3ee643157eb0ae2b6dd98f0b6984" "eb2bd1cf0c5e074f9dbf38ebbc99c316f54e21803048c687a3bb359f7a713b02")))
+    (is (string-equal "72903ec8f9919dfcec6efb5535490527b573b3d77f9890386d373c02bf368934"
+                      (derive-key/hex "1ebf8c3c296bb91708b09d9a8e0639ccfd72556976419c7dc7e6dfd7599218b9" "e49f363fd5c8fc1f8645983647ca33d7ec9db2d255d94cd538a3cc83153c5f04")))
+    (is (string-equal "9dcac9c9e87dd96a4115d84d587218d8bf165a0527153b1c306e562fe39a46ab"
+                      (derive-key/hex "3e3047a633b1f84250ae11b5c8e8825a3df4729f6cbe4713b887db62f268187d" "6df324e24178d91c640b75ab1c6905f8e6bb275bc2c2a5d9b9ecf446765a5a05")))
+    (is (string-equal "f5bb6522dea0c40229928766fb7019ac4be3022469c8d825ae965b8af3d3c517"
+                      (derive-key/hex "ba7b73dfa3185875538871e425a4ec8d5f16cac09db14cefd5510568a66eff3e" "c9b52fd93365c57220178996d97cc979c752d56a8199568dd2c882486f7f1d0a")))
+    (is (string-equal "bcdc1f0c4b6cc6bc1847728630c3060dd1982d51bb06873f53a4a13998510cc1"
+                      (derive-key/hex "45f6f692d8dc545deff096b048e94ee25acd7bf67fb49f7d83107f9969b9bc67" "4451358855fb52b2199db97b33b6d7d47ac2b4067ecdf5ed20bb32162543270a")))
+    (is (string-equal "7498d5bf0b69e08653f6d420a17f866dd2bd490ab43074f46065cb501fe7e2d8"
+                      (derive-key/hex "71329cf72de45f5b98fdd233707501f87aa4130db40b3570527801d5d24e2be5" "b8bc1ee2987bb7451e90c6e7885ce5f6d2f4ae12e5e724ab8432769af66a2307")))
+    (is (string-equal "796b938b108654542a27155a760853101aa896eba019c659e0bf357db225603f"
+                      (derive-key/hex "748c56d5104fb888c4143dd3ae13e578100cd87f4af1be562ee8401d2eec81ad" "659f545d8661711e337ce3c4e47770c9f55c25b0c087a3a794403febd3f1600d")))
+    (is (string-equal "6e9e6dba0861417979f668755c66e09cba4b06d07eca5bcadf6e8dd2f704eef4"
+                      (derive-key/hex "1a2c6c3f4c305b93e6c09604f108d46c988e16bb78a58bbc95da5e148e9ca856" "668b766d1a3b09fc41a7f27ca50a1ffce1f6456b9d3613527f0cb86e1eed6705")))
+    (is (string-equal "f59b6f915e270452eccdf7172f1cf0fe702beca9067673ea3ef7a4920066a1cc"
+                      (derive-key/hex "6ac060a711ce299a7ee47a74f7b3ab9d53ed8bb19fe3bf5f786745babf22e3c1" "00b5bbef9ad292f0289126a0ece082c9c535324c5ee0fd1534f7801777337f05")))
+    (is (string-equal "e4ced0d7c6d10f0dd4f55a4d7b69ad17b692179b0038013dc8ac287fd4360cf2"
+                      (derive-key/hex "aa1a5a28ec965d1f4838c2781628cafa9867dda2153990c7fc4d19dbf1cae3b2" "76c1838f52d761c3738500f240b14e48ada3c1e92081d5f60e53d642fffc610b")))))
+
 (test valid-signature-p
   (flet ((valid-signature-p/hex (data public-key signature)
            (valid-signature-p (hex-string->bytes data)

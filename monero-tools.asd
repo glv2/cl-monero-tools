@@ -70,6 +70,7 @@
                               :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
                                            (:file "signature" :depends-on ("address"))
+                                           (:file "transaction")
                                            (:file "wallet-file")))))))
 
 (defun compile-cncrypto-library (&optional static)

@@ -79,6 +79,12 @@
   (r :pointer)
   (p :pointer))
 
+(defun ge-mul8 (point)
+  "Multiply a POINT by 8."
+  (let* ((p2 (ironclad::ed25519-edwards-add point point))
+         (p4 (ironclad::ed25519-edwards-add p2 p2)))
+    (ironclad::ed25519-edwards-add p4 p4)))
+
 (defcfun ("ge_p1p1_to_p3" cn-ge-p1p1-to-p3) :void
   (r :pointer)
   (p :pointer))

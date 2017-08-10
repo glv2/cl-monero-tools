@@ -69,3 +69,10 @@ from the SECRET-SPEND-KEY."
   "Generate a new set of keys."
   (let ((secret-spend-key (generate-secret-key)))
     (recover-keys secret-spend-key)))
+
+(defun derive-key (public-key private-key)
+  "Compute a shared secret from a user's PUBLIC-KEY and your PRIVATE-KEY."
+  (let* ((p (ironclad::ed25519-decode-point public-key))
+         (s (ironclad::ed25519-decode-int private-key))
+         (k (ge-mul8 (ironclad::ed25519-scalar-mult p s))))
+    (ironclad::ed25519-encode-point k)))

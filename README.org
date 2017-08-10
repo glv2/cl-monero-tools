@@ -67,6 +67,7 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 ** Cryptography
 
  - chacha8
+ - derive-key
  - fast-hash
  - generate-chacha8-key
  - generate-keys
@@ -123,6 +124,8 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
  - bruteforce-wallet-keys
  - decode-address
+ - decrypt-payment-id
+ - encrypt-payment-id
  - get-wallet-keys
  - make-integrated-address
  - public-keys->address
