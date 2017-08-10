@@ -72,26 +72,42 @@ from the SECRET-SPEND-KEY."
 
 (defun derive-key (public-key secret-key)
   "Compute a shared secret from a user's PUBLIC-KEY and your SECRET-KEY."
+  (check-type public-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type secret-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (let* ((p (ironclad::ed25519-decode-point public-key))
          (s (ironclad::ed25519-decode-int secret-key))
          (k (ge-mul8 (ironclad::ed25519-scalar-mult p s))))
     (ironclad::ed25519-encode-point k)))
 
 (defun derivation->scalar (derivation output-index)
+  "Compute a scalar that can be used for deriving an output's keys
+from a key DERIVATION and an OUTPUT-INDEX."
+  (check-type derivation (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type output-index (integer 0))
   (let ((data (concatenate '(simple-array (unsigned-byte 8) (*))
                            derivation (write-varint output-index))))
     (hash-to-scalar data)))
 
-(defun derive-public-key (derivation output-index public-key)
+(defun derive-public-key (derivation output-index public-spend-key)
+  "Compute an output's public key from a key DERIVATION, an
+OUTPUT-INDEX and a PUBLIC-SPEND-KEY."
+  (check-type derivation (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type output-index (integer 0))
+  (check-type public-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (let* ((g ironclad::+ed25519-b+)
          (x (ironclad::ed25519-decode-int (derivation->scalar derivation output-index)))
-         (p1 (ironclad::ed25519-decode-point public-key))
+         (p1 (ironclad::ed25519-decode-point public-spend-key))
          (p2 (ironclad::ed25519-scalar-mult g x))
          (p3 (ironclad::ed25519-edwards-add p1 p2)))
     (ironclad::ed25519-encode-point p3)))
 
-(defun derive-secret-key (derivation output-index secret-key)
+(defun derive-secret-spend-key (derivation output-index secret-spend-key)
+  "Compute an output's secret key from a key DERIVATION, an
+OUTPUT-INDEX and a SECRET-SPEND-KEY."
+  (check-type derivation (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type output-index (integer 0))
+  (check-type secret-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
   (let* ((x (ironclad::ed25519-decode-int (derivation->scalar derivation output-index)))
-         (s (ironclad::ed25519-decode-int secret-key))
+         (s (ironclad::ed25519-decode-int secret-spend-key))
          (k (mod (+ x s) ironclad::+ed25519-l+)))
     (ironclad::ed25519-encode-int k)))
