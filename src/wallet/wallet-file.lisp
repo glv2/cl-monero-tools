@@ -17,26 +17,27 @@
                                      (+ +chacha8-iv-length+ varint-size)
                                      (+ +chacha8-iv-length+ varint-size encrypted-data-length)))
              (key (generate-chacha8-key password))
-             (account-json-data (map 'string #'code-char (chacha8 encrypted-data key iv))))
-        (unless (string= (subseq account-json-data 0 12) "{\"key_data\":")
+             (account-json-data (map 'string #'code-char (chacha8 encrypted-data key iv)))
+             (account-json (handler-case (decode-json-from-string account-json-data)
+                             (t () nil)))
+             (key-data (geta account-json :key--data)))
+        (unless key-data
           (error "Bad password."))
-        (let* ((account-json (decode-json-from-string account-json-data))
-               (key-data (geta account-json :key--data )))
-          (flet ((find-key-field (data key)
-                   (let ((l (length key))
-                         (i (search key data)))
-                     (when i
-                       (map '(simple-array (unsigned-byte 8) (32))
-                            #'char-code
-                            (subseq data (+ i 2 l) (+ i 2 l 32)))))))
-            (append (let ((v (find-key-field key-data "m_spend_public_key")))
-                      (when v (list (cons :public-spend-key v))))
-                    (let ((v (find-key-field key-data "m_view_public_key")))
-                      (when v (list (cons :public-view-key v))))
-                    (let ((v (find-key-field key-data "m_spend_secret_key")))
-                      (when v (list (cons :secret-spend-key v))))
-                    (let ((v (find-key-field key-data "m_view_secret_key")))
-                      (when v (list (cons :secret-view-key v)))))))))))
+        (flet ((find-key-field (data key)
+                 (let ((l (length key))
+                       (i (search key data)))
+                   (when i
+                     (map '(simple-array (unsigned-byte 8) (32))
+                          #'char-code
+                          (subseq data (+ i 2 l) (+ i 2 l 32)))))))
+          (append (let ((v (find-key-field key-data "m_spend_public_key")))
+                    (when v (list (cons :public-spend-key v))))
+                  (let ((v (find-key-field key-data "m_view_public_key")))
+                    (when v (list (cons :public-view-key v))))
+                  (let ((v (find-key-field key-data "m_spend_secret_key")))
+                    (when v (list (cons :secret-spend-key v))))
+                  (let ((v (find-key-field key-data "m_view_secret_key")))
+                    (when v (list (cons :secret-view-key v))))))))))
 
 (defparameter *bruteforce-dictionary* nil)
 (defparameter *bruteforce-state* nil)
@@ -44,7 +45,7 @@
 (defparameter *bruteforce-result* nil)
 (defparameter *bruteforce-lock* nil)
 
-(defun bruteforce-wallet-keys (keys-file &key (threads 1) dictionary-file (characters "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") (minimum-length 1) (maximum-length 8) prefix suffix)
+(defun bruteforce-wallet-keys (keys-file &key (threads 1) dictionary-file (characters " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~") (minimum-length 1) (maximum-length 8) prefix suffix)
   "Try to find the password and keys of an encrypted KEYS-FILE either
 using a DICTIONARY-FILE, or by trying all the passwords composed of
 some CHARACTERS, having a length between MINIMUM-LENGTH and
