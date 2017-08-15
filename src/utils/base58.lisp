@@ -10,8 +10,7 @@
 (define-constant +base58-alphabet+ "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
   :test #'string=)
 (defconstant +base58-alphabet-size+ 58)
-(define-constant +base58-encoded-block-sizes+ #(0 2 3 5 6 7 9 10 11)
-  :test #'equalp)
+(define-constant +base58-encoded-block-sizes+ #(0 2 3 5 6 7 9 10 11) :test #'equalp)
 (defconstant +base58-full-block-size+ 8)
 (defconstant +base58-full-encoded-block-size+ 11)
 (defconstant +base58-checksum-size+ 4)

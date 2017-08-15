@@ -7,19 +7,20 @@
 (in-package :monero-tools)
 
 
+(define-constant +message-signature-header+ "SigV1" :test #'string=)
+
 (defun sign-message (message secret-spend-key)
   "Return a signature of a MESSAGE by a SECRET-SPEND-KEY."
-  (let* ((header "SigV1")
-         (hash (fast-hash (string->bytes message)))
+  (let* ((hash (fast-hash (string->bytes message)))
          (signature-data (generate-signature hash secret-spend-key)))
-    (concatenate 'string header (base58-encode signature-data))))
+    (concatenate 'string +message-signature-header+ (base58-encode signature-data))))
 
 (defun valid-message-signature-p (message address signature)
   "Return T if a SIGNATURE of a MESSAGE by the secret key matching
 an ADDRESS is valid, and NIL otherwise."
-  (let* ((header "SigV1")
-         (header-length (length header)))
-    (unless (or (< (length signature) (+ header-length (* 2 +ed25519-key-length+))))
+  (let ((header-length (length +message-signature-header+)))
+    (when (and (= (length signature) (+ header-length 88))
+               (string= signature +message-signature-header+ :end1 header-length))
       (let ((hash (fast-hash (string->bytes message)))
             (public-key (geta (decode-address address) :public-spend-key))
             (signature-data (base58-decode (subseq signature header-length))))
@@ -27,17 +28,16 @@ an ADDRESS is valid, and NIL otherwise."
 
 (defun sign-file (file secret-spend-key)
   "Return a signature of a FILE by a SECRET-SPEND-KEY."
-  (let* ((header "SigV1")
-         (hash (fast-hash (read-file-into-byte-vector file)))
+  (let* ((hash (fast-hash (read-file-into-byte-vector file)))
          (signature-data (generate-signature hash secret-spend-key)))
-    (concatenate 'string header (base58-encode signature-data))))
+    (concatenate 'string +message-signature-header+ (base58-encode signature-data))))
 
 (defun valid-file-signature-p (file address signature)
   "Return T if a SIGNATURE of a FILE by the secret key matching
 an ADDRESS is valid, and NIL otherwise."
-  (let* ((header "SigV1")
-         (header-length (length header)))
-    (unless (or (< (length signature) (+ header-length (* 2 +ed25519-key-length+))))
+  (let ((header-length (length +message-signature-header+)))
+    (when (and (= (length signature) (+ header-length 88))
+               (string= signature +message-signature-header+ :end1 header-length))
       (let ((hash (fast-hash (read-file-into-byte-vector file)))
             (public-key (geta (decode-address address) :public-spend-key))
             (signature-data (base58-decode (subseq signature header-length))))
