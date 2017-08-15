@@ -12,22 +12,20 @@
 alist format."
   (let* ((prefix (geta transaction :prefix))
          (version (geta prefix :version)))
-    (if (= 1 version)
-        (fast-hash (serialize-transaction transaction))
-        (let* ((rct-sig (geta transaction :rct-signature))
-               (base (remove-if (lambda (x) (eq (car x) :rct-signature-prunable)) rct-sig))
-               (prunable (geta rct-sig :rct-signature-prunable))
-               (prefix-hash (fast-hash (serialize-transaction-prefix prefix)))
-               (base-hash (fast-hash (serialize-rct-signature base)))
-               (prunable-hash (if prunable
-                                  (fast-hash (serialize-rct-signature-prunable prunable))
-                                  (make-array +hash-length+
-                                              :element-type '(unsigned-byte 8)
-                                              :initial-element 0))))
-          (fast-hash (concatenate '(simple-array (unsigned-byte 8) (*))
-                                  prefix-hash
-                                  base-hash
-                                  prunable-hash))))))
+    (case version
+      ((1) (fast-hash (serialize-transaction transaction)))
+      ((2) (let* ((rct-sig (geta transaction :rct-signature))
+                  (base (remove :rct-signature-prunable rct-sig :key #'car))
+                  (prunable (geta rct-sig :rct-signature-prunable))
+                  (prefix-hash (fast-hash (serialize-transaction-prefix prefix)))
+                  (base-hash (fast-hash (serialize-rct-signature base)))
+                  (prunable-hash (if prunable
+                                     (fast-hash (serialize-rct-signature-prunable prunable))
+                                     (make-array +hash-length+
+                                                 :element-type '(unsigned-byte 8)
+                                                 :initial-element 0))))
+             (fast-hash (concatenate 'octet-vector prefix-hash base-hash prunable-hash))))
+      (t (error "Transaction version ~d not supported." version)))))
 
 (defun compute-transaction-hash-from-data (transaction-data)
   "Return the hash of the transaction represented by the
@@ -52,5 +50,5 @@ by the BLOCK-DATA byte vector."
   "Return the root of the Merkle tree computed from a list of
 transaction HASHES."
   (let ((count (length hashes))
-        (data (apply #'concatenate '(simple-array (unsigned-byte 8) (*)) (coerce hashes 'list))))
+        (data (apply #'concatenate 'octet-vector (coerce hashes 'list))))
     (tree-hash data count)))

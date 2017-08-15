@@ -53,7 +53,7 @@
 #+cncrypto-prefer-ffi
 (defun sc-reduce (data)
   "Return the byte vector representing DATA modulo +ED25519-L+."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length))
       (dotimes (i length)
@@ -66,7 +66,7 @@
 #-cncrypto-prefer-ffi
 (defun sc-reduce (data)
   "Return the byte vector representing DATA modulo +ED25519-L+."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (let* ((n (ironclad::ed25519-decode-int data))
          (r (mod n ironclad::+ed25519-l+)))
     (ironclad::ed25519-encode-int r)))
@@ -116,7 +116,7 @@
 
 (defun fast-hash (data)
   "Fast hash function (Keccak1600) for the Cryptonote protocol."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-hash :unsigned-char +hash-length+))
@@ -134,7 +134,7 @@
 
 (defun slow-hash (data)
   "Slow hash function (CryptoNight) for the Cryptonote protocol."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-hash :unsigned-char +hash-length+))
@@ -152,6 +152,8 @@
 
 (defun tree-hash (data count)
   "Tree hash function for the transactions Merkle tree."
+  (check-type data octet-vector)
+  (check-type count (integer 0))
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-hash :unsigned-char +hash-length+))
@@ -166,7 +168,7 @@
 (defun hash-to-scalar (data)
   "Make a scalar usable with the ED25519 curve from DATA and return it
 as a byte vector."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-res :unsigned-char +hash-length+))
@@ -182,7 +184,7 @@ as a byte vector."
 (defun hash-to-scalar (data)
   "Make a scalar usable with the ED25519 curve from DATA and return it
 as a byte vector."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (sc-reduce (fast-hash data)))
 
 (defun cn-hash-to-ec (raw-data raw-res)
@@ -197,7 +199,7 @@ as a byte vector."
 (defun hash-to-point (data)
   "Make a point on the ED25519 curve from DATA and return it
 as a byte vector."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
+  (check-type data octet-vector)
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-point '(:struct cn-ge-p3))
@@ -227,9 +229,9 @@ as a byte vector."
 #+cncrypto-prefer-ffi
 (defun chacha8 (data key iv)
   "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
-  (check-type key (simple-array (unsigned-byte 8) (#.+chacha8-key-length+)))
-  (check-type iv (simple-array (unsigned-byte 8) (#.+chacha8-iv-length+)))
+  (check-type data octet-vector)
+  (check-type key (octet-vector #.+chacha8-key-length+))
+  (check-type iv (octet-vector #.+chacha8-iv-length+))
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-key :unsigned-char +chacha8-key-length+)
@@ -249,9 +251,9 @@ as a byte vector."
 #-cncrypto-prefer-ffi
 (defun chacha8 (data key iv)
   "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
-  (check-type data (simple-array (unsigned-byte 8) (*)))
-  (check-type key (simple-array (unsigned-byte 8) (#.+chacha8-key-length+)))
-  (check-type iv (simple-array (unsigned-byte 8) (#.+chacha8-iv-length+)))
+  (check-type data octet-vector)
+  (check-type key (octet-vector #.+chacha8-key-length+))
+  (check-type iv (octet-vector #.+chacha8-iv-length+))
   (let ((cipher (ironclad:make-cipher :chacha/8 :key key
                                                 :mode :stream
                                                 :initialization-vector iv))

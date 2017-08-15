@@ -29,14 +29,13 @@ mining process) instead of fast-hash (used for the block id)."
            (root-hash (compute-transaction-tree-hash transaction-hashes))
            (header-data (serialize-block-header header))
            (count (serialize-integer (length transaction-hashes)))
-           (data (concatenate '(simple-array (unsigned-byte 8) (*))
-                              header-data root-hash count))
+           (data (concatenate 'octet-vector header-data root-hash count))
            (size (serialize-integer (+ (length header-data)
                                        (length root-hash)
                                        (length count)))))
       (if slow-hash
           (slow-hash data)
-          (fast-hash (concatenate '(simple-array (unsigned-byte 8) (*)) size data))))))
+          (fast-hash (concatenate 'octet-vector size data))))))
 
 (defun compute-block-hash-from-data (block-data &optional slow-hash)
   "Return the hash of the block represented by the BLOCK-DATA byte

@@ -303,12 +303,13 @@ The second returned value in the size of the serialized transaction."
                           0))
            (outputs-size (length (geta transaction-prefix :outputs))))
       (multiple-value-bind (signature signature-size)
-          (if (= 1 version)
-              (deserialize data (+ offset prefix-size)
-                           ((signature #'deserialize-signature ring-size inputs-size)))
-              (deserialize data (+ offset prefix-size)
-                           ((rct-signature #'deserialize-rct-signature
-                                           ring-size inputs-size outputs-size))))
+          (case version
+            ((1) (deserialize data (+ offset prefix-size)
+                              ((signature #'deserialize-signature ring-size inputs-size))))
+            ((2) (deserialize data (+ offset prefix-size)
+                              ((rct-signature #'deserialize-rct-signature
+                                              ring-size inputs-size outputs-size))))
+            (t (error "Transaction version ~d not supported." version)))
         (values (append prefix signature) (+ prefix-size signature-size))))))
 
 

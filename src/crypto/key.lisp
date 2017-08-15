@@ -25,7 +25,7 @@
 #+cncrypto-prefer-ffi
 (defun secret-key->public-key (secret-key)
   "Compute the public key matching a SECRET-KEY."
-  (check-type secret-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type secret-key (octet-vector #.+ed25519-key-length+))
   (with-foreign-objects ((raw-secret-key :unsigned-char +ed25519-key-length+)
                          (raw-public-key :unsigned-char +ed25519-key-length+)
                          (raw-point '(:struct cn-ge-p3)))
@@ -41,7 +41,7 @@
 #-cncrypto-prefer-ffi
 (defun secret-key->public-key (secret-key)
   "Compute the public key matching a SECRET-KEY."
-  (check-type secret-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type secret-key (octet-vector #.+ed25519-key-length+))
   (let* ((g ironclad::+ed25519-b+)
          (x (ironclad::ed25519-decode-int secret-key))
          (r (mod x ironclad::+ed25519-l+))
@@ -50,13 +50,13 @@
 
 (defun secret-spend-key->secret-view-key (secret-spend-key)
   "Derive the secret view key from the SECRET-SPEND-KEY."
-  (check-type secret-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type secret-spend-key (octet-vector #.+ed25519-key-length+))
   (fast-hash secret-spend-key))
 
 (defun recover-keys (secret-spend-key)
   "Compute the public-spend-key, secret-view-key and public-view-key
 from the SECRET-SPEND-KEY."
-  (check-type secret-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type secret-spend-key (octet-vector #.+ed25519-key-length+))
   (let* ((secret-view-key (secret-spend-key->secret-view-key secret-spend-key))
          (public-spend-key (secret-key->public-key secret-spend-key))
          (public-view-key (secret-key->public-key secret-view-key)))
@@ -72,8 +72,8 @@ from the SECRET-SPEND-KEY."
 
 (defun derive-key (public-key secret-key)
   "Compute a shared secret from a user's PUBLIC-KEY and your SECRET-KEY."
-  (check-type public-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
-  (check-type secret-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type public-key (octet-vector #.+ed25519-key-length+))
+  (check-type secret-key (octet-vector #.+ed25519-key-length+))
   (let* ((p (ironclad::ed25519-decode-point public-key))
          (s (ironclad::ed25519-decode-int secret-key))
          (k (ge-mul8 (ironclad::ed25519-scalar-mult p s))))
@@ -82,18 +82,17 @@ from the SECRET-SPEND-KEY."
 (defun derivation->scalar (derivation output-index)
   "Compute a scalar that can be used for deriving an output's keys
 from a key DERIVATION and an OUTPUT-INDEX."
-  (check-type derivation (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type derivation (octet-vector #.+ed25519-key-length+))
   (check-type output-index (integer 0))
-  (let ((data (concatenate '(simple-array (unsigned-byte 8) (*))
-                           derivation (write-varint output-index))))
+  (let ((data (concatenate 'octet-vector derivation (write-varint output-index))))
     (hash-to-scalar data)))
 
 (defun derive-public-key (derivation output-index public-spend-key)
   "Compute an output's public key from a key DERIVATION, an
 OUTPUT-INDEX and a PUBLIC-SPEND-KEY."
-  (check-type derivation (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type derivation (octet-vector #.+ed25519-key-length+))
   (check-type output-index (integer 0))
-  (check-type public-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type public-spend-key (octet-vector #.+ed25519-key-length+))
   (let* ((g ironclad::+ed25519-b+)
          (x (ironclad::ed25519-decode-int (derivation->scalar derivation output-index)))
          (p1 (ironclad::ed25519-decode-point public-spend-key))
@@ -104,9 +103,9 @@ OUTPUT-INDEX and a PUBLIC-SPEND-KEY."
 (defun derive-secret-spend-key (derivation output-index secret-spend-key)
   "Compute an output's secret key from a key DERIVATION, an
 OUTPUT-INDEX and a SECRET-SPEND-KEY."
-  (check-type derivation (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type derivation (octet-vector #.+ed25519-key-length+))
   (check-type output-index (integer 0))
-  (check-type secret-spend-key (simple-array (unsigned-byte 8) (#.+ed25519-key-length+)))
+  (check-type secret-spend-key (octet-vector #.+ed25519-key-length+))
   (let* ((x (ironclad::ed25519-decode-int (derivation->scalar derivation output-index)))
          (s (ironclad::ed25519-decode-int secret-spend-key))
          (k (mod (+ x s) ironclad::+ed25519-l+)))

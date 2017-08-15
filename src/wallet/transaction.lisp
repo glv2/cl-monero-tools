@@ -13,10 +13,9 @@
   "Encrypt a PAYMENT-ID using a shared secret derived from
 a PUBLIC-VIEW-KEY and a TRANSACTION-SECRET-KEY."
   (let* ((derivation (derive-key public-view-key transaction-secret-key))
-         (data (concatenate '(simple-array (unsigned-byte 8) (*))
-                            derivation (vector +encrypted-payment-id-tail+)))
+         (data (concatenate 'octet-vector derivation (vector +encrypted-payment-id-tail+)))
          (key (fast-hash data)))
-    (map '(simple-array (unsigned-byte 8) (*)) #'logxor payment-id key)))
+    (map 'octet-vector #'logxor payment-id key)))
 
 (defun decrypt-payment-id (encrypted-payment-id transaction-public-key secret-view-key)
   "Decrypt an ENCRYPTED-PAYMENT-ID using a shared secret derived-from

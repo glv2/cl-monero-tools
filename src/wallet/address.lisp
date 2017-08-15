@@ -18,7 +18,7 @@ PUBLIC-SPEND-KEY and PUBLIC-VIEW-KEY. If a PAYMENT-ID is supplied, an
 integrated address is returned. If TESTNET is T, a testnet address is
 returned."
   (macrolet ((concat (&rest sequences)
-               `(concatenate '(simple-array (unsigned-byte 8) (*)) ,@sequences)))
+               `(concatenate 'octet-vector ,@sequences)))
     (let* ((tag (vector (if testnet
                             (if payment-id
                                 +testnet-integrated-address-base58-prefix+

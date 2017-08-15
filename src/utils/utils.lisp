@@ -7,6 +7,11 @@
 (in-package :monero-tools)
 
 
+(deftype octet-vector (&optional size)
+  (if size
+      `(simple-array (unsigned-byte 8) (,size))
+      '(simple-array (unsigned-byte 8) (*))))
+
 (defun read-varint (bytes &key (start 0))
   "Read the variable size integer encoded in BYTES."
   (let ((n 0)

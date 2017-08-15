@@ -27,9 +27,7 @@
                  (let ((l (length key))
                        (i (search key data)))
                    (when i
-                     (map '(simple-array (unsigned-byte 8) (32))
-                          #'char-code
-                          (subseq data (+ i 2 l) (+ i 2 l 32)))))))
+                     (map 'octet-vector #'char-code (subseq data (+ i 2 l) (+ i 2 l 32)))))))
           (append (let ((v (find-key-field key-data "m_spend_public_key")))
                     (when v (list (cons :public-spend-key v))))
                   (let ((v (find-key-field key-data "m_view_public_key")))

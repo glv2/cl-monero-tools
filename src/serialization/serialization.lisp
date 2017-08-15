@@ -18,9 +18,7 @@
         collect `(let* ((,id ,(intern (string-upcase (symbol-name name)) :keyword))
                         (,data (apply ,writer (geta ,object ,id) (list ,@writer-parameters))))
                    (when ,data
-                     (setf ,result (concatenate '(simple-array (unsigned-byte 8) (*))
-                                                ,result
-                                                ,data))))
+                     (setf ,result (concatenate 'octet-vector ,result ,data))))
           into forms
         finally (return `(let ((,result (make-array 0 :element-type '(unsigned-byte 8))))
                            ,@forms
@@ -43,19 +41,17 @@
          (result (serialize-integer size)))
     (dotimes (i size result)
       (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
-        (setf result (concatenate '(simple-array (unsigned-byte 8) (*)) result data))))))
+        (setf result (concatenate 'octet-vector result data))))))
 
 (defun serialize-custom-vector (objects element-writer &rest element-writer-parameters)
   (let ((size (length objects))
         (result (make-array 0 :element-type '(unsigned-byte 8))))
     (dotimes (i size result)
       (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
-        (setf result (concatenate '(simple-array (unsigned-byte 8) (*)) result data))))))
+        (setf result (concatenate 'octet-vector result data))))))
 
 (defun serialize-byte-vector (object)
-  (concatenate '(simple-array (unsigned-byte 8) (*))
-               (serialize-integer (length object))
-               object))
+  (concatenate 'octet-vector (serialize-integer (length object)) object))
 
 (defun serialize-key (object)
   (serialize-bytes object))
@@ -81,15 +77,15 @@
   (let ((type (caar object))
         (target (cdar object)))
     (cond ((eq type :script)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-output-to-script-tag+)
                         (serialize-transaction-output-to-script target)))
           ((eq type :script-hash)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-output-to-script-hash-tag+)
                         (serialize-transaction-output-to-script-hash target)))
           ((eq type :key)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-output-to-key-tag+)
                         (serialize-transaction-output-to-key target))))))
 
@@ -128,19 +124,19 @@
   (let ((type (caar object))
         (target (cdar object)))
     (cond ((eq type :generation)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-input-generation-tag+)
                         (serialize-transaction-input-generation target)))
           ((eq type :script)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-input-to-script-tag+)
                         (serialize-transaction-input-to-script target)))
           ((eq type :script-hash)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-input-to-script-hash-tag+)
                         (serialize-transaction-input-to-script-hash target)))
           ((eq type :key)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (vector +transaction-input-to-key-tag+)
                         (serialize-transaction-input-to-key target))))))
 
@@ -188,7 +184,7 @@
                       ((mask #'serialize-key)
                        (amount #'serialize-key)))))
     (let ((type (geta object :type)))
-      (concatenate '(simple-array (unsigned-byte 8) (*))
+      (concatenate 'octet-vector
                    (vector type)
                    (unless (eq type +rct-type-null+)
                      (serialize object
@@ -205,11 +201,11 @@
   (let* ((type (caar object))
          (data (cdar object))
          (nonce-data (cond ((eq type :payment-id)
-                            (concatenate '(simple-array (unsigned-byte 8) (*))
+                            (concatenate 'octet-vector
                                          (vector +transaction-extra-nonce-payment-id-tag+)
                                          (serialize-bytes data)))
                            ((eq type :encrypted-payment-id)
-                            (concatenate '(simple-array (unsigned-byte 8) (*))
+                            (concatenate 'octet-vector
                                          (vector +transaction-extra-nonce-encrypted-payment-id-tag+)
                                          (serialize-bytes data)))
                            (t
@@ -224,15 +220,15 @@
     (cond ((eq type :padding)
            (if (> (length data) +transaction-extra-padding-max-size+)
                (error "Too much data in padding.")
-               (concatenate '(simple-array (unsigned-byte 8) (*))
+               (concatenate 'octet-vector
                             (serialize-integer +transaction-extra-padding-tag+)
                             (serialize-bytes data))))
           ((eq type :transaction-public-key)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (serialize-integer +transaction-extra-public-key-tag+)
                         (serialize-key data)))
           ((eq type :nonce)
-           (concatenate '(simple-array (unsigned-byte 8) (*))
+           (concatenate 'octet-vector
                         (serialize-integer +transaction-extra-nonce-tag+)
                         (serialize-transaction-extra-nonce data)))
           ((eq type :data)
@@ -242,7 +238,7 @@
   (let ((result #()))
     (dolist (field object)
       (let ((data (serialize-transaction-extra-data-field field)))
-        (setf result (concatenate '(simple-array (unsigned-byte 8) (*)) result data))))
+        (setf result (concatenate 'octet-vector result data))))
     (serialize-byte-vector result)))
 
 
@@ -260,13 +256,14 @@
 (defun serialize-transaction (object)
   "Return a transaction OBJECT as a byte vector."
   (let ((version (geta (geta object :prefix) :version)))
-    (if (= 1 version)
-        (serialize object
-                   ((prefix #'serialize-transaction-prefix)
-                    (signature #'serialize-signature)))
-        (serialize object
-                   ((prefix #'serialize-transaction-prefix)
-                    (rct-signature #'serialize-rct-signature))))))
+    (case version
+      ((1) (serialize object
+                      ((prefix #'serialize-transaction-prefix)
+                       (signature #'serialize-signature))))
+      ((2) (serialize object
+                      ((prefix #'serialize-transaction-prefix)
+                       (rct-signature #'serialize-rct-signature))))
+      (t (error "Transaction version ~d not supported." version)))))
 
 
 ;;; Blocks
