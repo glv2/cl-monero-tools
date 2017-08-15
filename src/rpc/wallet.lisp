@@ -7,14 +7,28 @@
 (in-package :monero-tools)
 
 
-(defun wallet-get-balance (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (json-rpc "getbalance"
-            :host host
-            :port port
-            :user user
-            :password password))
+(defun get-address-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((answer (json-rpc "getaddress"
+                          :host host
+                          :port port
+                          :user user
+                          :password password)))
+    (geta answer :address)))
 
-(defun wallet-get-block-height (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun get-balance-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((answer (json-rpc "getbalance"
+                           :host host
+                           :port port
+                           :user user
+                           :password password))
+         (balance (geta answer :balance))
+         (unlocked-balance (geta answer :unlocked--balance)))
+    (append (when balance
+              (acons :balance (/ balance +monero-unit+) '()))
+            (when unlocked-balance
+              (acons :unlocked-balance (/ unlocked-balance +monero-unit+) '())))))
+
+(defun get-block-height-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let ((answer (json-rpc "getheight"
                           :host host
                           :port port
@@ -22,15 +36,21 @@
                           :password password)))
     (geta answer :height)))
 
-(defun wallet-get-transfers (&key (in t) (out t) (pending t) (failed t) (pool t) (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let ((parameters (append (when pool '(:pool . t))
-                            (when failed '(:failed . t))
-                            (when pending '(:pending . t))
-                            (when out '(:out . t))
-                            (when in '(:in . t)))))
-    (json-rpc "get_transfers"
-              :parameters parameters
-              :host host
-              :port port
-              :user user
-              :password password)))
+(defun get-transfers-from-wallet (&key (in t) (out t) (pending t) (failed t) (pool t) (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((parameters (append (when in '((:in . t)))
+                             (when out '((:out . t)))
+                             (when pending '((:pending . t)))
+                             (when failed '((:failed . t)))
+                             (when pool '((:pool . t)))))
+         (answer (json-rpc "get_transfers"
+                           :parameters parameters
+                           :host host
+                           :port port
+                           :user user
+                           :password password))
+         (transactions (loop for x in answer
+                             append (cdr x))))
+    (dolist (transaction transactions)
+      (setf (geta transaction :amount) (/ (geta transaction :amount) +monero-unit+)
+            (geta transaction :fee) (/ (geta transaction :fee) +monero-unit+)))
+    (sort transactions (lambda (x y) (< (geta x :timestamp) (geta y :timestamp))))))

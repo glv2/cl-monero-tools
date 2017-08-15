@@ -7,6 +7,8 @@
 (in-package :monero-tools)
 
 
+(defconstant +monero-unit+ #.(expt 10 12))
+
 (defun compute-transaction-hash (transaction)
   "Return the hash of a TRANSACTION. The TRANSACTION must be in
 alist format."
