@@ -25,6 +25,6 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
 (defun output-for-address-p (output-key output-index transaction-public-key address secret-view-key)
   "Check if an ADDRESS is the destination of an output."
   (let* ((public-spend-key (geta (decode-address address) :public-spend-key))
-         (k (derive-key transaction-public-key secret-view-key))
-         (pk (derive-public-key k output-index public-spend-key)))
-    (equalp pk output-key)))
+         (derivation (derive-key transaction-public-key secret-view-key))
+         (key (derive-public-key derivation output-index public-spend-key)))
+    (equalp key output-key)))
