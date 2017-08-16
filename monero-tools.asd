@@ -44,6 +44,7 @@
                               :components ((:file "chinese-simplified" :depends-on ("mnemonic"))
                                            (:file "dutch" :depends-on ("mnemonic"))
                                            (:file "english" :depends-on ("mnemonic"))
+                                           (:file "esperanto" :depends-on ("mnemonic"))
                                            (:file "french" :depends-on  ("mnemonic"))
                                            (:file "german" :depends-on ("mnemonic"))
                                            (:file "italian" :depends-on ("mnemonic"))
