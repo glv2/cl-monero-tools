@@ -37,7 +37,7 @@
                                            (:file "key" :depends-on ("crypto"))
                                            (:file "signature" :depends-on ("crypto" "key"))))
                              (:module "mine"
-                              :depends-on ("blockchain" "package")
+                              :depends-on ("blockchain" "package" "rpc")
                               :components ((:file "miner")))
                              (:module "mnemonic"
                               :depends-on ("package" "utils")

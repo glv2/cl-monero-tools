@@ -20,5 +20,5 @@
         (difficulty-3 60))
     (flet ((miner/hex (template difficulty)
              (miner (hex-string->bytes template) 0 0 difficulty)))
-      (is-true (acceptable-hash-p (nth-value 1 (miner/hex template-1 difficulty-1)) difficulty-1))
-      (is-true (acceptable-hash-p (nth-value 1 (miner/hex template-3 difficulty-3)) difficulty-3)))))
+      (is-true (acceptable-hash-p (compute-block-hash-from-data (miner/hex template-1 difficulty-1) t) difficulty-1))
+      (is-true (acceptable-hash-p (compute-block-hash-from-data (miner/hex template-3 difficulty-3) t) difficulty-3)))))
