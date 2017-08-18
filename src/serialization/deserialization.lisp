@@ -69,7 +69,7 @@
       (values bytes (+ s0 size)))))
 
 (defun deserialize-key (data offset)
-  (deserialize-bytes data offset +ed25519-key-length+))
+  (deserialize-bytes data offset +key-length+))
 
 (defun deserialize-hash (data offset)
   (deserialize-bytes data offset +hash-length+))
@@ -131,7 +131,7 @@
   (deserialize data offset
                ((amount #'deserialize-integer)
                 (key-offsets #'deserialize-vector #'deserialize-integer)
-                (key-image #'deserialize-bytes +ed25519-key-length+))))
+                (key-image #'deserialize-bytes +key-length+))))
 
 (defun deserialize-transaction-input-target (data offset)
   (let ((type (aref data offset)))
@@ -156,7 +156,7 @@
 (defun deserialize-signature (data offset ring-size inputs-size)
   (deserialize-custom-vector data offset inputs-size
                              #'deserialize-custom-vector ring-size
-                             #'deserialize-bytes (* 2 +ed25519-key-length+)))
+                             #'deserialize-bytes (* 2 +key-length+)))
 
 
 ;;; Ring confidential transaction signatures

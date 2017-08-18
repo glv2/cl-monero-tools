@@ -25,7 +25,30 @@
 ;;; Public key cryptography functions
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant +ed25519-key-length+ 32))
+  (defconstant +key-length+ 32))
+
+(define-constant +g+ ironclad::+ed25519-b+ :test #'equalp)
+(defconstant +l+ ironclad::+ed25519-l+)
+
+(deftype point ()
+  'ironclad::ed25519-point)
+
+(defun point->bytes (point)
+  (check-type point point)
+  (ironclad::ed25519-encode-point point))
+
+(defun bytes->point (bytes)
+  (ironclad::ed25519-decode-point bytes))
+
+(defun point+ (p1 p2)
+  (check-type p1 point)
+  (check-type p2 point)
+  (ironclad::ed25519-edwards-add p1 p2))
+
+(defun point* (point n)
+  (check-type point point)
+  (check-type n (integer 0))
+  (ironclad::ed25519-scalar-mult point n))
 
 (defcstruct cn-ge-p2
   (x :uint32 :count 10)
@@ -51,25 +74,23 @@
   (s :pointer))
 
 #+cncrypto-prefer-ffi
-(defun sc-reduce (data)
-  "Return the byte vector representing DATA modulo +ED25519-L+."
+(defun reduce-scalar (data)
+  "Return the byte vector representing DATA modulo +L+."
   (check-type data octet-vector)
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length))
       (dotimes (i length)
         (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
       (cn-sc-reduce raw-data)
-      (let ((res (make-array +ed25519-key-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +ed25519-key-length+ res)
+      (let ((res (make-array +key-length+ :element-type '(unsigned-byte 8))))
+        (dotimes (i +key-length+ res)
           (setf (aref res i) (mem-aref raw-data :unsigned-char i)))))))
 
 #-cncrypto-prefer-ffi
-(defun sc-reduce (data)
-  "Return the byte vector representing DATA modulo +ED25519-L+."
+(defun reduce-scalar (data)
+  "Return the byte vector representing DATA modulo +L+."
   (check-type data octet-vector)
-  (let* ((n (ironclad::ed25519-decode-int data))
-         (r (mod n ironclad::+ed25519-l+)))
-    (ironclad::ed25519-encode-int r)))
+  (integer->bytes (mod (bytes->integer data) +l+) :size +key-length+))
 
 (defcfun ("ge_scalarmult_base" cn-ge-scalarmult-base) :void
   (h :pointer)
@@ -79,11 +100,11 @@
   (r :pointer)
   (p :pointer))
 
-(defun ge-mul8 (point)
+(defun point*8 (point)
   "Multiply a POINT by 8."
-  (let* ((p2 (ironclad::ed25519-edwards-add point point))
-         (p4 (ironclad::ed25519-edwards-add p2 p2)))
-    (ironclad::ed25519-edwards-add p4 p4)))
+  (let* ((p2 (point+ point point))
+         (p4 (point+ p2 p2)))
+    (point+ p4 p4)))
 
 (defcfun ("ge_p1p1_to_p3" cn-ge-p1p1-to-p3) :void
   (r :pointer)
@@ -102,7 +123,7 @@
   (result :pointer))
 
 (defun random-scalar ()
-  (sc-reduce (ironclad:random-data +ed25519-key-length+)))
+  (reduce-scalar (ironclad:random-data +key-length+)))
 
 
 ;;; Hash functions
@@ -176,8 +197,8 @@ as a byte vector."
         (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
       (cn-fast-hash raw-data length raw-res)
       (cn-sc-reduce32 raw-res)
-      (let ((res (make-array +ed25519-key-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +ed25519-key-length+ res)
+      (let ((res (make-array +key-length+ :element-type '(unsigned-byte 8))))
+        (dotimes (i +key-length+ res)
           (setf (aref res i) (mem-aref raw-res :unsigned-char i)))))))
 
 #-cncrypto-prefer-ffi
@@ -185,13 +206,13 @@ as a byte vector."
   "Make a scalar usable with the ED25519 curve from DATA and return it
 as a byte vector."
   (check-type data octet-vector)
-  (sc-reduce (fast-hash data)))
+  (reduce-scalar (fast-hash data)))
 
 (defun cn-hash-to-ec (raw-data raw-res)
   (with-foreign-objects ((raw-hash :unsigned-char +hash-length+)
                          (raw-point1 '(:struct cn-ge-p2))
                          (raw-point2 '(:struct cn-ge-p1p1)))
-    (cn-fast-hash raw-data +ed25519-key-length+ raw-hash)
+    (cn-fast-hash raw-data +key-length+ raw-hash)
     (cn-ge-fromfe-frombytes-vartime raw-point1 raw-hash)
     (cn-ge-mul8 raw-point2 raw-point1)
     (cn-ge-p1p1-to-p3 raw-res raw-point2)))
@@ -203,13 +224,13 @@ as a byte vector."
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-point '(:struct cn-ge-p3))
-                           (raw-res :unsigned-char +ed25519-key-length+))
+                           (raw-res :unsigned-char +key-length+))
       (dotimes (i length)
         (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
       (cn-hash-to-ec raw-data raw-point)
       (cn-ge-p3-tobytes raw-res raw-point)
-      (let ((res (make-array +ed25519-key-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +ed25519-key-length+ res)
+      (let ((res (make-array +key-length+ :element-type '(unsigned-byte 8))))
+        (dotimes (i +key-length+ res)
           (setf (aref res i) (mem-aref raw-res :unsigned-char i)))))))
 
 
