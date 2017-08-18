@@ -34,18 +34,22 @@
   'ironclad::ed25519-point)
 
 (defun point->bytes (point)
+  "Convert an Ed25519 POINT to a sequence of bytes."
   (check-type point point)
   (ironclad::ed25519-encode-point point))
 
 (defun bytes->point (bytes)
+  "Convert a sequence of BYTES to an Ed25519 point."
   (ironclad::ed25519-decode-point bytes))
 
 (defun point+ (p1 p2)
+  "Point addition on Ed25519."
   (check-type p1 point)
   (check-type p2 point)
   (ironclad::ed25519-edwards-add p1 p2))
 
 (defun point* (point n)
+  "Scalar multiplication on Ed25519."
   (check-type point point)
   (check-type n (integer 0))
   (ironclad::ed25519-scalar-mult point n))

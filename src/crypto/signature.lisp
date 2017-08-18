@@ -37,6 +37,7 @@ a PUBLIC-KEY is valid, and NIL otherwise."
     (= c h)))
 
 (defun generate-key-image (secret-key &optional (public-key (secret-key->public-key secret-key)))
+  "Compute the key image of a SECRET-KEY."
   (check-type public-key (octet-vector #.+key-length+))
   (check-type secret-key (octet-vector #.+key-length+))
   (let* ((h (hash-to-point public-key))
@@ -44,14 +45,10 @@ a PUBLIC-KEY is valid, and NIL otherwise."
          (s (bytes->integer secret-key)))
     (point->bytes (point* p s))))
 
-(defun generate-ring-signature (data decoy-public-keys secret-key secret-index)
+(defun generate-ring-signature (data public-keys secret-key secret-index)
   (let* ((public-key (secret-key->public-key secret-key))
          (key-image (generate-key-image secret-key public-key))
          (ki (bytes->point key-image))
-         (public-keys (concatenate 'vector
-                                   (subseq decoy-public-keys 0 secret-index)
-                                   (list public-key)
-                                   (subseq decoy-public-keys secret-index)))
          (n (length public-keys))
          (s (bytes->integer secret-key))
          (a (make-array n))
@@ -72,7 +69,8 @@ a PUBLIC-KEY is valid, and NIL otherwise."
                   (aref b i) (point+ (point* hp q) (point* ki w))
                   (aref c i) w
                   (aref r i) q
-                  sum (+ sum w)))))
+                  sum (mod (+ sum w) +l+)))))
+    ;; TODO: hash a1 a2 a3 b1 b2 b3 or a1 b1 a2 b2 a3 b3 ?
     (let ((h (bytes->integer (hash-to-scalar (concatenate 'octet-vector
                                                           data
                                                           (map 'vector #'point->bytes a)
@@ -84,5 +82,21 @@ a PUBLIC-KEY is valid, and NIL otherwise."
             (map 'vector (lambda (n) (integer->bytes n :size +key-length+)) r)))))
 
 (defun valid-ring-signature-p (data public-keys key-image signature)
-  ;; TODO
-  )
+  (let* ((n (length public-keys))
+         (ki (bytes->point key-image))
+         (a (make-array n))
+         (b (make-array n))
+         (c (map 'vector #'bytes->integer (second signature)))
+         (r (map 'vector #'bytes->integer (third signature)))
+         (sum 0))
+    (dotimes (i n)
+      (let ((p (bytes->point (aref public-keys i)))
+            (hp (bytes->point (hash-to-point (aref public-keys i)))))
+        (setf (aref a i) (point+ (point* +g+ (aref r i)) (point* p (aref c i)))
+              (aref b i) (point+ (point* hp (aref r i)) (point* ki (aref c i)))
+              sum (mod (+ sum (aref c i)) +l+))))
+    (let ((h (bytes->integer (hash-to-scalar (concatenate 'octet-vector
+                                                          data
+                                                          (map 'vector #'point->bytes a)
+                                                          (map 'vector #'point->bytes b))))))
+      (= h sum))))
