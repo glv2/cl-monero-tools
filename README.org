@@ -67,16 +67,21 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
 ** Cryptography
 
  - chacha8
+ - compute-key-image
  - derive-key
  - fast-hash
  - generate-chacha8-key
  - generate-keys
  - generate-secret-key
+ - generate-ring-signature
+ - generate-signature
  - recover-keys
  - secret-key->public-key
  - secret-spend-key->secret-view-key
  - slow-hash
  - tree-hash
+ - valid-ring-signature-p
+ - valid-signature-p
 
 ** Mining
 

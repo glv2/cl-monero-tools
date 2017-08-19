@@ -22,6 +22,8 @@
    #:recover-keys
    #:derive-key
    #:generate-signature #:valid-signature-p
+   #:generate-ring-signature #:valid-ring-signature-p
+   #:compute-key-image
 
    ;; mine
    #:miner
