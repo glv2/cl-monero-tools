@@ -24,6 +24,23 @@
                            ,@forms
                            ,result))))
 
+(defmacro serialize-variant (object specs)
+  (loop with type = (gensym)
+        with thing = (gensym)
+        for spec in specs
+        for id = (intern (string-upcase (symbol-name (car spec))) :keyword)
+        for tag = (cadr spec)
+        for writer = (caddr spec)
+        for writer-parameters = (cdddr spec)
+        collect `((eq ,type ,id)
+                  (concatenate 'octet-vector
+                               (vector ,tag)
+                               (apply ,writer ,thing (list ,@writer-parameters))))
+          into forms
+        finally (return `(let ((,type (caar ,object))
+                               (,thing (cdar object)))
+                           (cond ,@forms)))))
+
 
 ;;; Basic types
 
@@ -74,20 +91,13 @@
   (serialize-key object))
 
 (defun serialize-transaction-output-target (object)
-  (let ((type (caar object))
-        (target (cdar object)))
-    (cond ((eq type :script)
-           (concatenate 'octet-vector
-                        (vector +transaction-output-to-script-tag+)
-                        (serialize-transaction-output-to-script target)))
-          ((eq type :script-hash)
-           (concatenate 'octet-vector
-                        (vector +transaction-output-to-script-hash-tag+)
-                        (serialize-transaction-output-to-script-hash target)))
-          ((eq type :key)
-           (concatenate 'octet-vector
-                        (vector +transaction-output-to-key-tag+)
-                        (serialize-transaction-output-to-key target))))))
+  (serialize-variant object
+                     ((script +transaction-output-to-script-tag+
+                              #'serialize-transaction-output-to-script)
+                      (script-hash +transaction-output-to-script-hash-tag+
+                                   #'serialize-transaction-output-to-script-hash)
+                      (key +transaction-output-to-key-tag+
+                           #'serialize-transaction-output-to-key))))
 
 (defun serialize-transaction-output (object)
   (serialize object
@@ -121,24 +131,15 @@
               (key-image #'serialize-bytes))))
 
 (defun serialize-transaction-input-target (object)
-  (let ((type (caar object))
-        (target (cdar object)))
-    (cond ((eq type :generation)
-           (concatenate 'octet-vector
-                        (vector +transaction-input-generation-tag+)
-                        (serialize-transaction-input-generation target)))
-          ((eq type :script)
-           (concatenate 'octet-vector
-                        (vector +transaction-input-to-script-tag+)
-                        (serialize-transaction-input-to-script target)))
-          ((eq type :script-hash)
-           (concatenate 'octet-vector
-                        (vector +transaction-input-to-script-hash-tag+)
-                        (serialize-transaction-input-to-script-hash target)))
-          ((eq type :key)
-           (concatenate 'octet-vector
-                        (vector +transaction-input-to-key-tag+)
-                        (serialize-transaction-input-to-key target))))))
+  (serialize-variant object
+                     ((generation +transaction-input-generation-tag+
+                                  #'serialize-transaction-input-generation)
+                      (script +transaction-input-to-script-tag+
+                              #'serialize-transaction-input-to-script)
+                      (script-hash +transaction-input-to-script-hash-tag+
+                                   #'serialize-transaction-input-to-script-hash)
+                      (key +transaction-input-to-key-tag+
+                           #'serialize-transaction-input-to-key))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
@@ -215,24 +216,20 @@
     (serialize-byte-vector nonce-data)))
 
 (defun serialize-transaction-extra-data-field (object)
-  (let ((type (caar object))
-        (data (cdar object)))
-    (cond ((eq type :padding)
-           (if (> (length data) +transaction-extra-padding-max-size+)
-               (error "Too much data in padding.")
-               (concatenate 'octet-vector
-                            (serialize-integer +transaction-extra-padding-tag+)
-                            (serialize-bytes data))))
-          ((eq type :transaction-public-key)
-           (concatenate 'octet-vector
-                        (serialize-integer +transaction-extra-public-key-tag+)
-                        (serialize-key data)))
-          ((eq type :nonce)
-           (concatenate 'octet-vector
-                        (serialize-integer +transaction-extra-nonce-tag+)
-                        (serialize-transaction-extra-nonce data)))
-          ((eq type :data)
-           (serialize-bytes data)))))
+  (let ((result (serialize-variant object
+                                   ((padding +transaction-extra-padding-tag+
+                                             (lambda (data)
+                                               (if (> (length data)
+                                                      +transaction-extra-padding-max-size+)
+                                                   (error "Too much data in padding.")
+                                                   (serialize-bytes data))))
+                                    (transaction-public-key +transaction-extra-public-key-tag+
+                                                            #'serialize-key)
+                                    (nonce +transaction-extra-nonce-tag+
+                                           #'serialize-transaction-extra-nonce)))))
+    (or result
+        (serialize object
+                   ((data #'serialize-bytes))))))
 
 (defun serialize-transaction-extra-data (object)
   (let ((result #()))

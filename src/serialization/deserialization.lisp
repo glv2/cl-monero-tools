@@ -28,6 +28,26 @@
                            ,@forms
                            (values (reverse ,result) ,total-size)))))
 
+(defmacro deserialize-variant (data offset specs)
+  (loop with type = (gensym)
+        with object = (gensym)
+        with size = (gensym)
+        for spec in specs
+        for name = (car spec)
+        for tag = (cadr spec)
+        for reader = (caddr spec)
+        for reader-parameters = (cdddr spec)
+        collect `((= ,type ,tag)
+                  (deserialize ,data (+ ,offset 1)
+                               ((,name ,reader ,@reader-parameters))))
+          into forms
+        finally (return `(let ((,type (aref ,data ,offset)))
+                           (multiple-value-bind (,object ,size)
+                               (cond ,@forms)
+                             (if ,object
+                                 (values ,object (+ 1 ,size))
+                                 (values nil 0)))))))
+
 
 ;;; Basic types
 
@@ -89,18 +109,13 @@
   (deserialize-key data offset))
 
 (defun deserialize-transaction-output-target (data offset)
-  (let ((type (aref data offset)))
-    (multiple-value-bind (target size)
-        (cond ((eq type +transaction-output-to-script-tag+)
-               (deserialize data (+ offset 1)
-                            ((script #'deserialize-transaction-output-to-script))))
-              ((eq type +transaction-output-to-script-hash-tag+)
-               (deserialize data (+ offset 1)
-                            ((script-hash #'deserialize-transaction-output-to-script-hash))))
-              ((eq type +transaction-output-to-key-tag+)
-               (deserialize data (+ offset 1)
-                            ((key #'deserialize-transaction-output-to-key)))))
-      (values target (+ 1 size)))))
+  (deserialize-variant data offset
+                       ((script +transaction-output-to-script-tag+
+                                #'deserialize-transaction-output-to-script)
+                        (script-hash +transaction-output-to-script-hash-tag+
+                                     #'deserialize-transaction-output-to-script-hash)
+                        (key +transaction-output-to-key-tag+
+                             #'deserialize-transaction-output-to-key))))
 
 (defun deserialize-transaction-output (data offset)
   (deserialize data offset
@@ -134,21 +149,15 @@
                 (key-image #'deserialize-bytes +key-length+))))
 
 (defun deserialize-transaction-input-target (data offset)
-  (let ((type (aref data offset)))
-    (multiple-value-bind (target size)
-        (cond ((eq type +transaction-input-generation-tag+)
-               (deserialize data (+ offset 1)
-                            ((generation #'deserialize-transaction-input-generation))))
-              ((eq type +transaction-input-to-script-tag+)
-               (deserialize data (+ offset 1)
-                            ((script #'deserialize-transaction-input-to-script))))
-              ((eq type +transaction-input-to-script-hash-tag+)
-               (deserialize data (+ offset 1)
-                            ((script-hash #'deserialize-transaction-input-to-script-hash))))
-              ((eq type +transaction-input-to-key-tag+)
-               (deserialize data (+ offset 1)
-                            ((key #'deserialize-transaction-input-to-key)))))
-      (values target (+ 1 size)))))
+  (deserialize-variant data offset
+                       ((generation +transaction-input-generation-tag+
+                                    #'deserialize-transaction-input-generation)
+                        (script +transaction-input-to-script-tag+
+                                #'deserialize-transaction-input-to-script)
+                        (script-hash +transaction-input-to-script-hash-tag+
+                                     #'deserialize-transaction-input-to-script-hash)
+                        (key +transaction-input-to-key-tag+
+                             #'deserialize-transaction-input-to-key))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
@@ -242,24 +251,19 @@
         (values nonce (+ s0 s1))))))
 
 (defun deserialize-transaction-extra-data-field (data offset max-size)
-  (multiple-value-bind (type type-size)
-      (deserialize-integer data offset)
-    (multiple-value-bind (field field-size)
-        (cond ((eq type +transaction-extra-padding-tag+)
-               (deserialize data (+ offset type-size)
-                            ((padding #'deserialize-bytes
-                                      (min (- max-size type-size)
-                                           +transaction-extra-padding-max-size+)))))
-              ((eq type +transaction-extra-public-key-tag+)
-               (deserialize data (+ offset type-size)
-                            ((transaction-public-key #'deserialize-key))))
-              ((eq type +transaction-extra-nonce-tag+)
-               (deserialize data (+ offset type-size)
-                            ((nonce #'deserialize-transaction-extra-nonce)))))
-      (if field
-          (values field (+ type-size field-size))
-          (deserialize data offset
-                       ((data #'deserialize-bytes max-size)))))))
+  (multiple-value-bind (field size)
+      (deserialize-variant data offset
+                           ((padding +transaction-extra-padding-tag+
+                                     #'deserialize-bytes (min (- max-size 1)
+                                                              +transaction-extra-padding-max-size+))
+                            (transaction-public-key +transaction-extra-public-key-tag+
+                                                    #'deserialize-key)
+                            (nonce +transaction-extra-nonce-tag+
+                                   #'deserialize-transaction-extra-nonce)))
+    (if field
+        (values field size)
+        (deserialize data offset
+                     ((data #'deserialize-bytes max-size))))))
 
 (defun deserialize-transaction-extra-data (data offset)
   (multiple-value-bind (extra-data extra-data-size)
