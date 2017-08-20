@@ -110,9 +110,13 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 ** Serialization
 
  - deserialize-block
+ - deserialize-block-header
  - deserialize-transaction
+ - deserialize-transaction-prefix
  - serialize-block
+ - serialize-block-header
  - serialize-transaction
+ - serialize-transaction-prefix
 
 ** Utils
 

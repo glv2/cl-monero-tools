@@ -39,7 +39,9 @@
 
    ;; serialization
    #:serialize-block #:deserialize-block
+   #:serialize-block-header #:deserialize-block-header
    #:serialize-transaction #:deserialize-transaction
+   #:serialize-transaction-prefix #:deserialize-transaction-prefix
 
    ;; utils
    #:base58-encode #:base58-decode
