@@ -49,10 +49,10 @@ id)."
 4 bytes long nonce of the block represented by the BLOCK-DATA byte
 vector."
   (nth-value 1 (deserialize block-data 0
-                            ((major-version #'deserialize-integer)
-                             (minor-version #'deserialize-integer)
-                             (timestamp #'deserialize-integer)
-                             (previous-block-hash #'deserialize-hash)))))
+                 ((major-version #'deserialize-integer)
+                  (minor-version #'deserialize-integer)
+                  (timestamp #'deserialize-integer)
+                  (previous-block-hash #'deserialize-hash)))))
 
 (defun acceptable-hash-p (hash difficulty)
   "Check if a block HASH (computed with slow-hash) is acceptable for

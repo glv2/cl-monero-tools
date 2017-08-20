@@ -81,8 +81,8 @@
 
 (defun serialize-transaction-output-to-script (object)
   (serialize object
-             ((keys #'serialize-vector #'serialize-key)
-              (script #'serialize-byte-vector))))
+    ((keys #'serialize-vector #'serialize-key)
+     (script #'serialize-byte-vector))))
 
 (defun serialize-transaction-output-to-script-hash (object)
   (serialize-hash object))
@@ -92,54 +92,54 @@
 
 (defun serialize-transaction-output-target (object)
   (serialize-variant object
-                     ((script +transaction-output-to-script-tag+
-                              #'serialize-transaction-output-to-script)
-                      (script-hash +transaction-output-to-script-hash-tag+
-                                   #'serialize-transaction-output-to-script-hash)
-                      (key +transaction-output-to-key-tag+
-                           #'serialize-transaction-output-to-key))))
+    ((script +transaction-output-to-script-tag+
+             #'serialize-transaction-output-to-script)
+     (script-hash +transaction-output-to-script-hash-tag+
+                  #'serialize-transaction-output-to-script-hash)
+     (key +transaction-output-to-key-tag+
+          #'serialize-transaction-output-to-key))))
 
 (defun serialize-transaction-output (object)
   (serialize object
-             ((amount #'serialize-integer)
-              (target #'serialize-transaction-output-target))))
+    ((amount #'serialize-integer)
+     (target #'serialize-transaction-output-target))))
 
 
 ;;; Transaction inputs
 
 (defun serialize-transaction-input-generation (object)
   (serialize object
-             ((height #'serialize-integer))))
+    ((height #'serialize-integer))))
 
 (defun serialize-transaction-input-to-script (object)
   (serialize object
-             ((prev #'serialize-hash)
-              (prevout #'serialize-integer)
-              (sigset #'serialize-byte-vector))))
+    ((prev #'serialize-hash)
+     (prevout #'serialize-integer)
+     (sigset #'serialize-byte-vector))))
 
 (defun serialize-transaction-input-to-script-hash (object)
   (serialize object
-             ((prev #'serialize-hash)
-              (prevout #'serialize-integer)
-              (script #'serialize-transaction-output-to-script)
-              (sigset #'serialize-byte-vector))))
+    ((prev #'serialize-hash)
+     (prevout #'serialize-integer)
+     (script #'serialize-transaction-output-to-script)
+     (sigset #'serialize-byte-vector))))
 
 (defun serialize-transaction-input-to-key (object)
   (serialize object
-             ((amount #'serialize-integer)
-              (key-offsets #'serialize-vector #'serialize-integer)
-              (key-image #'serialize-bytes))))
+    ((amount #'serialize-integer)
+     (key-offsets #'serialize-vector #'serialize-integer)
+     (key-image #'serialize-bytes))))
 
 (defun serialize-transaction-input-target (object)
   (serialize-variant object
-                     ((generation +transaction-input-generation-tag+
-                                  #'serialize-transaction-input-generation)
-                      (script +transaction-input-to-script-tag+
-                              #'serialize-transaction-input-to-script)
-                      (script-hash +transaction-input-to-script-hash-tag+
-                                   #'serialize-transaction-input-to-script-hash)
-                      (key +transaction-input-to-key-tag+
-                           #'serialize-transaction-input-to-key))))
+    ((generation +transaction-input-generation-tag+
+                 #'serialize-transaction-input-generation)
+     (script +transaction-input-to-script-tag+
+             #'serialize-transaction-input-to-script)
+     (script-hash +transaction-input-to-script-hash-tag+
+                  #'serialize-transaction-input-to-script-hash)
+     (key +transaction-input-to-key-tag+
+          #'serialize-transaction-input-to-key))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
@@ -156,44 +156,44 @@
 
            (serialize-boromean-signature (object)
              (serialize object
-                        ((s0 #'serialize-key64)
-                         (s1 #'serialize-key64)
-                         (ee #'serialize-key))))
+               ((s0 #'serialize-key64)
+                (s1 #'serialize-key64)
+                (ee #'serialize-key))))
 
            (serialize-range-proof (object)
              (serialize object
-                        ((boromean-signature #'serialize-boromean-signature)
-                         (pedersen-commitments #'serialize-key64))))
+               ((boromean-signature #'serialize-boromean-signature)
+                (pedersen-commitments #'serialize-key64))))
 
            (serialize-multilayered-group-signature (object)
              (serialize object
-                        ((ss #'serialize-custom-vector #'serialize-custom-vector #'serialize-key)
-                         (cc #'serialize-key)))))
+               ((ss #'serialize-custom-vector #'serialize-custom-vector #'serialize-key)
+                (cc #'serialize-key)))))
     (when object
       (serialize object
-                 ((range-proofs #'serialize-custom-vector #'serialize-range-proof)
-                  (multilayered-group-signatures #'serialize-custom-vector
-                                                 #'serialize-multilayered-group-signature))))))
+        ((range-proofs #'serialize-custom-vector #'serialize-range-proof)
+         (multilayered-group-signatures #'serialize-custom-vector
+                                        #'serialize-multilayered-group-signature))))))
 
 (defun serialize-rct-signature (object)
   (flet ((serialize-pseudo-outputs (object type)
-           (when (eq type +rct-type-simple+)
+           (when (= type +rct-type-simple+)
              (serialize-custom-vector object #'serialize-key)))
 
          (serialize-ecdh-tuple (object)
            (serialize object
-                      ((mask #'serialize-key)
-                       (amount #'serialize-key)))))
+             ((mask #'serialize-key)
+              (amount #'serialize-key)))))
     (let ((type (geta object :type)))
       (concatenate 'octet-vector
                    (vector type)
-                   (unless (eq type +rct-type-null+)
+                   (unless (= type +rct-type-null+)
                      (serialize object
-                                ((fee #'serialize-integer)
-                                 (pseudo-outputs #'serialize-pseudo-outputs type)
-                                 (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
-                                 (output-public-keys #'serialize-custom-vector #'serialize-key)
-                                 (rct-signature-prunable #'serialize-rct-signature-prunable))))))))
+                       ((fee #'serialize-integer)
+                        (pseudo-outputs #'serialize-pseudo-outputs type)
+                        (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
+                        (output-public-keys #'serialize-custom-vector #'serialize-key)
+                        (rct-signature-prunable #'serialize-rct-signature-prunable))))))))
 
 
 ;;; Transaction extra data
@@ -217,19 +217,19 @@
 
 (defun serialize-transaction-extra-data-field (object)
   (let ((result (serialize-variant object
-                                   ((padding +transaction-extra-padding-tag+
-                                             (lambda (data)
-                                               (if (> (length data)
-                                                      +transaction-extra-padding-max-size+)
-                                                   (error "Too much data in padding.")
-                                                   (serialize-bytes data))))
-                                    (transaction-public-key +transaction-extra-public-key-tag+
-                                                            #'serialize-key)
-                                    (nonce +transaction-extra-nonce-tag+
-                                           #'serialize-transaction-extra-nonce)))))
+                  ((padding +transaction-extra-padding-tag+
+                            (lambda (data)
+                              (if (> (length data)
+                                     +transaction-extra-padding-max-size+)
+                                  (error "Too much data in padding.")
+                                  (serialize-bytes data))))
+                   (transaction-public-key +transaction-extra-public-key-tag+
+                                           #'serialize-key)
+                   (nonce +transaction-extra-nonce-tag+
+                          #'serialize-transaction-extra-nonce)))))
     (or result
         (serialize object
-                   ((data #'serialize-bytes))))))
+          ((data #'serialize-bytes))))))
 
 (defun serialize-transaction-extra-data (object)
   (let ((result #()))
@@ -244,22 +244,22 @@
 (defun serialize-transaction-prefix (object)
   "Return a transaction prefix OBJECT as a byte vector."
   (serialize object
-             ((version #'serialize-integer)
-              (unlock-time #'serialize-integer)
-              (inputs #'serialize-vector #'serialize-transaction-input-target)
-              (outputs #'serialize-vector #'serialize-transaction-output)
-              (extra #'serialize-transaction-extra-data))))
+    ((version #'serialize-integer)
+     (unlock-time #'serialize-integer)
+     (inputs #'serialize-vector #'serialize-transaction-input-target)
+     (outputs #'serialize-vector #'serialize-transaction-output)
+     (extra #'serialize-transaction-extra-data))))
 
 (defun serialize-transaction (object)
   "Return a transaction OBJECT as a byte vector."
   (let ((version (geta (geta object :prefix) :version)))
     (case version
       ((1) (serialize object
-                      ((prefix #'serialize-transaction-prefix)
-                       (signature #'serialize-signature))))
+             ((prefix #'serialize-transaction-prefix)
+              (signature #'serialize-signature))))
       ((2) (serialize object
-                      ((prefix #'serialize-transaction-prefix)
-                       (rct-signature #'serialize-rct-signature))))
+             ((prefix #'serialize-transaction-prefix)
+              (rct-signature #'serialize-rct-signature))))
       (t (error "Transaction version ~d not supported." version)))))
 
 
@@ -268,15 +268,15 @@
 (defun serialize-block-header (object)
   "Return a block header OBJECT as a byte vector."
   (serialize object
-             ((major-version #'serialize-integer)
-              (minor-version #'serialize-integer)
-              (timestamp #'serialize-integer)
-              (previous-block-hash #'serialize-hash)
-              (nonce #'serialize-bytes))))
+    ((major-version #'serialize-integer)
+     (minor-version #'serialize-integer)
+     (timestamp #'serialize-integer)
+     (previous-block-hash #'serialize-hash)
+     (nonce #'serialize-bytes))))
 
 (defun serialize-block (object)
   "Return a block OBJECT as a byte vector."
   (serialize object
-             ((header #'serialize-block-header)
-              (miner-transaction #'serialize-transaction)
-              (transaction-hashes #'serialize-vector #'serialize-hash))))
+    ((header #'serialize-block-header)
+     (miner-transaction #'serialize-transaction)
+     (transaction-hashes #'serialize-vector #'serialize-hash))))

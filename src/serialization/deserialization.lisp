@@ -39,7 +39,7 @@
         for reader-parameters = (cdddr spec)
         collect `((= ,type ,tag)
                   (deserialize ,data (+ ,offset 1)
-                               ((,name ,reader ,@reader-parameters))))
+                    ((,name ,reader ,@reader-parameters))))
           into forms
         finally (return `(let ((,type (aref ,data ,offset)))
                            (multiple-value-bind (,object ,size)
@@ -99,8 +99,8 @@
 
 (defun deserialize-transaction-output-to-script (data offset)
   (deserialize data offset
-               ((keys #'deserialize-vector #'deserialize-key)
-                (script #'deserialize-byte-vector))))
+    ((keys #'deserialize-vector #'deserialize-key)
+     (script #'deserialize-byte-vector))))
 
 (defun deserialize-transaction-output-to-script-hash (data offset)
   (deserialize-hash data offset))
@@ -110,54 +110,54 @@
 
 (defun deserialize-transaction-output-target (data offset)
   (deserialize-variant data offset
-                       ((script +transaction-output-to-script-tag+
-                                #'deserialize-transaction-output-to-script)
-                        (script-hash +transaction-output-to-script-hash-tag+
-                                     #'deserialize-transaction-output-to-script-hash)
-                        (key +transaction-output-to-key-tag+
-                             #'deserialize-transaction-output-to-key))))
+    ((script +transaction-output-to-script-tag+
+             #'deserialize-transaction-output-to-script)
+     (script-hash +transaction-output-to-script-hash-tag+
+                  #'deserialize-transaction-output-to-script-hash)
+     (key +transaction-output-to-key-tag+
+          #'deserialize-transaction-output-to-key))))
 
 (defun deserialize-transaction-output (data offset)
   (deserialize data offset
-               ((amount #'deserialize-integer)
-                (target #'deserialize-transaction-output-target))))
+    ((amount #'deserialize-integer)
+     (target #'deserialize-transaction-output-target))))
 
 
 ;;; Transaction inputs
 
 (defun deserialize-transaction-input-generation (data offset)
   (deserialize data offset
-               ((height #'deserialize-integer))))
+    ((height #'deserialize-integer))))
 
 (defun deserialize-transaction-input-to-script(data offset)
   (deserialize data offset
-               ((prev #'deserialize-hash)
-                (prevout #'deserialize-integer)
-                (sigset #'deserialize-byte-vector))))
+    ((prev #'deserialize-hash)
+     (prevout #'deserialize-integer)
+     (sigset #'deserialize-byte-vector))))
 
 (defun deserialize-transaction-input-to-script-hash (data offset)
   (deserialize data offset
-               ((prev #'deserialize-hash)
-                (prevout #'deserialize-integer)
-                (script #'deserialize-transaction-output-to-script)
-                (sigset #'deserialize-byte-vector))))
+    ((prev #'deserialize-hash)
+     (prevout #'deserialize-integer)
+     (script #'deserialize-transaction-output-to-script)
+     (sigset #'deserialize-byte-vector))))
 
 (defun deserialize-transaction-input-to-key (data offset)
   (deserialize data offset
-               ((amount #'deserialize-integer)
-                (key-offsets #'deserialize-vector #'deserialize-integer)
-                (key-image #'deserialize-bytes +key-length+))))
+    ((amount #'deserialize-integer)
+     (key-offsets #'deserialize-vector #'deserialize-integer)
+     (key-image #'deserialize-bytes +key-length+))))
 
 (defun deserialize-transaction-input-target (data offset)
   (deserialize-variant data offset
-                       ((generation +transaction-input-generation-tag+
-                                    #'deserialize-transaction-input-generation)
-                        (script +transaction-input-to-script-tag+
-                                #'deserialize-transaction-input-to-script)
-                        (script-hash +transaction-input-to-script-hash-tag+
-                                     #'deserialize-transaction-input-to-script-hash)
-                        (key +transaction-input-to-key-tag+
-                             #'deserialize-transaction-input-to-key))))
+    ((generation +transaction-input-generation-tag+
+                 #'deserialize-transaction-input-generation)
+     (script +transaction-input-to-script-tag+
+             #'deserialize-transaction-input-to-script)
+     (script-hash +transaction-input-to-script-hash-tag+
+                  #'deserialize-transaction-input-to-script-hash)
+     (key +transaction-input-to-key-tag+
+          #'deserialize-transaction-input-to-key))))
 
 
 ;;; Signatures (before ring confidential transaction signatures)
@@ -176,53 +176,53 @@
 
            (deserialize-boromean-signature (data offset)
              (deserialize data offset
-                          ((s0 #'deserialize-key64)
-                           (s1 #'deserialize-key64)
-                           (ee #'deserialize-key))))
+               ((s0 #'deserialize-key64)
+                (s1 #'deserialize-key64)
+                (ee #'deserialize-key))))
 
            (deserialize-range-proof (data offset)
              (deserialize data offset
-                          ((boromean-signature #'deserialize-boromean-signature)
-                           (pedersen-commitments #'deserialize-key64))))
+               ((boromean-signature #'deserialize-boromean-signature)
+                (pedersen-commitments #'deserialize-key64))))
 
            (deserialize-multilayered-group-signature (data offset)
              (deserialize data offset
-                          ((ss #'deserialize-custom-vector ring-size
-                               #'deserialize-custom-vector
-                               (+ 1 (if (eq type +rct-type-simple+) 1 inputs-size))
-                               #'deserialize-key)
-                           (cc #'deserialize-key)))))
+               ((ss #'deserialize-custom-vector ring-size
+                    #'deserialize-custom-vector
+                    (+ 1 (if (= type +rct-type-simple+) 1 inputs-size))
+                    #'deserialize-key)
+                (cc #'deserialize-key)))))
     (deserialize data offset
-                 ((range-proofs #'deserialize-custom-vector outputs-size
-                                #'deserialize-range-proof)
-                  (multilayered-group-signatures #'deserialize-custom-vector
-                                                 (if (eq type +rct-type-simple+) inputs-size 1)
-                                                 #'deserialize-multilayered-group-signature)))))
+      ((range-proofs #'deserialize-custom-vector outputs-size
+                     #'deserialize-range-proof)
+       (multilayered-group-signatures #'deserialize-custom-vector
+                                      (if (= type +rct-type-simple+) inputs-size 1)
+                                      #'deserialize-multilayered-group-signature)))))
 
 (defun deserialize-rct-signature (data offset ring-size inputs-size outputs-size)
   (flet ((deserialize-pseudo-outputs (data offset type inputs-size)
-           (if (eq type +rct-type-simple+)
+           (if (= type +rct-type-simple+)
                (deserialize-custom-vector data offset inputs-size #'deserialize-key)
                (values nil 0)))
 
          (deserialize-ecdh-tuple (data offset)
            (deserialize data offset
-                        ((mask #'deserialize-key)
-                         (amount #'deserialize-key)))))
+             ((mask #'deserialize-key)
+              (amount #'deserialize-key)))))
     (let ((type (deserialize-single-byte data offset)))
-      (if (eq type +rct-type-null+)
+      (if (= type +rct-type-null+)
           (values (list (cons :type type)) 1)
           (multiple-value-bind (signature size)
               (deserialize data (+ offset 1)
-                           ((fee #'deserialize-integer)
-                            (pseudo-outputs #'deserialize-pseudo-outputs type inputs-size)
-                            (ecdh-info #'deserialize-custom-vector outputs-size
-                                       #'deserialize-ecdh-tuple)
-                            (output-public-keys #'deserialize-custom-vector outputs-size
-                                                #'deserialize-key)
-                            (rct-signature-prunable #'deserialize-rct-signature-prunable
-                                                    ring-size inputs-size outputs-size type)))
-            (values (append (list (cons :type type)) signature)
+                ((fee #'deserialize-integer)
+                 (pseudo-outputs #'deserialize-pseudo-outputs type inputs-size)
+                 (ecdh-info #'deserialize-custom-vector outputs-size
+                            #'deserialize-ecdh-tuple)
+                 (output-public-keys #'deserialize-custom-vector outputs-size
+                                     #'deserialize-key)
+                 (rct-signature-prunable #'deserialize-rct-signature-prunable
+                                         ring-size inputs-size outputs-size type)))
+            (values (acons :type type signature)
                     (+ 1 size)))))))
 
 
@@ -233,37 +233,35 @@
       (deserialize-integer data offset)
     (let ((type (aref data (+ offset s0))))
       (multiple-value-bind (nonce s1)
-          (cond ((and (eq type +transaction-extra-nonce-payment-id-tag+)
+          (cond ((and (= type +transaction-extra-nonce-payment-id-tag+)
                       (= nonce-size 33))
                  (incf s0)
                  (deserialize data (+ offset s0)
-                              ((payment-id #'deserialize-bytes 32))))
-                ((and (eq type +transaction-extra-nonce-encrypted-payment-id-tag+)
+                   ((payment-id #'deserialize-bytes 32))))
+                ((and (= type +transaction-extra-nonce-encrypted-payment-id-tag+)
                       (= nonce-size 9))
                  (incf s0)
                  (deserialize data (+ offset s0)
-                              ((encrypted-payment-id #'deserialize-bytes 8))))
+                   ((encrypted-payment-id #'deserialize-bytes 8))))
                 (t
                  (deserialize data (+ offset s0)
-                              ((data #'deserialize-bytes
-                                     (min nonce-size
-                                          +transaction-extra-nonce-max-size+))))))
+                   ((data #'deserialize-bytes
+                          (min nonce-size +transaction-extra-nonce-max-size+))))))
         (values nonce (+ s0 s1))))))
 
 (defun deserialize-transaction-extra-data-field (data offset max-size)
   (multiple-value-bind (field size)
       (deserialize-variant data offset
-                           ((padding +transaction-extra-padding-tag+
-                                     #'deserialize-bytes (min (- max-size 1)
-                                                              +transaction-extra-padding-max-size+))
-                            (transaction-public-key +transaction-extra-public-key-tag+
-                                                    #'deserialize-key)
-                            (nonce +transaction-extra-nonce-tag+
-                                   #'deserialize-transaction-extra-nonce)))
+        ((padding +transaction-extra-padding-tag+
+                  #'deserialize-bytes (min (- max-size 1) +transaction-extra-padding-max-size+))
+         (transaction-public-key +transaction-extra-public-key-tag+
+                                 #'deserialize-key)
+         (nonce +transaction-extra-nonce-tag+
+                #'deserialize-transaction-extra-nonce)))
     (if field
         (values field size)
         (deserialize data offset
-                     ((data #'deserialize-bytes max-size))))))
+          ((data #'deserialize-bytes max-size))))))
 
 (defun deserialize-transaction-extra-data (data offset)
   (multiple-value-bind (extra-data extra-data-size)
@@ -286,18 +284,18 @@
 in DATA. The second returned value in the size of the serialized
 transaction prefix."
   (deserialize data offset
-               ((version #'deserialize-integer)
-                (unlock-time #'deserialize-integer)
-                (inputs #'deserialize-vector #'deserialize-transaction-input-target)
-                (outputs #'deserialize-vector #'deserialize-transaction-output)
-                (extra #'deserialize-transaction-extra-data))))
+    ((version #'deserialize-integer)
+     (unlock-time #'deserialize-integer)
+     (inputs #'deserialize-vector #'deserialize-transaction-input-target)
+     (outputs #'deserialize-vector #'deserialize-transaction-output)
+     (extra #'deserialize-transaction-extra-data))))
 
 (defun deserialize-transaction (data offset)
   "Return the transaction whose serialization starts at OFFSET in DATA.
 The second returned value in the size of the serialized transaction."
   (multiple-value-bind (prefix prefix-size)
       (deserialize data offset
-                   ((prefix #'deserialize-transaction-prefix)))
+        ((prefix #'deserialize-transaction-prefix)))
     (let* ((transaction-prefix (geta prefix :prefix))
            (version (geta transaction-prefix :version))
            (inputs (geta transaction-prefix :inputs))
@@ -309,10 +307,10 @@ The second returned value in the size of the serialized transaction."
       (multiple-value-bind (signature signature-size)
           (case version
             ((1) (deserialize data (+ offset prefix-size)
-                              ((signature #'deserialize-signature ring-size inputs-size))))
+                   ((signature #'deserialize-signature ring-size inputs-size))))
             ((2) (deserialize data (+ offset prefix-size)
-                              ((rct-signature #'deserialize-rct-signature
-                                              ring-size inputs-size outputs-size))))
+                   ((rct-signature #'deserialize-rct-signature
+                                   ring-size inputs-size outputs-size))))
             (t (error "Transaction version ~d not supported." version)))
         (values (append prefix signature) (+ prefix-size signature-size))))))
 
@@ -324,16 +322,16 @@ The second returned value in the size of the serialized transaction."
 DATA. The second returned value in the size of the serialized block
 header."
   (deserialize data offset
-               ((major-version #'deserialize-integer)
-                (minor-version #'deserialize-integer)
-                (timestamp #'deserialize-integer)
-                (previous-block-hash #'deserialize-hash)
-                (nonce #'deserialize-bytes 4))))
+    ((major-version #'deserialize-integer)
+     (minor-version #'deserialize-integer)
+     (timestamp #'deserialize-integer)
+     (previous-block-hash #'deserialize-hash)
+     (nonce #'deserialize-bytes 4))))
 
 (defun deserialize-block (data offset)
   "Return the block whose serialization starts at OFFSET in DATA.
 The second returned value in the size of the serialized block."
   (deserialize data offset
-               ((header #'deserialize-block-header)
-                (miner-transaction #'deserialize-transaction)
-                (transaction-hashes #'deserialize-vector #'deserialize-hash))))
+    ((header #'deserialize-block-header)
+     (miner-transaction #'deserialize-transaction)
+     (transaction-hashes #'deserialize-vector #'deserialize-hash))))
