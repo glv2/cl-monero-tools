@@ -56,13 +56,13 @@
                    ", response=\"" response "\""
                    ", algorithm=\"" algorithm "\""))))
 
-;;(defun rpc (host port user password method &optional parameters)
-(defun rpc (method &key parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun rpc (method &key binary parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   "Send a METHOD RPC request to the server at HOST:PORT with optional
 PARAMETERS."
   (let* ((page (format nil "/~(~a~)" method))
-         (parameters (when parameters
-                       (encode-json-to-string parameters)))
+         (parameters (if (or binary (null parameters))
+                         parameters
+                         (encode-json-to-string parameters)))
          (server-uri (format nil "http://~a:~d~a" host port page))
          (auth (handler-case (progn (dex:head server-uri) nil)
                  (dex:http-request-unauthorized (e)
@@ -88,14 +88,17 @@ PARAMETERS."
         (dex:post server-uri
                   :headers (if auth
                                (list (cons "authorization" auth)
-                                     (cons "content-type" "application/json"))
-                               (list (cons "content-type" "application/json")))
+                                     (cons "content-type" (if binary
+                                                              "application/octet-stream"
+                                                              "application/json")))
+                               (list (cons "content-type" (if binary
+                                                              "application/octet-stream"
+                                                              "application/json"))))
                   :content parameters)
       (declare (ignore status response-headers uri stream))
       (decode-json-from-string body))))
 
 (defun json-rpc (method &key parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-;;(defun json-rpc (host port user password method &optional parameters)
   "Send a METHOD JSON-RPC request to HOST:PORT with optional PARAMETERS."
   (let* ((request (list (cons :jsonrpc "2.0")
                         (cons :id (random 1000000))
