@@ -53,3 +53,22 @@
 (defconstant +transaction-extra-nonce-encrypted-payment-id-tag+ 1)
 (defconstant +transaction-extra-padding-max-size+ 254)
 (defconstant +transaction-extra-nonce-max-size+ 254)
+
+
+;;; Portable storage
+(define-constant +portable-storage-signature-a+ #(1 17 1 1) :test #'equalp)
+(define-constant +portable-storage-signature-b+ #(1 1 2 1) :test #'equalp)
+(defconstant +portable-storage-format-version+ 1)
+(defconstant +portable-storage-type-int64+ 1)
+(defconstant +portable-storage-type-int32+ 2)
+(defconstant +portable-storage-type-int16+ 3)
+(defconstant +portable-storage-type-int8+ 4)
+(defconstant +portable-storage-type-uint64+ 5)
+(defconstant +portable-storage-type-uint32+ 6)
+(defconstant +portable-storage-type-uint16+ 7)
+(defconstant +portable-storage-type-uint8+ 8)
+(defconstant +portable-storage-type-double+ 9)
+(defconstant +portable-storage-type-string+ 10)
+(defconstant +portable-storage-type-bool+ 11)
+(defconstant +portable-storage-type-object+ 12)
+(defconstant +portable-storage-type-array+ 13)
