@@ -45,8 +45,10 @@
 
    ;; utils
    #:base58-encode #:base58-decode
-   #:bytes->hex-string #:bytes->integer
-   #:hex-string->bytes #:integer->bytes #:string->bytes
+   #:integer->bytes #:bytes->integer
+   #:string->bytes #:bytes->string
+   #:utf-8-string->bytes #:bytes->utf-8-string
+   #:hex-string->bytes #:bytes->hex-string
    #:geta
 
    ;; wallet

@@ -11,7 +11,7 @@
 
 (defun sign-message (message secret-spend-key)
   "Return a signature of a MESSAGE by a SECRET-SPEND-KEY."
-  (let* ((hash (fast-hash (string->bytes message)))
+  (let* ((hash (fast-hash (utf-8-string->bytes message)))
          (signature-data (generate-signature hash secret-spend-key)))
     (concatenate 'string +message-signature-header+ (base58-encode signature-data))))
 
@@ -21,7 +21,7 @@ an ADDRESS is valid, and NIL otherwise."
   (let ((header-length (length +message-signature-header+)))
     (when (and (= (length signature) (+ header-length 88))
                (string= signature +message-signature-header+ :end1 header-length))
-      (let ((hash (fast-hash (string->bytes message)))
+      (let ((hash (fast-hash (utf-8-string->bytes message)))
             (public-key (geta (decode-address address) :public-spend-key))
             (signature-data (base58-decode (subseq signature header-length))))
         (valid-signature-p hash public-key signature-data)))))

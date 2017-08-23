@@ -124,10 +124,13 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - base58-encode
  - bytes->hex-string
  - bytes->integer
+ - bytes->string
+ - bytes->utf-8-string
  - geta
  - hex-string->bytes
  - integer->bytes
  - string->bytes
+ - utf-8-string->bytes
 
 ** Wallet
 

@@ -289,4 +289,4 @@ as a byte vector."
 (defun generate-chacha8-key (password)
   "Generate the decryption key matching a PASSWORD."
   (check-type password string)
-  (subseq (slow-hash (string->bytes password)) 0 +chacha8-key-length+))
+  (subseq (slow-hash (utf-8-string->bytes password)) 0 +chacha8-key-length+))

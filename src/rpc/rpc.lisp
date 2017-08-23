@@ -39,7 +39,7 @@
              (string-downcase (bytes->hex-string bytes)))
            (digest (string)
              (let ((algo (intern (string-upcase algorithm) :keyword)))
-               (bytes->hex (ironclad:digest-sequence algo (string->bytes string))))))
+               (bytes->hex (ironclad:digest-sequence algo (utf-8-string->bytes string))))))
     (let* ((ha1 (digest (format nil "~a:~a:~a" user realm password)))
            (ha2 (digest (format nil "~a:~a" method uri)))
            (nc "00000001")
