@@ -96,7 +96,9 @@ PARAMETERS."
                                                               "application/json"))))
                   :content parameters)
       (declare (ignore status response-headers uri stream))
-      (decode-json-from-string body))))
+      (if binary
+          body
+          (decode-json-from-string body)))))
 
 (defun json-rpc (method &key parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   "Send a METHOD JSON-RPC request to HOST:PORT with optional PARAMETERS."
