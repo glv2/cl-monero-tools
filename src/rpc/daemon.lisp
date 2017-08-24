@@ -117,9 +117,9 @@
 
 (defun get-blocks-from-daemon (block-ids start-height prune &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((block-ids (bytes->string (apply #'concatenate 'octet-vector block-ids)))
-         (parameters (list (cons :block_ids block-ids)
+         (parameters (list (cons :block--ids block-ids)
                            (cons :prune prune)
-                           (cons :start_height (cons start-height '(unsigned-byte 64))))))
+                           (cons :start--height (cons start-height '(unsigned-byte 64))))))
     (rpc "getblocks.bin"
          :binary t
          :parameters parameters
