@@ -25,6 +25,7 @@ or
  - cl-base64
  - cl-json
  - dexador
+ - ieee-floats
  - ironclad
  - split-sequence
  - trivial-features
@@ -111,10 +112,12 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
  - deserialize-block
  - deserialize-block-header
+ - deserialize-from-binary-storage
  - deserialize-transaction
  - deserialize-transaction-prefix
  - serialize-block
  - serialize-block-header
+ - serialize-to-binary-storage
  - serialize-transaction
  - serialize-transaction-prefix
 

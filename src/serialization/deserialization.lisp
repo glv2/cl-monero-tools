@@ -281,7 +281,7 @@
 
 (defun deserialize-transaction-prefix (data offset)
   "Return the transaction prefix whose serialization starts at OFFSET
-in DATA. The second returned value in the size of the serialized
+in DATA. The second returned value is the size of the serialized
 transaction prefix."
   (deserialize data offset
     ((version #'deserialize-integer)
@@ -292,7 +292,7 @@ transaction prefix."
 
 (defun deserialize-transaction (data offset)
   "Return the transaction whose serialization starts at OFFSET in DATA.
-The second returned value in the size of the serialized transaction."
+The second returned value is the size of the serialized transaction."
   (multiple-value-bind (prefix prefix-size)
       (deserialize data offset
         ((prefix #'deserialize-transaction-prefix)))
@@ -319,7 +319,7 @@ The second returned value in the size of the serialized transaction."
 
 (defun deserialize-block-header (data offset)
   "Return the block header whose serialization starts at OFFSET in
-DATA. The second returned value in the size of the serialized block
+DATA. The second returned value is the size of the serialized block
 header."
   (deserialize data offset
     ((major-version #'deserialize-integer)
@@ -330,7 +330,7 @@ header."
 
 (defun deserialize-block (data offset)
   "Return the block whose serialization starts at OFFSET in DATA.
-The second returned value in the size of the serialized block."
+The second returned value is the size of the serialized block."
   (deserialize data offset
     ((header #'deserialize-block-header)
      (miner-transaction #'deserialize-transaction)

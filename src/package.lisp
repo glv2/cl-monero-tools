@@ -5,7 +5,7 @@
 
 
 (defpackage :monero-tools
-  (:use :cl :alexandria :babel :base64 :bordeaux-threads :cffi :json :split-sequence)
+  (:use :cl :alexandria :babel :base64 :bordeaux-threads :cffi :ieee-floats :json :split-sequence)
   (:export
    ;; blockchain
    #:acceptable-hash-p
@@ -42,6 +42,7 @@
    #:serialize-block-header #:deserialize-block-header
    #:serialize-transaction #:deserialize-transaction
    #:serialize-transaction-prefix #:deserialize-transaction-prefix
+   #:serialize-to-binary-storage #:deserialize-from-binary-storage
 
    ;; utils
    #:base58-encode #:base58-decode

@@ -187,12 +187,13 @@
   (bytes->integer data :start offset :end (+ offset 1)))
 
 (defun storage-serialize-double-float (object &key in-vector)
-  (declare (ignorable object in-vector))
-  (error "storage-serialize-double-float not implemented yet"))
+  (concatenate 'octet-vector
+               (unless in-vector (vector +portable-storage-type-double+))
+               (integer->bytes (encode-float64 object))))
 
 (defun storage-deserialize-double-float (data offset)
-  (declare (ignorable data offset))
-  (error "storage-deserialize-double-float not implemented yet"))
+  (values (decode-float64 (bytes->integer data :start offset :end (+ offset 8)))
+          8))
 
 (defun storage-serialize-boolean (object &key in-vector)
   (concatenate 'octet-vector
@@ -287,11 +288,14 @@
       (values result (+ 1 s0)))))
 
 (defun serialize-to-binary-storage (object)
+  "Return an OBJECT as a byte vector."
   (concatenate 'octet-vector
                +portable-storage-header+
                (storage-serialize object)))
 
 (defun deserialize-from-binary-storage (data offset)
+  "Return the object whose serialization starts at OFFSET in DATA.
+The second returned value is the size of the serialized object."
   (let* ((header-length (length +portable-storage-header+))
          (header (subseq data offset (+ offset header-length))))
     (unless (equalp header +portable-storage-header+)

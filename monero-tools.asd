@@ -21,6 +21,7 @@
                "cl-base64"
                "cl-json"
                "dexador"
+               "ieee-floats"
                "ironclad"
                "split-sequence"
                "trivial-features")
