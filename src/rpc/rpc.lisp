@@ -60,9 +60,10 @@
   "Send a METHOD RPC request to the server at HOST:PORT with optional
 PARAMETERS."
   (let* ((page (format nil "/~(~a~)" method))
-         (parameters (if (or binary (null parameters))
-                         parameters
-                         (encode-json-to-string parameters)))
+         (parameters (when parameters
+                       (if binary
+                           (serialize-to-binary-storage parameters)
+                           (encode-json-to-string parameters))))
          (server-uri (format nil "http://~a:~d~a" host port page))
          (auth (handler-case (progn (dex:head server-uri) nil)
                  (dex:http-request-unauthorized (e)
@@ -97,7 +98,7 @@ PARAMETERS."
                   :content parameters)
       (declare (ignore status response-headers uri stream))
       (if binary
-          body
+          (deserialize-from-binary-storage body 0)
           (decode-json-from-string body)))))
 
 (defun json-rpc (method &key parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))

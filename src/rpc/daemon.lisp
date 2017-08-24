@@ -114,3 +114,35 @@
          :port port
          :user user
          :password password)))
+
+(defun get-blocks-from-daemon (block-ids start-height prune &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((block-ids (bytes->string (apply #'concatenate 'octet-vector block-ids)))
+         (parameters (list (cons :block_ids block-ids)
+                           (cons :prune prune)
+                           (cons :start_height (cons start-height '(unsigned-byte 64))))))
+    (rpc "getblocks.bin"
+         :binary t
+         :parameters parameters
+         :host host
+         :port port
+         :user user
+         :password password)))
+
+;; (get-blocks-from-daemon (list (hex-string->bytes "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148") (hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")) 0 t)
+
+(defun get-blocks-by-height-from-daemon (block-heights &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((block-heights (make-array (length block-heights)
+                                    :element-type '(unsigned-byte 64)
+                                    :initial-contents block-heights))
+         (parameters (list (cons :heights block-heights)))
+         (answer (rpc "getblocks_by_height.bin"
+                      :binary t
+                      :parameters parameters
+                      :host host
+                      :port port
+                      :user user
+                      :password password))
+         (blocks (geta answer :blocks)))
+    (map 'vector (lambda (x) (string->bytes (cdar x))) blocks)))
+
+;; (get-blocks-by-height-from-daemon '(1000000))

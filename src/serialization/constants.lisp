@@ -59,6 +59,12 @@
 (define-constant +portable-storage-signature-a+ #(1 17 1 1) :test #'equalp)
 (define-constant +portable-storage-signature-b+ #(1 1 2 1) :test #'equalp)
 (defconstant +portable-storage-format-version+ 1)
+(define-constant +portable-storage-header+
+    (concatenate 'octet-vector
+                 +portable-storage-signature-a+
+                 +portable-storage-signature-b+
+                 (vector +portable-storage-format-version+))
+  :test #'equalp)
 (defconstant +portable-storage-raw-size-byte+ 0)
 (defconstant +portable-storage-raw-size-word+ 1)
 (defconstant +portable-storage-raw-size-double-word+ 2)
