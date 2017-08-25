@@ -143,6 +143,6 @@
                       :user user
                       :password password))
          (blocks (geta answer :blocks)))
-    (map 'vector (lambda (x) (string->bytes (cdar x))) blocks)))
+    (map 'vector (lambda (x) (string->bytes (geta x :block))) blocks)))
 
 ;; (get-blocks-by-height-from-daemon '(1000000))

@@ -206,7 +206,10 @@
 
 (defun storage-serialize-vector (objects &key in-vector)
   (let* ((size (length objects))
-         (type (lisp-type->storage-type (array-element-type objects)))
+         (type (lisp-type->storage-type (let ((type (array-element-type objects)))
+                                          (if (eq type 't)
+                                              (type-of (aref objects 0))
+                                              type))))
          (serialization-function (storage-type->serialization-function type))
          (result (concatenate 'octet-vector
                               (unless in-vector (vector (logior type +portable-storage-array-flag+)))
@@ -241,9 +244,11 @@
     (values (bytes->string data :start (+ offset s0) :end (+ offset s0 size))
             (+ s0 size))))
 
-(defun storage-serialize-section (object)
+(defun storage-serialize-section (object &key in-vector)
   (let* ((size (length object))
-         (result (storage-serialize-varint size)))
+         (result (concatenate 'octet-vector
+                              (unless in-vector (vector +portable-storage-type-object+))
+                              (storage-serialize-varint size))))
     (dolist (pair object result)
       (let ((name (string->bytes (lisp-to-camel-case (symbol-name (car pair)))))
             (thing (cdr pair)))
@@ -291,7 +296,7 @@
   "Return an OBJECT as a byte vector."
   (concatenate 'octet-vector
                +portable-storage-header+
-               (storage-serialize object)))
+               (storage-serialize-section object :in-vector t)))
 
 (defun deserialize-from-binary-storage (data offset)
   "Return the object whose serialization starts at OFFSET in DATA.
