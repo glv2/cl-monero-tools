@@ -62,37 +62,35 @@ THREADS can be used to go faster."
          (labels ((read-dictionary-line ()
                     (when *bruteforce-dictionary*
                       (let (password)
-                        (acquire-lock *bruteforce-lock*)
-                        (setf password (read-line *bruteforce-dictionary* nil nil))
-                        (unless password
-                          (setf *bruteforce-stop* t))
-                        (release-lock *bruteforce-lock*)
+                        (with-lock-held (*bruteforce-lock*)
+                          (setf password (read-line *bruteforce-dictionary* nil nil))
+                          (unless password
+                            (setf *bruteforce-stop* t)))
                         (when (plusp (length password))
                           password))))
 
                   (generate-next-password ()
                     (let (password)
-                      (acquire-lock *bruteforce-lock*)
-                      (let ((len (1- (length *bruteforce-state*))))
-                        (if (> len (- maximum-length (length prefix) (length suffix)))
-                            (setf *bruteforce-stop* t)
-                            (let ((charset-len (length characters)))
-                              (setf password (loop for i from 0 below len
-                                                   collect (aref characters (aref *bruteforce-state* (- len 1 i)))))
-                              ;; Prepare next password
-                              (incf (aref *bruteforce-state* 0))
-                              (when (= (aref *bruteforce-state* 0) charset-len)
-                                (setf (aref *bruteforce-state* 0) 0))
-                              (loop with i = 0
-                                    while (and (< i len) (zerop (aref *bruteforce-state* i)))
-                                    do (progn
-                                         (incf i)
-                                         (incf (aref *bruteforce-state* i))
-                                         (when (= (aref *bruteforce-state* i) charset-len)
-                                           (setf (aref *bruteforce-state* i) 0))))
-                              (when (plusp (aref *bruteforce-state* len))
-                                (setf *bruteforce-state* (make-array (+ len 2) :initial-element 0))))))
-                      (release-lock *bruteforce-lock*)
+                      (with-lock-held (*bruteforce-lock*)
+                        (let ((len (1- (length *bruteforce-state*))))
+                          (if (> len (- maximum-length (length prefix) (length suffix)))
+                              (setf *bruteforce-stop* t)
+                              (let ((charset-len (length characters)))
+                                (setf password (loop for i from 0 below len
+                                                     collect (aref characters (aref *bruteforce-state* (- len 1 i)))))
+                                ;; Prepare next password
+                                (incf (aref *bruteforce-state* 0))
+                                (when (= (aref *bruteforce-state* 0) charset-len)
+                                  (setf (aref *bruteforce-state* 0) 0))
+                                (loop with i = 0
+                                      while (and (< i len) (zerop (aref *bruteforce-state* i)))
+                                      do (progn
+                                           (incf i)
+                                           (incf (aref *bruteforce-state* i))
+                                           (when (= (aref *bruteforce-state* i) charset-len)
+                                             (setf (aref *bruteforce-state* i) 0))))
+                                (when (plusp (aref *bruteforce-state* len))
+                                  (setf *bruteforce-state* (make-array (+ len 2) :initial-element 0)))))))
                       (when (plusp (length password))
                         (concatenate 'string prefix password suffix))))
 
@@ -104,10 +102,9 @@ THREADS can be used to go faster."
                              (keys (handler-case (get-wallet-keys keys-file password)
                                      (t () nil))))
                         (when keys
-                          (acquire-lock *bruteforce-lock*)
-                          (setf *bruteforce-stop* t)
-                          (setf *bruteforce-result* (acons :password password keys))
-                          (release-lock *bruteforce-lock*))))))
+                          (with-lock-held (*bruteforce-lock*)
+                            (setf *bruteforce-stop* t)
+                            (setf *bruteforce-result* (acons :password password keys))))))))
            (let ((thread-handles (make-array threads)))
              (dotimes (i threads)
                (setf (aref thread-handles i) (make-thread #'bruteforce)))

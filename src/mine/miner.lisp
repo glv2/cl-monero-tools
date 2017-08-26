@@ -20,25 +20,21 @@ put, find a nonce and an extra nonce allowing the hash of the
 resulting block (computed with slow-hash) to be acceptable for a given
 DIFFICULTY level.
 The returned value is the new block data containing the found nonces."
-  (let ((*random-state* (make-random-state t)))
-    (loop with nonce-offset = (get-nonce-offset block-template-data)
-          with template = (copy-seq block-template-data)
-          for hash = (compute-block-hash-from-data template t)
-          until (or *mine-stop* (acceptable-hash-p hash difficulty))
-          do (progn
-               (loop for i from nonce-offset below (+ nonce-offset 4)
-                     do (setf (aref template i) (random 256)))
-               (loop for i from reserve-offset below (+ reserve-offset reserve-size)
-                     do (setf (aref template i) (random 256))))
-          finally (return (when (acceptable-hash-p hash difficulty)
-                            (if *mine-lock*
-                                (progn
-                                  (acquire-lock *mine-lock*)
+  (loop with nonce-offset = (get-nonce-offset block-template-data)
+        with template = (copy-seq block-template-data)
+        for hash = (compute-block-hash-from-data template t)
+        until (or *mine-stop* (acceptable-hash-p hash difficulty))
+        do (let ((random-data (ironclad:random-data (+ 4 reserve-size))))
+             (replace template random-data :start1 nonce-offset :end2 4)
+             (replace template random-data :start1 reserve-offset :start2 4))
+        finally (return (when (acceptable-hash-p hash difficulty)
+                          (if *mine-lock*
+                              (progn
+                                (with-lock-held (*mine-lock*)
                                   (setf *mine-stop* t)
-                                  (setf *mine-result* template)
-                                  (release-lock *mine-lock*)
-                                  *mine-result*)
-                                template))))))
+                                  (setf *mine-result* template))
+                                *mine-result*)
+                              template)))))
 
 (defun mine-block (address reserve-size &key (threads 1) (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   "Mine a block with several THREADS for an ADDRESS using RESERVE-SIZE
@@ -50,15 +46,13 @@ bytes of extra nonce."
          (setf *mine-lock* (make-lock))
          (labels ((stop-threads ()
                     (when (aref thread-handles 0)
-                      (acquire-lock *mine-lock*)
-                      (setf *mine-stop* t)
-                      (release-lock *mine-lock*)
+                      (with-lock-held (*mine-lock*)
+                        (setf *mine-stop* t))
                       (dotimes (i threads)
                         (join-thread (aref thread-handles i))
                         (setf (aref thread-handles i) nil))
-                      (acquire-lock *mine-lock*)
-                      (setf *mine-stop* nil)
-                      (release-lock *mine-lock*)))
+                      (with-lock-held (*mine-lock*)
+                        (setf *mine-stop* nil))))
 
                   (update-miners (template reserve-size reserve-offset difficulty)
                     (stop-threads)
@@ -76,7 +70,8 @@ bytes of extra nonce."
                                                                       :password password))
                                 (template (hex-string->bytes (geta info :blocktemplate--blob)))
                                 (difficulty (geta info :difficulty))
-                                (reserve-offset (geta info :reserved--offset))
+                                ;;(reserve-offset (geta info :reserved--offset))
+                                (reserve-offset (1- (geta info :reserved--offset))) ; off by 1 bug?
                                 (height (geta info :height)))
                            (format t "height=~a difficulty=~d~%" height difficulty)
                            (update-miners template reserve-size reserve-offset difficulty)
