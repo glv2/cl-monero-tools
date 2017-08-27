@@ -130,6 +130,30 @@
 
 ;; (get-blocks-from-daemon (list (hex-string->bytes "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148") (hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")) 0 t)
 
+(defun get-hashes-from-daemon (block-ids start-height &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((block-ids (bytes->string (apply #'concatenate 'octet-vector block-ids)))
+         (parameters (list (cons :block--ids block-ids)
+                           (cons :start--height (cons start-height '(unsigned-byte 64)))))
+         (answer (rpc "gethashes.bin"
+                      :binary t
+                      :parameters parameters
+                      :host host
+                      :port port
+                      :user user
+                      :password password)))
+    (flet ((split (data-string)
+             (let ((size (length data-string)))
+               (unless (zerop (mod size +key-length+))
+                 (error "Invalid length"))
+               (map 'vector
+                    #'string->bytes
+                    (loop for i from 0 below size by +key-length+
+                          collect (subseq data-string i (+ i +key-length+)))))))
+      (setf (geta answer :m--block--ids) (split (geta answer :m--block--ids)))
+      answer)))
+
+;; (get-hashes-from-daemon (list (hex-string->bytes "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148") (hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")) 0)
+
 (defun get-blocks-by-height-from-daemon (block-heights &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((block-heights (make-array (length block-heights)
                                     :element-type '(unsigned-byte 64)
