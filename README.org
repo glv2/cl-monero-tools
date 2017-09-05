@@ -144,12 +144,14 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - get-wallet-keys
  - make-integrated-address
  - output-for-address-p
+ - prove-payment
  - public-keys->address
  - secret-spend-key->address
  - sign-file
  - sign-message
  - valid-file-signature-p
  - valid-message-signature-p
+ - valid-payment-proof-p
 
 * Tests
 

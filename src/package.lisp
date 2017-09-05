@@ -57,6 +57,7 @@
    #:public-keys->address #:secret-spend-key->address
    #:encrypt-payment-id #:decrypt-payment-id
    #:output-for-address-p
+   #:prove-payment #:valid-payment-proof-p
    #:get-wallet-keys #:bruteforce-wallet-keys
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p))

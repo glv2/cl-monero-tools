@@ -8,6 +8,7 @@
 
 
 (defconstant +encrypted-payment-id-tail+ 141)
+(define-constant +payment-proof-header+ "ProofV1" :test #'string=)
 
 (defun encrypt-payment-id (payment-id public-view-key transaction-secret-key)
   "Encrypt a PAYMENT-ID using a shared secret derived from
@@ -28,3 +29,32 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
          (derivation (derive-key transaction-public-key secret-view-key))
          (key (derive-public-key derivation output-index public-spend-key)))
     (equalp key output-key)))
+
+(defun prove-payment (transaction-hash address transaction-secret-key)
+  "Prove that a payment to an ADDRESS was made."
+  (let* ((recipient-public-view-key (geta (decode-address address) :public-view-key))
+         (key-derivation (point->bytes (point* (bytes->point recipient-public-view-key)
+                                               (bytes->integer transaction-secret-key))))
+         (proof-data (generate-transaction-proof transaction-hash
+                                                 recipient-public-view-key
+                                                 key-derivation
+                                                 transaction-secret-key)))
+    (concatenate 'string
+                 +payment-proof-header+
+                 (base58-encode key-derivation)
+                 (base58-encode proof-data))))
+
+(defun valid-payment-proof-p (transaction-hash address transaction-public-key proof)
+  "Return T if PROOF of transaction to an ADDRESS is valid, and NIL
+otherwise."
+  (let ((header-length (length +payment-proof-header+)))
+    (when (and (= (length proof) (+ header-length 44 88))
+               (string= proof +payment-proof-header+ :end1 header-length))
+      (let ((recipient-public-view-key (geta (decode-address address) :public-view-key))
+            (key-derivation (base58-decode (subseq proof header-length (+ header-length 44))))
+            (proof-data (base58-decode (subseq proof (+ header-length 44)))))
+        (valid-transaction-proof-p transaction-hash
+                                   recipient-public-view-key
+                                   key-derivation
+                                   transaction-public-key
+                                   proof-data)))))

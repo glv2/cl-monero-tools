@@ -138,3 +138,44 @@ a KEY-IMAGE using a set of PUBLIC-KEYS is valid, and NIL otherwise."
               sum (mod (+ sum c) +l+))))
     (let ((h (bytes->integer (compute-non-interactive-challenge data a b))))
       (= h sum))))
+
+(defun generate-transaction-proof (transaction-hash recipient-public-view-key key-derivation transaction-secret-key)
+  "Return a signature proving that a transaction to a recipient was
+made."
+  (check-type transaction-hash (octet-vector #.+hash-length+))
+  (check-type recipient-public-view-key (octet-vector #.+key-length+))
+  (check-type key-derivation (octet-vector #.+key-length+))
+  (check-type transaction-secret-key (octet-vector #.+key-length+))
+  (let* ((a (bytes->point recipient-public-view-key))
+         (s (bytes->integer transaction-secret-key))
+         (k (1+ (ironclad:strong-random (1- +l+))))
+         (x (point* +g+ k))
+         (y (point* a k))
+         (c-data (hash-to-scalar (concatenate 'octet-vector
+                                              transaction-hash
+                                              key-derivation
+                                              (point->bytes x)
+                                              (point->bytes y))))
+         (c (bytes->integer c-data))
+         (r-data (integer->bytes (mod (- k (* c s)) +l+) :size +key-length+)))
+    (concatenate 'octet-vector c-data r-data)))
+
+(defun valid-transaction-proof-p (transaction-hash recipient-public-view-key key-derivation transaction-public-key proof)
+  "Return T if a PROOF of transaction is valid, and NIL otherwise."
+  (check-type transaction-hash (octet-vector #.+hash-length+))
+  (check-type recipient-public-view-key (octet-vector #.+key-length+))
+  (check-type key-derivation (octet-vector #.+key-length+))
+  (check-type transaction-public-key (octet-vector #.+key-length+))
+  (check-type proof (octet-vector #.(* 2 +key-length+)))
+  (let* ((c (bytes->integer proof :start 0 :end +key-length+))
+         (r (bytes->integer proof :start +key-length+))
+         (x (point+ (point* (bytes->point transaction-public-key) c)
+                    (point* +g+ r)))
+         (y (point+ (point* (bytes->point key-derivation) c)
+                    (point* (bytes->point recipient-public-view-key) r)))
+         (h (bytes->integer (hash-to-scalar (concatenate 'octet-vector
+                                                         transaction-hash
+                                                         key-derivation
+                                                         (point->bytes x)
+                                                         (point->bytes y))))))
+    (= c h)))

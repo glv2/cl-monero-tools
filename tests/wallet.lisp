@@ -179,3 +179,25 @@ testnet: no
         (file-2 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-2.dat")))
     (is-true (valid-file-signature-p file-1 address (sign-file file-1 secret-spend-key)))
     (is-true (valid-file-signature-p file-2 address (sign-file file-2 secret-spend-key)))))
+
+(test valid-payment-proof-p
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (transaction-hash "8d245fc820dac077a32db250074c50f995f93630bd374ba3566f5e1d3fde3d4a")
+        (transaction-public-key "5dd5e0faabe08ccf904a45e486d19ae8e67cb5a17e7e03104070dce80dd26f08")
+        (proof "ProofV1XnFfDiZjLCDGPYhB26pLUr5yKxhmpAFP1gjM7z58GBpaN5USEd5EfVd272Dogct48o69HnwiyKJspBDDCDV6KzuZeeSzFXQFPhhe5Hq9mAGjqp6XTDTXK6TKWTD4zNi2jT6y"))
+    (is-true (valid-payment-proof-p (hex-string->bytes transaction-hash)
+                                    address
+                                    (hex-string->bytes transaction-public-key)
+                                    proof))))
+
+(test prove-payment
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (transaction-hash "8d245fc820dac077a32db250074c50f995f93630bd374ba3566f5e1d3fde3d4a")
+        (transaction-public-key "5dd5e0faabe08ccf904a45e486d19ae8e67cb5a17e7e03104070dce80dd26f08")
+        (transaction-secret-key "5404868a109869804a2e45f6797c250e68d9c5afe9cb9c1fd1ed8108082ac909"))
+    (is-true (valid-payment-proof-p (hex-string->bytes transaction-hash)
+                                    address
+                                    (hex-string->bytes transaction-public-key)
+                                    (prove-payment (hex-string->bytes transaction-hash)
+                                                   address
+                                                   (hex-string->bytes transaction-secret-key))))))
