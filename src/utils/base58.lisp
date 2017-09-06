@@ -15,6 +15,21 @@
 (defconstant +base58-full-encoded-block-size+ 11)
 (defconstant +base58-checksum-size+ 4)
 
+(defun base58-encoded-length (n)
+  "Return the length of the base58 encoding of N bytes."
+  (multiple-value-bind (full-block-count remaining-bytes)
+      (floor n +base58-full-block-size+)
+    (+ (* full-block-count +base58-full-encoded-block-size+)
+       (aref +base58-encoded-block-sizes+ remaining-bytes))))
+
+(defun base58-decoded-length (n)
+  "Return the number of bytes encoded in a base58 string of
+N characters."
+  (multiple-value-bind (full-encoded-block-count remaining-characters)
+      (floor n +base58-full-encoded-block-size+)
+    (+ (* full-encoded-block-count +base58-full-block-size+)
+       (position remaining-characters +base58-encoded-block-sizes+))))
+
 (defun base58-encode (data)
   "Return the base58 encoding of the DATA byte sequence."
   (multiple-value-bind (full-block-count last-block-size)

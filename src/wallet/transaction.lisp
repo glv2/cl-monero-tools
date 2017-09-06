@@ -47,12 +47,16 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
 (defun valid-payment-proof-p (transaction-hash address transaction-public-key proof)
   "Return T if PROOF of transaction to an ADDRESS is valid, and NIL
 otherwise."
-  (let ((header-length (length +payment-proof-header+)))
-    (when (and (= (length proof) (+ header-length 44 88))
+  (let ((header-length (length +payment-proof-header+))
+        (encoded-key-length (base58-encoded-length +key-length+))
+        (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+    (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
                (string= proof +payment-proof-header+ :end1 header-length))
       (let ((recipient-public-view-key (geta (decode-address address) :public-view-key))
-            (key-derivation (base58-decode (subseq proof header-length (+ header-length 44))))
-            (proof-data (base58-decode (subseq proof (+ header-length 44)))))
+            (key-derivation (base58-decode (subseq proof
+                                                   header-length
+                                                   (+ header-length encoded-key-length))))
+            (proof-data (base58-decode (subseq proof (+ header-length encoded-key-length)))))
         (valid-transaction-proof-p transaction-hash
                                    recipient-public-view-key
                                    key-derivation

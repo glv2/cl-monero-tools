@@ -18,8 +18,9 @@
 (defun valid-message-signature-p (message address signature)
   "Return T if a SIGNATURE of a MESSAGE by the secret key matching
 an ADDRESS is valid, and NIL otherwise."
-  (let ((header-length (length +message-signature-header+)))
-    (when (and (= (length signature) (+ header-length 88))
+  (let ((header-length (length +message-signature-header+))
+        (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+    (when (and (= (length signature) (+ header-length encoded-signature-length))
                (string= signature +message-signature-header+ :end1 header-length))
       (let ((hash (fast-hash (utf-8-string->bytes message)))
             (public-key (geta (decode-address address) :public-spend-key))
@@ -35,8 +36,9 @@ an ADDRESS is valid, and NIL otherwise."
 (defun valid-file-signature-p (file address signature)
   "Return T if a SIGNATURE of a FILE by the secret key matching
 an ADDRESS is valid, and NIL otherwise."
-  (let ((header-length (length +message-signature-header+)))
-    (when (and (= (length signature) (+ header-length 88))
+  (let ((header-length (length +message-signature-header+))
+        (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+    (when (and (= (length signature) (+ header-length encoded-signature-length))
                (string= signature +message-signature-header+ :end1 header-length))
       (let ((hash (fast-hash (read-file-into-byte-vector file)))
             (public-key (geta (decode-address address) :public-spend-key))
