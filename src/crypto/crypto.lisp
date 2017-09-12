@@ -243,6 +243,7 @@ as a byte vector."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +chacha8-key-length+ 32)
   (defconstant +chacha8-iv-length+ 8))
+(defconstant +chacha8-key-tail+ 140)
 
 (defcfun ("chacha8" cn-chacha8) :void
   (data :pointer)
@@ -287,6 +288,17 @@ as a byte vector."
     ciphertext))
 
 (defun generate-chacha8-key (password)
-  "Generate the decryption key matching a PASSWORD."
+  "Generate the encryption/decryption key matching a PASSWORD."
   (check-type password string)
   (subseq (slow-hash (utf-8-string->bytes password)) 0 +chacha8-key-length+))
+
+(defun generate-chacha8-key-from-secret-keys (secret-view-key secret-spend-key)
+  "Generate the encryption/decryption key matching a wallet's secret
+keys."
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type secret-spend-key (octet-vector #.+key-length+))
+  (let ((data (concatenate 'octet-vector
+                           secret-view-key
+                           secret-spend-key
+                           (vector +chacha8-key-tail+))))
+    (subseq (slow-hash data) 0 +chacha8-key-length+)))

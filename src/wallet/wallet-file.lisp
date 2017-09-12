@@ -118,3 +118,20 @@ THREADS can be used to go faster."
     (setf *bruteforce-stop* nil)
     (setf *bruteforce-lock* nil)
     (setf *bruteforce-result* nil)))
+
+(defun decrypt-wallet-cache (cache-file password &optional keys-file)
+  (let* ((keys-file (or keys-file (concatenate 'string cache-file ".keys")))
+         (wallet-keys (get-wallet-keys keys-file password))
+         (secret-view-key (geta wallet-keys :secret-view-key))
+         (secret-spend-key (geta wallet-keys :secret-spend-key))
+         (key (generate-chacha8-key-from-secret-keys secret-view-key secret-spend-key))
+         (cache-file-data (read-file-into-byte-vector cache-file))
+         (iv (subseq cache-file-data 0 +chacha8-iv-length+)))
+    (multiple-value-bind (encrypted-data-length varint-size)
+        (deserialize-integer cache-file-data +chacha8-iv-length+)
+      (let* ((encrypted-data (subseq cache-file-data
+                                     (+ +chacha8-iv-length+ varint-size)
+                                     (+ +chacha8-iv-length+ varint-size encrypted-data-length)))
+             (data (chacha8 encrypted-data key iv)))
+        ;; TODO: deserialize data
+        data))))
