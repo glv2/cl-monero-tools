@@ -74,6 +74,7 @@
                               :components ((:file "address")
                                            (:file "signature" :depends-on ("address"))
                                            (:file "transaction" :depends-on ("address"))
+                                           (:file "uri")
                                            (:file "wallet-file")))))))
 
 (defun compile-cncrypto-library (&optional static)

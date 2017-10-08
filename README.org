@@ -139,10 +139,12 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
  - bruteforce-wallet-keys
  - decode-address
+ - decode-uri
  - decrypt-payment-id
  - encrypt-payment-id
  - get-wallet-keys
  - make-integrated-address
+ - make-uri
  - output-for-address-p
  - prove-payment
  - public-keys->address

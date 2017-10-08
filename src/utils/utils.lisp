@@ -104,3 +104,32 @@ SETF-able, it is equivalent to (cdr (assoc key alist :test test))."
 
 (defun (setf geta) (new-value alist key &key (test #'eql))
   (setf (cdr (assoc key alist :test test)) new-value))
+
+(defun read-float (string)
+  (labels ((parse-digit (character)
+             (- (char-code character) (char-code #\0)))
+
+           (parse (numerator denominator point index length)
+             (if (= index length)
+                 (values (/ numerator denominator) length)
+                 (let ((c (char string index)))
+                   (cond ((char<= #\0 c #\9)
+                          (parse (+ (* numerator 10) (parse-digit c))
+                                 (if point (* denominator 10) denominator)
+                                 point
+                                 (1+ index)
+                                 length))
+
+                         ((and (not point)
+                               (or (char= c #\.) (char= c #\,)))
+                          (parse numerator denominator t (1+ index) length))
+
+                         (t
+                          (parse numerator denominator point index index)))))))
+    (let ((length (length string)))
+      (if (zerop length)
+          0
+          (case (char string 0)
+            ((#\+) (parse 0 1 nil 1 length))
+            ((#\-) (parse 0 -1 nil 1 length))
+            (t (parse 0 1 nil 0 length)))))))
