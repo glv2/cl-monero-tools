@@ -251,3 +251,44 @@ testnet: no
       (is (string= recipient-name (geta result :recipient-name)))
       (is (= amount (geta result :amount)))
       (is (string= description (geta result :description))))))
+
+(test decode-qr-code
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (payment-id "8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5")
+        (recipient-name "Alice MONERO")
+        (description "A payment to Alice")
+        (file1 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr1.png"))
+        (file2 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr2.png")))
+    (let ((amount 3)
+          (result (decode-qr-code file1)))
+      (is (string= address (geta result :address)))
+      (is (string= payment-id (bytes->hex-string (geta result :payment-id))))
+      (is (= amount (geta result :amount))))
+    (let ((amount (read-float "12.3456789012"))
+          (result (decode-qr-code file2)))
+      (is (string= address (geta result :address)))
+      (is (string= payment-id (bytes->hex-string (geta result :payment-id))))
+      (is (string= recipient-name (geta result :recipient-name)))
+      (is (= amount (geta result :amount)))
+      (is (string= description (geta result :description))))))
+
+(test make-qr-code
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (recipient-name "Alice MONERO")
+        (description "A payment to Alice")
+        (file (asdf:system-relative-pathname "monero-tools/tests" "tests/qr0.png")))
+    (dotimes (i 3)
+      (let ((amount (ironclad:strong-random 100))
+            (payment-id (ironclad:random-data 32)))
+        (make-qr-code file address
+                      :payment-id payment-id
+                      :amount amount
+                      :recipient-name recipient-name
+                      :description description)
+        (let ((result (decode-qr-code file)))
+          (is (string= address (geta result :address)))
+          (is (equalp payment-id (geta result :payment-id)))
+          (is (string= recipient-name (geta result :recipient-name)))
+          (is (= amount (geta result :amount)))
+          (is (string= description (geta result :description))))))
+    (uiop:delete-file-if-exists file)))
