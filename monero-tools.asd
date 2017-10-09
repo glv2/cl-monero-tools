@@ -20,6 +20,7 @@
                "cffi"
                "cl-base64"
                "cl-json"
+               "cl-qrencode"
                "dexador"
                "ieee-floats"
                "ironclad"
@@ -72,6 +73,7 @@
                              (:module "wallet"
                               :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
+                                           (:file "qr" :depends-on ("uri"))
                                            (:file "signature" :depends-on ("address"))
                                            (:file "transaction" :depends-on ("address"))
                                            (:file "uri")

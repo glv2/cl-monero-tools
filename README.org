@@ -146,6 +146,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - encrypt-payment-id
  - get-wallet-keys
  - make-integrated-address
+ - make-qr-code
  - make-uri
  - output-for-address-p
  - prove-payment

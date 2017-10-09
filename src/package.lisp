@@ -62,4 +62,5 @@
    #:get-wallet-keys #:bruteforce-wallet-keys
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p
-   #:make-uri #:decode-uri))
+   #:make-uri #:decode-uri
+   #:make-qr-code))
