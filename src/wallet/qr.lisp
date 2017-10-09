@@ -15,7 +15,7 @@ a PNG-FILE."
                        :recipient-name recipient-name
                        :amount amount
                        :description description)))
-    (cl-qrencode:encode-png uri :fpath png-file :pixsize 4)))
+    (cl-qrencode:encode-png uri :fpath png-file :mode :byte :pixsize 4)))
 
 (define-foreign-library zbar
   (t (:default "libzbar")))
