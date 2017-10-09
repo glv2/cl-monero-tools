@@ -29,6 +29,7 @@ or
  - ironclad
  - split-sequence
  - trivial-features
+ - the libzbar C library (to read QR codes)
 
 *monero-tools* also depends on the *cncrypto* library (C code of the
 cryptographic primitives used by the Monero cryptocurrency). The
@@ -141,6 +142,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
  - bruteforce-wallet-keys
  - decode-address
+ - decode-qr-code
  - decode-uri
  - decrypt-payment-id
  - encrypt-payment-id
