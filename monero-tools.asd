@@ -24,6 +24,7 @@
                "dexador"
                "ieee-floats"
                "ironclad"
+               "pngload"
                "split-sequence"
                "trivial-features")
   :in-order-to ((test-op (test-op "monero-tools/tests")))

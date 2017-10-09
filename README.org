@@ -24,12 +24,14 @@ or
  - cffi
  - cl-base64
  - cl-json
+ - cl-qrencode
  - dexador
  - ieee-floats
  - ironclad
+ - pngload
  - split-sequence
  - trivial-features
- - the libzbar C library (to read QR codes)
+ - the zbar C library (to read QR codes)
 
 *monero-tools* also depends on the *cncrypto* library (C code of the
 cryptographic primitives used by the Monero cryptocurrency). The
