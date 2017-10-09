@@ -129,9 +129,11 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - bytes->integer
  - bytes->string
  - bytes->utf-8-string
+ - format-float
  - geta
  - hex-string->bytes
  - integer->bytes
+ - read-float
  - string->bytes
  - utf-8-string->bytes
 

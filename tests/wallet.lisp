@@ -201,3 +201,53 @@ testnet: no
                                     (prove-payment (hex-string->bytes transaction-hash)
                                                    address
                                                    (hex-string->bytes transaction-secret-key))))))
+
+(test make-uri
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (payment-id (hex-string->bytes "8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5"))
+        (recipient-name "Alice MONERO")
+        (amount (read-float "12.3456789012"))
+        (description "A payment to Alice"))
+    (is (string= "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao"
+                 (make-uri address)))
+    (is (string= "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5"
+                 (make-uri address :payment-id payment-id)))
+    (is (string= "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5&tx_amount=12.3456789012"
+                 (make-uri address :payment-id payment-id
+                                   :amount amount)))
+    (is (string= "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5&tx_amount=12.3456789012&tx_description=A%20payment%20to%20Alice"
+                 (make-uri address :payment-id payment-id
+                                   :amount amount
+                                   :description description)))
+    (is (string= "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5&recipient_name=Alice%20MONERO&tx_amount=12.3456789012&tx_description=A%20payment%20to%20Alice"
+                 (make-uri address :payment-id payment-id
+                                   :amount amount
+                                   :recipient-name recipient-name
+                                   :description description)))))
+
+(test decode-uri
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (payment-id "8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5")
+        (recipient-name "Alice MONERO")
+        (amount (read-float "12.3456789012"))
+        (description "A payment to Alice"))
+    (let ((result (decode-uri "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")))
+      (is (string= address (geta result :address))))
+    (let ((result (decode-uri "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5")))
+      (is (string= address (geta result :address)))
+      (is (string= payment-id (bytes->hex-string (geta result :payment-id)))))
+    (let ((result (decode-uri "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5&tx_amount=12.3456789012")))
+      (is (string= address (geta result :address)))
+      (is (string= payment-id (bytes->hex-string (geta result :payment-id))))
+      (is (= amount (geta result :amount))))
+    (let ((result (decode-uri "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5&tx_amount=12.3456789012&tx_description=A%20payment%20to%20Alice")))
+      (is (string= address (geta result :address)))
+      (is (string= payment-id (bytes->hex-string (geta result :payment-id))))
+      (is (= amount (geta result :amount)))
+      (is (string= description (geta result :description))))
+    (let ((result (decode-uri "monero:9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao?tx_payment_id=8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5&tx_amount=12.3456789012&tx_description=A%20payment%20to%20Alice&recipient_name=Alice%20MONERO")))
+      (is (string= address (geta result :address)))
+      (is (string= payment-id (bytes->hex-string (geta result :payment-id))))
+      (is (string= recipient-name (geta result :recipient-name)))
+      (is (= amount (geta result :amount)))
+      (is (string= description (geta result :description))))))

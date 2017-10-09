@@ -133,3 +133,12 @@ SETF-able, it is equivalent to (cdr (assoc key alist :test test))."
             ((#\+) (parse 0 1 nil 1 length))
             ((#\-) (parse 0 -1 nil 1 length))
             (t (parse 0 1 nil 0 length)))))))
+
+(defun format-float (x &optional (precision 12))
+  (let ((d (expt 10 precision)))
+    (multiple-value-bind (q r) (truncate (round (* x d)) d)
+      (with-output-to-string (output)
+        (format output "~@[~a~]~d" (when (and (zerop q) (minusp r)) #\-) q)
+        (unless (or (zerop precision) (zerop r))
+          (write-string (string-right-trim '(#\0) (format nil ".~v,'0d" precision (abs r)))
+                        output))))))

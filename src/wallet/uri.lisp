@@ -23,7 +23,7 @@
                               (when recipient-name
                                 (list (format nil "recipient_name=~a" (encode recipient-name))))
                               (when amount
-                                (list (format nil "tx_amount=~f" amount)))
+                                (list (format nil "tx_amount=~a" (format-float amount))))
                               (when description
                                 (list (format nil "tx_description=~a" (encode description)))))))
       (format nil "monero:~a~@[?~{~a~^&~}~]" address parameters))))

@@ -51,6 +51,7 @@
    #:utf-8-string->bytes #:bytes->utf-8-string
    #:hex-string->bytes #:bytes->hex-string
    #:geta
+   #:read-float #:format-float
 
    ;; wallet
    #:decode-address #:make-integrated-address
