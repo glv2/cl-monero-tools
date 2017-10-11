@@ -14,6 +14,13 @@
             :user user
             :password password))
 
+(defun zmq-get-info-from-daemon (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (zmq-json-rpc "get_info"
+                :host host
+                :port port
+                :user user
+                :password password))
+
 (defun get-block-count-from-daemon (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let ((answer (json-rpc "getblockcount"
                           :host host

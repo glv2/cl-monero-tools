@@ -29,6 +29,7 @@ or
  - ieee-floats
  - ironclad
  - pngload
+ - pzmq
  - split-sequence
  - trivial-features
  - the zbar C library (to read QR codes)
@@ -107,6 +108,7 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
  - =*rpc-user*=
  - json-rpc
  - rpc
+ - zmq-json-rpc
 
 There are some examples of functions using RPCs in
 src/rpc/daemon.lisp and src/rpc/wallet.lisp.

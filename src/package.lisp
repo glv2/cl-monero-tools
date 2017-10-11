@@ -36,6 +36,7 @@
    ;; rpc
    #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
    #:rpc #:json-rpc
+   #:zmq-json-rpc
 
    ;; serialization
    #:serialize-block #:deserialize-block

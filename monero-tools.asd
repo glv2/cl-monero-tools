@@ -25,6 +25,7 @@
                "ieee-floats"
                "ironclad"
                "pngload"
+               "pzmq"
                "split-sequence"
                "trivial-features")
   :in-order-to ((test-op (test-op "monero-tools/tests")))
@@ -60,7 +61,8 @@
                               :depends-on ("blockchain" "package" "serialization" "utils")
                               :components ((:file "daemon" :depends-on ("rpc"))
                                            (:file "rpc")
-                                           (:file "wallet" :depends-on ("rpc"))))
+                                           (:file "wallet" :depends-on ("rpc"))
+                                           (:file "zmq" :depends-on ("rpc"))))
                              (:module "serialization"
                               :depends-on ("crypto" "package" "utils")
                               :components ((:file "constants")
