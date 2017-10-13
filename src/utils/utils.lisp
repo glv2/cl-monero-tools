@@ -106,6 +106,8 @@ SETF-able, it is equivalent to (cdr (assoc key alist :test test))."
   (setf (cdr (assoc key alist :test test)) new-value))
 
 (defun read-float (string)
+  "Read a decimal number from a STRING and return it as a rational
+number."
   (labels ((parse-digit (character)
              (- (char-code character) (char-code #\0)))
 
@@ -135,6 +137,8 @@ SETF-able, it is equivalent to (cdr (assoc key alist :test test))."
             (t (parse 0 1 nil 0 length)))))))
 
 (defun format-float (x &optional (precision 12))
+  "Return a string representing the number X with at most PRECISION
+decimals."
   (let ((d (expt 10 precision)))
     (multiple-value-bind (q r) (truncate (round (* x d)) d)
       (with-output-to-string (output)
