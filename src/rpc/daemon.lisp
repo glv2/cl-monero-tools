@@ -41,6 +41,16 @@
          (transactions (map 'list #'decode-json-from-string (geta answer :txs--as--json))))
     (map 'list (lambda (tx) (remove :rctsig--prunable tx :key #'car)) transactions)))
 
+(defun zmq-get-transactions-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((parameters (list (cons "tx_hashes" (coerce transaction-ids 'vector))))
+         (answer (zmq-json-rpc "get_transactions"
+                               :parameters parameters
+                               :host host
+                               :port port
+                               :user user
+                               :password password)))
+    answer))
+
 (defun get-transaction-data-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))))
          (answer (rpc "gettransactions"
@@ -67,6 +77,17 @@
               :port port
               :user user
               :password password)))
+
+(defun zmq-get-block-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((get-by-height (integerp block-id))
+         (parameters (list (cons (if get-by-height "height" "hash")
+                                 block-id))))
+    (zmq-json-rpc (if get-by-height "get_block_header_by_height" "get_block_header_by_hash")
+                  :parameters parameters
+                  :host host
+                  :port port
+                  :user user
+                  :password password)))
 
 (defun get-block-data-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons (etypecase block-id

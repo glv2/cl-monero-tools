@@ -59,9 +59,9 @@
                                            (:file "spanish" :depends-on ("mnemonic"))))
                              (:module "rpc"
                               :depends-on ("blockchain" "package" "serialization" "utils")
-                              :components ((:file "daemon" :depends-on ("rpc"))
+                              :components ((:file "daemon" :depends-on ("rpc" "zmq"))
                                            (:file "rpc")
-                                           (:file "wallet" :depends-on ("rpc"))
+                                           (:file "wallet" :depends-on ("rpc" "zmq"))
                                            (:file "zmq" :depends-on ("rpc"))))
                              (:module "serialization"
                               :depends-on ("crypto" "package" "utils")
