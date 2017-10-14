@@ -54,8 +54,7 @@ a PNG-FILE."
                              :unsigned-int height)
             (let ((tmp image))
               (with-foreign-object (raw-data :unsigned-char data-length)
-                (dotimes (i data-length)
-                  (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+                (lisp-array->c-array data raw-data)
                 (foreign-funcall "zbar_image_set_data"
                                  :pointer image
                                  :pointer raw-data
@@ -84,9 +83,7 @@ a PNG-FILE."
                      (raw-data (foreign-funcall "zbar_symbol_get_data"
                                                 :pointer symbol
                                                 :pointer))
-                     (data (make-array data-length)))
-                (dotimes (i data-length)
-                  (setf (aref data i) (mem-aref raw-data :unsigned-char i)))
+                     (data (c-array->lisp-array raw-data data-length)))
                 (setf result (concatenate 'vector result data))))
             (foreign-funcall "zbar_image_destroy"
                              :pointer image)

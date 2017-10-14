@@ -82,13 +82,10 @@
   "Return the byte vector representing DATA modulo +L+."
   (check-type data octet-vector)
   (let ((length (length data)))
-    (with-foreign-objects ((raw-data :unsigned-char length))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+    (with-foreign-object (raw-data :unsigned-char length)
+      (lisp-array->c-array data raw-data)
       (cn-sc-reduce raw-data)
-      (let ((res (make-array +key-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +key-length+ res)
-          (setf (aref res i) (mem-aref raw-data :unsigned-char i)))))))
+      (c-array->lisp-array raw-data +key-length+))))
 
 #-cncrypto-prefer-ffi
 (defun reduce-scalar (data)
@@ -145,12 +142,9 @@
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-hash :unsigned-char +hash-length+))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+      (lisp-array->c-array data raw-data)
       (cn-fast-hash raw-data length raw-hash)
-      (let ((hash (make-array +hash-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +hash-length+ hash)
-          (setf (aref hash i) (mem-aref raw-hash :unsigned-char i)))))))
+      (c-array->lisp-array raw-hash +hash-length+))))
 
 (defcfun ("cn_slow_hash" cn-slow-hash) :void
   (data :pointer)
@@ -163,12 +157,9 @@
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-hash :unsigned-char +hash-length+))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+      (lisp-array->c-array data raw-data)
       (cn-slow-hash raw-data length raw-hash)
-      (let ((hash (make-array +hash-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +hash-length+ hash)
-          (setf (aref hash i) (mem-aref raw-hash :unsigned-char i)))))))
+      (c-array->lisp-array raw-hash +hash-length+))))
 
 (defcfun ("tree_hash" cn-tree-hash) :void
   (hashes :pointer)
@@ -182,12 +173,9 @@
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-hash :unsigned-char +hash-length+))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+      (lisp-array->c-array data raw-data)
       (cn-tree-hash raw-data count raw-hash)
-      (let ((hash (make-array +hash-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +hash-length+ hash)
-          (setf (aref hash i) (mem-aref raw-hash :unsigned-char i)))))))
+      (c-array->lisp-array raw-hash +hash-length+))))
 
 #+cncrypto-prefer-ffi
 (defun hash-to-scalar (data)
@@ -197,13 +185,10 @@ as a byte vector."
   (let ((length (length data)))
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-res :unsigned-char +hash-length+))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+      (lisp-array->c-array data raw-data)
       (cn-fast-hash raw-data length raw-res)
       (cn-sc-reduce32 raw-res)
-      (let ((res (make-array +key-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +key-length+ res)
-          (setf (aref res i) (mem-aref raw-res :unsigned-char i)))))))
+      (c-array->lisp-array raw-res +key-length+))))
 
 #-cncrypto-prefer-ffi
 (defun hash-to-scalar (data)
@@ -229,13 +214,10 @@ as a byte vector."
     (with-foreign-objects ((raw-data :unsigned-char length)
                            (raw-point '(:struct cn-ge-p3))
                            (raw-res :unsigned-char +key-length+))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
+      (lisp-array->c-array data raw-data)
       (cn-hash-to-ec raw-data raw-point)
       (cn-ge-p3-tobytes raw-res raw-point)
-      (let ((res (make-array +key-length+ :element-type '(unsigned-byte 8))))
-        (dotimes (i +key-length+ res)
-          (setf (aref res i) (mem-aref raw-res :unsigned-char i)))))))
+      (c-array->lisp-array raw-res +key-length+))))
 
 
 ;;; Data encryption/decryption functions
@@ -263,16 +245,11 @@ as a byte vector."
                            (raw-key :unsigned-char +chacha8-key-length+)
                            (raw-iv :unsigned-char +chacha8-iv-length+)
                            (raw-cipher :unsigned-char length))
-      (dotimes (i length)
-        (setf (mem-aref raw-data :unsigned-char i) (aref data i)))
-      (dotimes (i +chacha8-key-length+)
-        (setf (mem-aref raw-key :unsigned-char i) (aref key i)))
-      (dotimes (i +chacha8-iv-length+)
-        (setf (mem-aref raw-iv :unsigned-char i) (aref iv i)))
+      (lisp-array->c-array data raw-data)
+      (lisp-array->c-array key raw-key)
+      (lisp-array->c-array iv raw-iv)
       (cn-chacha8 raw-data length raw-key raw-iv raw-cipher)
-      (let ((ciphertext (make-array length :element-type '(unsigned-byte 8))))
-        (dotimes (i length ciphertext)
-          (setf (aref ciphertext i) (mem-aref raw-cipher :unsigned-char i)))))))
+      (c-array->lisp-array raw-cipher length))))
 
 #-cncrypto-prefer-ffi
 (defun chacha8 (data key iv)

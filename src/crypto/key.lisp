@@ -13,9 +13,7 @@
   (with-foreign-objects ((raw-data :unsigned-char (* 2 +key-length+)))
     (cn-generate-random-bytes-not-thread-safe (* 2 +key-length+) raw-data)
     (cn-sc-reduce raw-data)
-    (let ((secret-key (make-array +key-length+ :element-type '(unsigned-byte 8))))
-      (dotimes (i +key-length+ secret-key)
-        (setf (aref secret-key i) (mem-aref raw-data :unsigned-char i))))))
+    (c-array->lisp-array raw-data +key-length+)))
 
 #-cncrypto-prefer-ffi
 (defun generate-secret-key ()
@@ -29,14 +27,11 @@
   (with-foreign-objects ((raw-secret-key :unsigned-char +key-length+)
                          (raw-public-key :unsigned-char +key-length+)
                          (raw-point '(:struct cn-ge-p3)))
-    (dotimes (i +key-length+)
-      (setf (mem-aref raw-secret-key :unsigned-char i) (aref secret-key i)))
+    (lisp-array->c-array secret-key raw-secret-key)
     (cn-sc-reduce32 raw-secret-key)
     (cn-ge-scalarmult-base raw-point raw-secret-key)
     (cn-ge-p3-tobytes raw-public-key raw-point)
-    (let ((public-key (make-array +key-length+ :element-type '(unsigned-byte 8))))
-      (dotimes (i +key-length+ public-key)
-        (setf (aref public-key i) (mem-aref raw-public-key :unsigned-char i))))))
+    (c-array->lisp-array raw-public-key +key-length+)))
 
 #-cncrypto-prefer-ffi
 (defun secret-key->public-key (secret-key)

@@ -146,3 +146,15 @@ decimals."
         (unless (or (zerop precision) (zerop r))
           (write-string (string-right-trim '(#\0) (format nil ".~v,'0d" precision (abs r)))
                         output))))))
+
+(defun lisp-array->c-array (lisp-array c-array)
+  "Copy bytes from a LISP-ARRAY to a FFI C-ARRAY."
+  (dotimes (i (length lisp-array) c-array)
+    (setf (mem-aref c-array :unsigned-char i) (aref lisp-array i))))
+
+(defun c-array->lisp-array (c-array length &optional lisp-array)
+  "Copy LENGTH bytes from a FFI C-ARRAY to a LISP-ARRAY. If LISP-ARRAY
+is not specfied, a new LISP-ARRAY is created."
+  (let ((lisp-array (or lisp-array (make-array length :element-type '(unsigned-byte 8)))))
+    (dotimes (i length lisp-array)
+      (setf (aref lisp-array i) (mem-aref c-array :unsigned-char i)))))
