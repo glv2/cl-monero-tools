@@ -53,6 +53,7 @@
                                            (:file "german" :depends-on ("mnemonic"))
                                            (:file "italian" :depends-on ("mnemonic"))
                                            (:file "japanese" :depends-on ("mnemonic"))
+                                           (:file "lojban" :depends-on ("mnemonic"))
                                            (:file "mnemonic")
                                            (:file "portuguese" :depends-on ("mnemonic"))
                                            (:file "russian" :depends-on ("mnemonic"))
