@@ -24,7 +24,7 @@
                "dexador"
                "ieee-floats"
                "ironclad"
-               "pngload"
+               "png-read"
                "pzmq"
                "split-sequence"
                "trivial-features")
