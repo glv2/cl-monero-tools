@@ -258,7 +258,9 @@ testnet: no
         (recipient-name "Alice MONERO")
         (description "A payment to Alice")
         (file1 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr1.png"))
-        (file2 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr2.png")))
+        (file2 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr2.png"))
+        (file3 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr3.png"))
+        (file4 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr4.png")))
     (let ((amount 3)
           (result (decode-qr-code file1)))
       (is (string= address (geta result :address)))
@@ -270,7 +272,9 @@ testnet: no
       (is (string= payment-id (bytes->hex-string (geta result :payment-id))))
       (is (string= recipient-name (geta result :recipient-name)))
       (is (= amount (geta result :amount)))
-      (is (string= description (geta result :description))))))
+      (is (string= description (geta result :description))))
+    (is (equalp (decode-qr-code file2) (decode-qr-code file3)))
+    (is (equalp (decode-qr-code file2) (decode-qr-code file4)))))
 
 (test make-qr-code
   (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")

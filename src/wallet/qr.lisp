@@ -31,6 +31,17 @@ a PNG-FILE."
                (make-array (array-total-size array)
                            :displaced-to array
                            :element-type (array-element-type array)))
+             (convert-to-rgb3 (data bit-depth)
+               (loop with data-length = (length data)
+                     with shift = (- 8 bit-depth)
+                     with rgb-data = (make-array (* 3 data-length)
+                                                 :element-type '(unsigned-byte 8))
+                     for i from 0 below data-length
+                     do (let ((v (ash (aref data i) shift)))
+                          (setf (aref rgb-data (* 3 i)) v
+                                (aref rgb-data (+ (* 3 i) 1)) v
+                                (aref rgb-data (+ (* 3 i) 2)) v))
+                     finally (return rgb-data)))
              (fourcc (fourcc)
                (logior (char-code (char fourcc 0))
                        (ash (char-code (char fourcc 1)) 8)
@@ -40,7 +51,10 @@ a PNG-FILE."
                (width (png-read:width png))
                (height (png-read:height png))
                (image-data (png-read:image-data png))
-               (data (flatten-array image-data))
+               (data (if (= 3 (length (array-dimensions image-data)))
+                         (flatten-array image-data)
+                         (convert-to-rgb3 (flatten-array image-data)
+                                          (png-read:bit-depth png))))
                (data-length (length data))
                (processor (foreign-funcall "zbar_processor_create" :pointer))
                (image (foreign-funcall "zbar_image_create" :pointer))
