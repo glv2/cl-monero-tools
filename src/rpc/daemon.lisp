@@ -29,6 +29,14 @@
                           :password password)))
     (geta answer :count)))
 
+(defun zmq-get-block-count-from-daemon (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((answer (zmq-json-rpc "get_height"
+                              :host host
+                              :port port
+                              :user user
+                              :password password)))
+    (geta answer :height)))
+
 (defun get-transactions-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
                            (cons "decode_as_json" t)))
@@ -157,6 +165,20 @@
          :password password)))
 
 ;; (get-blocks-from-daemon (list (hex-string->bytes "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148") (hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")) 0 t)
+
+(defun zmq-get-blocks-from-daemon (block-ids start-height prune &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let* ((block-ids block-ids)
+         (parameters (list (cons :block--ids block-ids)
+                           (cons :prune prune)
+                           (cons :start--height start-height))))
+    (zmq-json-rpc "get_blocks_fast"
+                  :parameters parameters
+                  :host host
+                  :port port
+                  :user user
+                  :password password)))
+
+;; (zmq-get-blocks-from-daemon (list "5a1125384b088dbeaaa6f61c39db0318e53732ffc927978a52e3b16553203138" "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b") 0 t) ; testnet
 
 (defun get-hashes-from-daemon (block-ids start-height &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((block-ids (bytes->string (apply #'concatenate 'octet-vector block-ids)))
