@@ -22,8 +22,6 @@
       (let* ((json-answer (pzmq:recv-string socket))
              (answer (decode-json-from-string json-answer))
              (err (geta answer :error)))
-        (print json-request)
-        (print answer)
         (if err
             (error (geta err :message))
             (geta answer :response))))))
