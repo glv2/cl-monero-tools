@@ -28,6 +28,12 @@
   (defconstant +key-length+ 32))
 
 (define-constant +g+ ironclad::+ed25519-b+ :test #'equalp)
+(let ((h (coerce '(#x8b #x65 #x59 #x70 #x15 #x37 #x99 #xaf
+                   #x2a #xea #xdc #x9f #xf1 #xad #xd0 #xea
+                   #x6c #x72 #x51 #xd5 #x41 #x54 #xcf #xa9
+                   #x2c #x17 #x3a #x0d #xd3 #x9c #x1f #x94)
+                 'octet-vector)))
+  (define-constant +h+ (ironclad::ed25519-decode-point h) :test #'equalp))
 (defconstant +l+ ironclad::+ed25519-l+)
 
 (deftype point ()
