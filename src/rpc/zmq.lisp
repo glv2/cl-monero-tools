@@ -24,4 +24,4 @@
              (err (geta answer :error)))
         (if err
             (error (geta err :message))
-            (geta answer :response))))))
+            (geta answer :result))))))
