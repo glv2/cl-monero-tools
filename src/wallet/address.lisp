@@ -9,23 +9,27 @@
 
 (defconstant +address-base58-prefix+ 18)
 (defconstant +integrated-address-base58-prefix+ 19)
+(defconstant +subaddress-base58-prefix+ 42)
 (defconstant +testnet-address-base58-prefix+ 53)
 (defconstant +testnet-integrated-address-base58-prefix+ 54)
+(defconstant +testnet-subaddress-base58-prefix+ 63)
 
-(defun encode-address (public-spend-key public-view-key &key payment-id testnet)
+(defun encode-address (public-spend-key public-view-key &key payment-id subaddress testnet)
   "Return the base58 encoded Monero address matching the
 PUBLIC-SPEND-KEY and PUBLIC-VIEW-KEY. If a PAYMENT-ID is supplied, an
 integrated address is returned. If TESTNET is T, a testnet address is
 returned."
+  (when (and payment-id subaddress)
+    (error "Integrated subaddress not supported."))
   (macrolet ((concat (&rest sequences)
                `(concatenate 'octet-vector ,@sequences)))
     (let* ((tag (vector (if testnet
-                            (if payment-id
-                                +testnet-integrated-address-base58-prefix+
-                                +testnet-address-base58-prefix+)
-                            (if payment-id
-                                +integrated-address-base58-prefix+
-                                +address-base58-prefix+))))
+                            (cond (subaddress +testnet-subaddress-base58-prefix+)
+                                  (payment-id +testnet-integrated-address-base58-prefix+)
+                                  (t +testnet-address-base58-prefix+))
+                            (cond (subaddress +subaddress-base58-prefix+)
+                                  (payment-id +integrated-address-base58-prefix+)
+                                  (t +address-base58-prefix+)))))
            (data (concat tag public-spend-key public-view-key payment-id))
            (hash (subseq (fast-hash data) 0 +base58-checksum-size+)))
       (base58-encode (concat data hash)))))
@@ -36,9 +40,12 @@ returned."
          (size (length data))
          (tag (aref data 0))
          (testnet (or (= tag +testnet-address-base58-prefix+)
-                      (= tag +testnet-integrated-address-base58-prefix+)))
+                      (= tag +testnet-integrated-address-base58-prefix+)
+                      (= tag +testnet-subaddress-base58-prefix+)))
          (integrated-address (or (= tag +integrated-address-base58-prefix+)
                                  (= tag +testnet-integrated-address-base58-prefix+)))
+         (subaddress (or (= tag +subaddress-base58-prefix+)
+                         (= tag +testnet-subaddress-base58-prefix+)))
          (public-spend-key (subseq data 1 33))
          (public-view-key (subseq data 33 65))
          (payment-id (when integrated-address
@@ -53,12 +60,14 @@ returned."
             (when testnet
               (list (cons :testnet t)))
             (when integrated-address
-              (list (cons :payment-id payment-id))))))
+              (list (cons :payment-id payment-id)))
+            (when subaddress
+              (list (cons :subaddress subaddress))))))
 
-(defun public-keys->address (public-spend-key public-view-key &key testnet)
+(defun public-keys->address (public-spend-key public-view-key &key subaddress testnet)
   "Get the Monero address matching the PUBLIC-SPEND-KEY and
 PUBLIC-VIEW-KEY. If TESTNET is T, a testnet address is returned."
-  (encode-address public-spend-key public-view-key :testnet testnet))
+  (encode-address public-spend-key public-view-key :subaddress subaddress :testnet testnet))
 
 (defun secret-spend-key->address (secret-spend-key &key testnet)
   "Get the Monero address matching the SECRET-SPEND-KEY. If TESTNET is
@@ -74,6 +83,8 @@ T, a testnet address is returned."
          (public-spend-key (geta address-info :public-spend-key))
          (public-view-key (geta address-info :public-view-key))
          (testnet (geta address-info :testnet)))
+    (when (geta address-info :subaddress)
+      (error "Integrated subaddress not supported."))
     (when (geta address-info :payment-id)
       (warn "~a is already an integrated address." address))
     (unless (= (length payment-id) 8)

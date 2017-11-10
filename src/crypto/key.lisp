@@ -78,7 +78,7 @@ from the SECRET-SPEND-KEY."
 from a key DERIVATION and an OUTPUT-INDEX."
   (check-type derivation (octet-vector #.+key-length+))
   (check-type output-index (integer 0))
-  (let ((data (concatenate 'octet-vector derivation (write-varint output-index))))
+  (let ((data (concatenate 'octet-vector derivation (integer->bytes output-index :varint t))))
     (hash-to-scalar data)))
 
 (defun derive-public-key (derivation output-index public-spend-key)
@@ -100,3 +100,52 @@ OUTPUT-INDEX and a SECRET-SPEND-KEY."
   (let ((x (bytes->integer (derivation->scalar derivation output-index)))
         (s (bytes->integer secret-spend-key)))
     (integer->bytes (mod (+ x s) +l+) :size +key-length+)))
+
+(define-constant +subkey-prefix+ (map 'octet-vector #'char-code "SubAddr") :test #'equalp)
+
+(defun derive-subkey-secret (secret-view-key major-index minor-index)
+  "Compute the secret component of a subkey from its MAJOR-INDEX,
+its MINOR-INDEX and the main SECRET-VIEW-KEY."
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type major-index (integer 0 *))
+  (check-type minor-index (integer 0 *))
+  (let ((data (concatenate 'octet-vector
+                           +subkey-prefix+
+                           secret-view-key
+                           (integer->bytes major-index :varint t) ;; or uint32 ?
+                           (integer->bytes minor-index :varint t))))
+    (hash-to-scalar data)))
+
+(defun derive-secret-spend-subkey (secret-view-key secret-spend-key major-index minor-index)
+  "Compute the secret spend key of a subaddress from its MAJOR-INDEX,
+its MINOR-INDEX, the main SECRET-VIEW-KEY and the main
+SECRET-SPEND-KEY."
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type secret-spend-key (octet-vector #.+key-length+))
+  (check-type major-index (integer 0 *))
+  (check-type minor-index (integer 0 *))
+  (let* ((b (bytes->integer secret-spend-key))
+         (h (bytes->integer (derive-subkey-secret secret-view-key major-index minor-index)))
+         (d (mod (+ b h) +l+)))
+    (integer->bytes d :size +key-length+)))
+
+(defun derive-public-spend-subkey (secret-view-key public-spend-key major-index minor-index)
+  "Compute the public spend key of a subaddress from its MAJOR-INDEX,
+its MINOR-INDEX, the main SECRET-VIEW-KEY and the main
+PUBLIC-SPEND-KEY."
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type public-spend-key (octet-vector #.+key-length+))
+  (check-type major-index (integer 0 *))
+  (check-type minor-index (integer 0 *))
+  (let* ((b (bytes->point public-spend-key))
+         (h (bytes->integer (derive-subkey-secret secret-view-key major-index minor-index)))
+         (d (point+ b (point* +g+ h))))
+    (point->bytes d)))
+
+(defun public-spend-subkey->public-view-subkey (secret-view-key public-spend-subkey)
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type public-spend-subkey (octet-vector #.+key-length+))
+  (let* ((a (bytes->integer secret-view-key))
+         (d (bytes->point public-spend-subkey))
+         (c (point* d a)))
+    (point->bytes c)))
