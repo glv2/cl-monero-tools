@@ -39,6 +39,7 @@
                               :depends-on ("package" "utils")
                               :components ((:file "crypto")
                                            (:file "key" :depends-on ("crypto"))
+                                           (:file "proof" :depends-on ("crypto" "key"))
                                            (:file "signature" :depends-on ("crypto" "key"))))
                              (:module "mine"
                               :depends-on ("blockchain" "package" "rpc")
