@@ -21,6 +21,8 @@
    #:secret-key->public-key #:secret-spend-key->secret-view-key
    #:recover-keys
    #:derive-key
+   #:derive-secret-spend-subkey #:derive-public-spend-subkey
+   #:public-spend-subkey->public-view-subkey
    #:generate-signature #:valid-signature-p
    #:generate-ring-signature #:valid-ring-signature-p
    #:compute-key-image
@@ -57,6 +59,7 @@
    ;; wallet
    #:decode-address #:make-integrated-address
    #:public-keys->address #:secret-spend-key->address
+   #:public-keys->subaddress #:secret-spend-key->subaddress
    #:encrypt-payment-id #:decrypt-payment-id
    #:output-for-address-p
    #:prove-payment #:valid-payment-proof-p

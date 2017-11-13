@@ -101,7 +101,8 @@ OUTPUT-INDEX and a SECRET-SPEND-KEY."
         (s (bytes->integer secret-spend-key)))
     (integer->bytes (mod (+ x s) +l+) :size +key-length+)))
 
-(define-constant +subkey-prefix+ (map 'octet-vector #'char-code "SubAddr") :test #'equalp)
+(define-constant +subkey-prefix+ (map 'octet-vector #'char-code '(#\S #\u #\b #\A #\d #\d #\r #\nul))
+  :test #'equalp)
 
 (defun derive-subkey-secret (secret-view-key major-index minor-index)
   "Compute the secret component of a subkey from its MAJOR-INDEX,
@@ -112,8 +113,8 @@ its MINOR-INDEX and the main SECRET-VIEW-KEY."
   (let ((data (concatenate 'octet-vector
                            +subkey-prefix+
                            secret-view-key
-                           (integer->bytes major-index :varint t) ;; or uint32 ?
-                           (integer->bytes minor-index :varint t))))
+                           (integer->bytes major-index :size 4)
+                           (integer->bytes minor-index :size 4))))
     (hash-to-scalar data)))
 
 (defun derive-secret-spend-subkey (secret-view-key secret-spend-key major-index minor-index)

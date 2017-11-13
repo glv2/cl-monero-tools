@@ -17,8 +17,8 @@
 (defun encode-address (public-spend-key public-view-key &key payment-id subaddress testnet)
   "Return the base58 encoded Monero address matching the
 PUBLIC-SPEND-KEY and PUBLIC-VIEW-KEY. If a PAYMENT-ID is supplied, an
-integrated address is returned. If TESTNET is T, a testnet address is
-returned."
+integrated address is returned. If SUBADDRESS is T, a subaddress is
+returned. If TESTNET is T, a testnet address is returned."
   (when (and payment-id subaddress)
     (error "Integrated subaddress not supported."))
   (macrolet ((concat (&rest sequences)
@@ -66,8 +66,21 @@ returned."
 
 (defun public-keys->address (public-spend-key public-view-key &key subaddress testnet)
   "Get the Monero address matching the PUBLIC-SPEND-KEY and
-PUBLIC-VIEW-KEY. If TESTNET is T, a testnet address is returned."
+PUBLIC-VIEW-KEY. If SUBADDRESS is T, a subaddress is returned. If
+TESTNET is T, a testnet address is returned."
   (encode-address public-spend-key public-view-key :subaddress subaddress :testnet testnet))
+
+(defun public-keys->subaddress (public-spend-key secret-view-key major-index minor-index &key testnet)
+  "Get the Monero subaddress matching the PUBLIC-SPEND-KEY,
+SECRET-VIEW-KEY, MAJOR-INDEX and MINOR-INDEX. If TESTNET is T,
+a testnet address is returned."
+  (let* ((public-spend-subkey (derive-public-spend-subkey secret-view-key
+                                                          public-spend-key
+                                                          major-index
+                                                          minor-index))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key
+                                                                      public-spend-subkey)))
+    (public-keys->address public-spend-subkey public-view-subkey :subaddress t :testnet testnet)))
 
 (defun secret-spend-key->address (secret-spend-key &key testnet)
   "Get the Monero address matching the SECRET-SPEND-KEY. If TESTNET is
@@ -76,6 +89,19 @@ T, a testnet address is returned."
          (public-spend-key (geta keys :public-spend-key))
          (public-view-key (geta keys :public-view-key)))
     (public-keys->address public-spend-key public-view-key :testnet testnet)))
+
+(defun secret-spend-key->subaddress (secret-spend-key major-index minor-index &key testnet)
+  "Get the Monero subaddress matching the SECRET-SPEND-KEY,
+MAJOR-INDEX and MINOR-INDEX. If TESTNET is T, a testnet address is
+returned."
+  (let* ((keys (recover-keys secret-spend-key))
+         (public-spend-key (geta keys :public-spend-key))
+         (secret-view-key (geta keys :secret-view-key)))
+    (public-keys->subaddress public-spend-key
+                             secret-view-key
+                             major-index
+                             minor-index
+                             :testnet testnet)))
 
 (defun make-integrated-address (address payment-id)
   "Return an integrated address made from a Monero ADDRESS and a PAYMENT-ID."

@@ -120,12 +120,12 @@ testnet: no
                                      "d302c0849107819a5301b91e08928617bdadcf303b05122dca9adc24d80238e3")))))
 
 (test decode-address
-  (let ((keys (monero-tools::decode-address "43HyW9SFLTmFzDLRgYmeLZ4m4SW7w3G8XfGxfjW79oh6DJdDdwybRJJJKGS3SWsoH5NVMBaXyzty5bv3QNRarqDw5iPfNJJ")))
+  (let ((keys (decode-address "43HyW9SFLTmFzDLRgYmeLZ4m4SW7w3G8XfGxfjW79oh6DJdDdwybRJJJKGS3SWsoH5NVMBaXyzty5bv3QNRarqDw5iPfNJJ")))
     (is (string-equal "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
                       (bytes->hex-string (geta keys :public-spend-key))))
     (is (string-equal "8f5e31dbf970db6784eb5062aded5c80790f5e85667948d0bd7dd269c6722629"
                       (bytes->hex-string (geta keys :public-view-key)))))
-  (let ((keys (monero-tools::decode-address "43oErH6q2FfVkVBXrkQt3yfYmmZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7")))
+  (let ((keys (decode-address "43oErH6q2FfVkVBXrkQt3yfYmmZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7")))
     (is (string-equal "3962d1d1e47c06abe2314ed2849c40e67651a449144a2fe8d21e1146653fd085"
                       (bytes->hex-string (geta keys :public-spend-key))))
     (is (string-equal "d302c0849107819a5301b91e08928617bdadcf303b05122dca9adc24d80238e3"
@@ -133,8 +133,8 @@ testnet: no
 
 (test pubic-keys->address
   (flet ((public-keys->address/hex (public-spend-key public-view-key)
-           (monero-tools::public-keys->address (hex-string->bytes public-spend-key)
-                                               (hex-string->bytes public-view-key))))
+           (public-keys->address (hex-string->bytes public-spend-key)
+                                 (hex-string->bytes public-view-key))))
     (is (string= "43HyW9SFLTmFzDLRgYmeLZ4m4SW7w3G8XfGxfjW79oh6DJdDdwybRJJJKGS3SWsoH5NVMBaXyzty5bv3QNRarqDw5iPfNJJ"
                  (public-keys->address/hex "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
                                            "8f5e31dbf970db6784eb5062aded5c80790f5e85667948d0bd7dd269c6722629")))
@@ -144,11 +144,93 @@ testnet: no
 
 (test secret-spend-key->address
   (flet ((secret-spend-key->address/hex (secret-spend-key)
-           (monero-tools::secret-spend-key->address (hex-string->bytes secret-spend-key))))
+           (secret-spend-key->address (hex-string->bytes secret-spend-key))))
     (is (string= "43HyW9SFLTmFzDLRgYmeLZ4m4SW7w3G8XfGxfjW79oh6DJdDdwybRJJJKGS3SWsoH5NVMBaXyzty5bv3QNRarqDw5iPfNJJ"
                  (secret-spend-key->address/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306")))
     (is (string= "43oErH6q2FfVkVBXrkQt3yfYmmZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7"
                  (secret-spend-key->address/hex "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a")))))
+
+(test encode-subaddress
+  (let* ((public-spend-key (hex-string->bytes "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"))
+         (secret-view-key (hex-string->bytes "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"))
+         (public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key 0 1))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key public-spend-subkey)))
+    (is (string= "841P6Q51rJJcTR9PgCFNtP6gq2oAJpKtiNh9hQ9AcJ8jabzZRpy8acqHoriBmqCFBPVRBsAseVBmfduEj3Ys2FyGDEpQZ7C"
+                 (public-keys->address public-spend-subkey public-view-subkey :subaddress t))))
+  (let* ((public-spend-key (hex-string->bytes "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"))
+         (secret-view-key (hex-string->bytes "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"))
+         (public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key 1 0))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key public-spend-subkey)))
+    (is (string= "82WabaG7VAXJsdWGkiUJ3u7LkvQ5aR8rqhr1zBWdwdZN2RbjHLYi6mVAZqjucfX5soBngKiQLMt5FFE4VrXA9tE1Lv2ahZf"
+                 (public-keys->address public-spend-subkey public-view-subkey :subaddress t))))
+  (let* ((public-spend-key (hex-string->bytes "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"))
+         (secret-view-key (hex-string->bytes "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"))
+         (public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key 1 1))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key public-spend-subkey)))
+    (is (string= "876NP7hhudXT5wkGMzD2AA58gpzPtcJwDfUYoRijK54iBgNTha9uhQj5jNCHLwQfRjdi4V8RpAeTBUJptbe3FK3V49mr3CW"
+                 (public-keys->address public-spend-subkey public-view-subkey :subaddress t)))))
+
+(test decode-subaddress
+  (let* ((public-spend-key (hex-string->bytes "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"))
+         (secret-view-key (hex-string->bytes "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"))
+         (public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key 0 1))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key public-spend-subkey))
+         (keys (decode-address "841P6Q51rJJcTR9PgCFNtP6gq2oAJpKtiNh9hQ9AcJ8jabzZRpy8acqHoriBmqCFBPVRBsAseVBmfduEj3Ys2FyGDEpQZ7C")))
+    (is-true (geta keys :subaddress))
+    (is (equalp public-spend-subkey (geta keys :public-spend-key)))
+    (is (equalp public-view-subkey (geta keys :public-view-key))))
+  (let* ((public-spend-key (hex-string->bytes "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"))
+         (secret-view-key (hex-string->bytes "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"))
+         (public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key 1 0))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key public-spend-subkey))
+         (keys (decode-address "82WabaG7VAXJsdWGkiUJ3u7LkvQ5aR8rqhr1zBWdwdZN2RbjHLYi6mVAZqjucfX5soBngKiQLMt5FFE4VrXA9tE1Lv2ahZf")))
+    (is-true (geta keys :subaddress))
+    (is (equalp public-spend-subkey (geta keys :public-spend-key)))
+    (is (equalp public-view-subkey (geta keys :public-view-key))))
+  (let* ((public-spend-key (hex-string->bytes "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"))
+         (secret-view-key (hex-string->bytes "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"))
+         (public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key 1 1))
+         (public-view-subkey (public-spend-subkey->public-view-subkey secret-view-key public-spend-subkey))
+         (keys (decode-address "876NP7hhudXT5wkGMzD2AA58gpzPtcJwDfUYoRijK54iBgNTha9uhQj5jNCHLwQfRjdi4V8RpAeTBUJptbe3FK3V49mr3CW")))
+    (is-true (geta keys :subaddress))
+    (is (equalp public-spend-subkey (geta keys :public-spend-key)))
+    (is (equalp public-view-subkey (geta keys :public-view-key)))))
+
+(test public-keys->subaddress
+  (flet ((public-keys->subaddress/hex (public-spend-key secret-view-key major-index minor-index &key testnet)
+           (public-keys->subaddress (hex-string->bytes public-spend-key)
+                                    (hex-string->bytes secret-view-key)
+                                    major-index
+                                    minor-index
+                                    :testnet testnet)))
+    (is (string= "841P6Q51rJJcTR9PgCFNtP6gq2oAJpKtiNh9hQ9AcJ8jabzZRpy8acqHoriBmqCFBPVRBsAseVBmfduEj3Ys2FyGDEpQZ7C"
+                 (public-keys->subaddress/hex "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
+                                              "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"
+                                              0 1)))
+    (is (string= "82WabaG7VAXJsdWGkiUJ3u7LkvQ5aR8rqhr1zBWdwdZN2RbjHLYi6mVAZqjucfX5soBngKiQLMt5FFE4VrXA9tE1Lv2ahZf"
+                 (public-keys->subaddress/hex "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
+                                              "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"
+                                              1 0)))
+    (is (string= "876NP7hhudXT5wkGMzD2AA58gpzPtcJwDfUYoRijK54iBgNTha9uhQj5jNCHLwQfRjdi4V8RpAeTBUJptbe3FK3V49mr3CW"
+                 (public-keys->subaddress/hex "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
+                                              "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"
+                                              1 1)))))
+
+(test secret-spend-key->subaddress
+  (flet ((secret-spend-key->subaddress/hex (secret-spend-key major-index minor-index &key testnet)
+           (secret-spend-key->subaddress (hex-string->bytes secret-spend-key)
+                                         major-index
+                                         minor-index
+                                         :testnet testnet)))
+    (is (string= "841P6Q51rJJcTR9PgCFNtP6gq2oAJpKtiNh9hQ9AcJ8jabzZRpy8acqHoriBmqCFBPVRBsAseVBmfduEj3Ys2FyGDEpQZ7C"
+                 (secret-spend-key->subaddress/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
+                                                   0 1)))
+    (is (string= "82WabaG7VAXJsdWGkiUJ3u7LkvQ5aR8rqhr1zBWdwdZN2RbjHLYi6mVAZqjucfX5soBngKiQLMt5FFE4VrXA9tE1Lv2ahZf"
+                 (secret-spend-key->subaddress/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
+                                                   1 0)))
+    (is (string= "876NP7hhudXT5wkGMzD2AA58gpzPtcJwDfUYoRijK54iBgNTha9uhQj5jNCHLwQfRjdi4V8RpAeTBUJptbe3FK3V49mr3CW"
+                 (secret-spend-key->subaddress/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
+                                                   1 1)))))
 
 (test valid-message-signature-p
   (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ"))

@@ -74,12 +74,15 @@ gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
  - chacha8
  - compute-key-image
  - derive-key
+ - derive-public-spend-subkey
+ - derive-secret-spend-subkey
  - fast-hash
  - generate-chacha8-key
  - generate-keys
  - generate-secret-key
  - generate-ring-signature
  - generate-signature
+ - public-spend-subkey->public-view-subkey
  - recover-keys
  - secret-key->public-key
  - secret-spend-key->secret-view-key
@@ -157,7 +160,9 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - output-for-address-p
  - prove-payment
  - public-keys->address
+ - public-keys->subaddress
  - secret-spend-key->address
+ - secret-spend-key->subaddress
  - sign-file
  - sign-message
  - valid-file-signature-p
