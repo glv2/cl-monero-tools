@@ -28,7 +28,7 @@ made."
          (r-data (integer->bytes (mod (- k (* c s)) +l+) :size +key-length+)))
     (concatenate 'octet-vector c-data r-data)))
 
-(defun good-transaction-proof-p (transaction-hash recipient-public-view-key key-derivation transaction-public-key proof)
+(defun verify-transaction-proof (transaction-hash recipient-public-view-key key-derivation transaction-public-key proof)
   "Return T if a PROOF of transaction is valid, and NIL otherwise."
   (check-type transaction-hash (octet-vector #.+hash-length+))
   (check-type recipient-public-view-key (octet-vector #.+key-length+))
@@ -78,7 +78,7 @@ signed along with the TRANSACTION-HASH."
          (r-data (integer->bytes r :size +key-length+)))
     (values e-data (concatenate 'octet-vector c-data r-data))))
 
-(defun valid-inbound-transaction-proof-p (transaction-hash transaction-public-key public-view-key public-spend-key message shared-secret proof)
+(defun verify-inbound-transaction-proof (transaction-hash transaction-public-key public-view-key public-spend-key message shared-secret proof &optional transaction-secret-key)
   "Return T if a PROOF of inbound transaction is valid, and NIL
 otherwise."
   (check-type transaction-hash (octet-vector #.+hash-length+))
@@ -92,7 +92,7 @@ otherwise."
          (p (bytes->point transaction-public-key))
          (a (bytes->point public-view-key))
          (b (bytes->point public-spend-key))
-         (e (bytes->point shared-secret)) ; TODO: check validity of shared secret
+         (e (bytes->point shared-secret))
          (c (bytes->integer proof :start 0 :end +key-length+))
          (r (bytes->integer proof :start +key-length+))
          (l1 (point+ (point* a c) (point* b r)))
@@ -102,7 +102,11 @@ otherwise."
                                                          shared-secret
                                                          (point->bytes l1)
                                                          (point->bytes l2))))))
-    (= c h)))
+    (if (null transaction-secret-key)
+        (= c h)
+        (let* ((s (bytes->point transaction-secret-key))
+               (f (point* a s)))
+          (and (point= e f) (= c h))))))
 
 (defun generate-outbound-transaction-proof (transaction-hash transaction-secret-key public-view-key public-spend-key message)
   "Return a shared secret and a signature proving the existence of an
@@ -120,7 +124,7 @@ signed along with the TRANSACTION-HASH."
          (a (bytes->point public-view-key))
          (b (bytes->point public-spend-key))
          (e (point* a s))
-         (e-data (point->bytes e))
+         (e-data (point->bytes e)) ; TODO: check validity of shared secret using secret-view-key
          (k (1+ (ironclad:strong-random (1- +l+))))
          (l1 (point* b k))
          (l2 (point* a k))
@@ -134,7 +138,7 @@ signed along with the TRANSACTION-HASH."
          (r-data (integer->bytes r :size +key-length+)))
     (values e-data (concatenate 'octet-vector c-data r-data))))
 
-(defun valid-outbound-transaction-proof-p (transaction-hash transaction-public-key public-view-key public-spend-key message shared-secret proof)
+(defun verify-outbound-transaction-proof (transaction-hash transaction-public-key public-view-key public-spend-key message shared-secret proof &optional secret-view-key)
   "Return T if a PROOF of outbound transaction is valid, and NIL
 otherwise."
   (check-type transaction-hash (octet-vector #.+hash-length+))
@@ -158,4 +162,8 @@ otherwise."
                                                          shared-secret
                                                          (point->bytes l1)
                                                          (point->bytes l2))))))
-    (= c h)))
+    (if (null secret-view-key)
+        (= c h)
+        (let* ((s (bytes->point secret-view-key))
+               (f (point* p s)))
+          (and (point= e f) (= c h))))))

@@ -59,7 +59,7 @@ otherwise."
                                                    header-length
                                                    (+ header-length encoded-key-length))))
             (proof-data (base58-decode (subseq proof (+ header-length encoded-key-length)))))
-        (good-transaction-proof-p transaction-hash
+        (verify-transaction-proof transaction-hash
                                   recipient-public-view-key
                                   key-derivation
                                   transaction-public-key
@@ -83,6 +83,33 @@ otherwise."
                    (base58-encode shared-secret)
                    (base58-encode proof)))))
 
+(defun valid-inbound-transaction-proof-p (transaction-hash address message transaction-public-key proof &optional transaction-secret-key)
+  "Return T if a PROOF of inbound transaction for an ADDRESS is valid,
+and NIL otherwise."
+  (let* ((header-length (length +inbound-transaction-proof-header+))
+         (encoded-key-length (base58-encoded-length +key-length+))
+         (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+    (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
+               (string= proof +inbound-transaction-proof-header+ :end1 header-length))
+      (let* ((address-info (decode-address address))
+             (subaddress (geta address-info :subaddress))
+             (public-spend-key (if subaddress
+                                   (geta address-info :public-spend-key)
+                                   +g+))
+             (public-view-key (geta address-info :public-view-key))
+             (shared-secret (base58-decode (subseq proof
+                                                   header-length
+                                                   (+ header-length encoded-key-length))))
+             (signature (base58-decode (subseq proof (+ header-length encoded-key-length)))))
+        (verify-inbound-transaction-proof transaction-hash
+                                          transaction-public-key
+                                          public-view-key
+                                          public-spend-key
+                                          message
+                                          shared-secret
+                                          signature
+                                          transaction-secret-key)))))
+
 (defun prove-outbound-transaction (transaction-hash address message transaction-secret-key)
   "Prove that a transaction was send to an ADDRESS."
   (let* ((address-info (decode-address address))
@@ -102,26 +129,14 @@ otherwise."
                    (base58-encode shared-secret)
                    (base58-encode proof)))))
 
-(defun valid-transaction-proof-p (transaction-hash address message transaction-public-key proof)
-  "Return T if a PROOF of transaction to an ADDRESS is valid, and NIL
-otherwise. The second returned value is T if the PROOF is about an
-inbound transaction, and NIL if it is about an outbound transaction."
-  (let* ((inbound-header-length (length +inbound-transaction-proof-header+))
-         (outbound-header-length (length +outbound-transaction-proof-header+))
+(defun valid-outbound-transaction-proof-p (transaction-hash address message transaction-public-key proof &optional secret-view-key)
+  "Return T if a PROOF of outbound transaction for an ADDRESS is
+valid, and NIL otherwise."
+  (let* ((header-length (length +outbound-transaction-proof-header+))
          (encoded-key-length (base58-encoded-length +key-length+))
-         (encoded-signature-length (base58-encoded-length (* 2 +key-length+)))
-         (inbound-p (cond ((and (> (length proof) inbound-header-length)
-                                (string= proof +inbound-transaction-proof-header+
-                                         :end1 inbound-header-length))
-                           t)
-                          ((and (> (length proof) outbound-header-length)
-                                (string= proof +outbound-transaction-proof-header+
-                                         :end1 outbound-header-length))
-                           nil)
-                          (t
-                           (return-from valid-transaction-proof-p nil))))
-         (header-length (if inbound-p inbound-header-length outbound-header-length)))
-    (when (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
+         (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+    (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
+               (string= proof +outbound-transaction-proof-header+ :end1 header-length))
       (let* ((address-info (decode-address address))
              (subaddress (geta address-info :subaddress))
              (public-spend-key (if subaddress
@@ -132,19 +147,11 @@ inbound transaction, and NIL if it is about an outbound transaction."
                                                    header-length
                                                    (+ header-length encoded-key-length))))
              (signature (base58-decode (subseq proof (+ header-length encoded-key-length)))))
-        (values (if inbound-p
-                    (valid-inbound-transaction-proof-p transaction-hash
-                                                       transaction-public-key
-                                                       public-view-key
-                                                       public-spend-key
-                                                       message
-                                                       shared-secret
-                                                       signature)
-                    (valid-outbound-transaction-proof-p transaction-hash
-                                                        transaction-public-key
-                                                        public-view-key
-                                                        public-spend-key
-                                                        message
-                                                        shared-secret
-                                                        signature))
-                inbound-p)))))
+        (verify-outbound-transaction-proof transaction-hash
+                                           transaction-public-key
+                                           public-view-key
+                                           public-spend-key
+                                           message
+                                           shared-secret
+                                           signature
+                                           secret-view-key)))))

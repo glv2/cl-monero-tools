@@ -60,6 +60,12 @@
   (check-type n (integer 0))
   (ironclad::ed25519-scalar-mult point n))
 
+(defun point= (p1 p2)
+  "Point equality on Ed25519."
+  (check-type p1 point)
+  (check-type p2 point)
+  (ironclad::ed25519-point-equal p1 p2))
+
 (defcstruct cn-ge-p2
   (x :uint32 :count 10)
   (y :uint32 :count 10)
