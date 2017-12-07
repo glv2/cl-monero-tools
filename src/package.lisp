@@ -63,6 +63,8 @@
    #:encrypt-payment-id #:decrypt-payment-id
    #:output-for-address-p
    #:prove-payment #:valid-payment-proof-p
+   #:prove-inbound-transaction #:valid-inbound-transaction-proof-p
+   #:prove-outbound-transaction #:valid-outbound-transaction-proof-p
    #:get-wallet-keys #:bruteforce-wallet-keys
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p

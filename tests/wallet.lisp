@@ -284,6 +284,63 @@ testnet: no
                                                    address
                                                    (hex-string->bytes transaction-secret-key))))))
 
+(test valid-inbound-transaction-proof-p
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (transaction-hash "ae4671480fa0c139bfeea2913210dcb8130ae3eef688a707d91923528fee1c14")
+        (message "message")
+        (transaction-public-key "cebcf16a2a1e44a3204f502a6a979ba0d77b1be39859cab283df052c8f99da99")
+        (proof "InProofV11MFcTEcRh6rZf9boPNaShJDfYwGVeMNSjfNz9zFh8aVrBHBA94GbBcq35o2cVj1cUFEsAZ1HL59XK3PQtpgUePps6654CweyYaYKjVqhG7MAxDTa3A7Wx9T3gM3siXYrgFj2"))
+    (is-true (valid-inbound-transaction-proof-p (hex-string->bytes transaction-hash)
+                                                address
+                                                (string->bytes message)
+                                                (hex-string->bytes transaction-public-key)
+                                                proof))))
+
+(test prove-inbound-transaction
+  (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+         (transaction-hash "ae4671480fa0c139bfeea2913210dcb8130ae3eef688a707d91923528fee1c14")
+         (message "message")
+         (transaction-public-key "cebcf16a2a1e44a3204f502a6a979ba0d77b1be39859cab283df052c8f99da99")
+         (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+         (proof (prove-inbound-transaction (hex-string->bytes transaction-hash)
+                                           address
+                                           (string->bytes message)
+                                           (hex-string->bytes transaction-public-key)
+                                           (hex-string->bytes secret-view-key))))
+    (is-true (valid-inbound-transaction-proof-p (hex-string->bytes transaction-hash)
+                                                address
+                                                (string->bytes message)
+                                                (hex-string->bytes transaction-public-key)
+                                                proof))))
+
+(test valid-outbound-transaction-proof-p
+  (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
+        (transaction-hash "6761c0560ba5fab0ce37b51782cc6e03cd1f3ed8442faba726b444594b384baf")
+        (message "message")
+        (transaction-public-key "fe34e8abd3d1c39686f25f8b5975fa160ae77fda33e3a6183007cc4abaf5ec36")
+        (proof "OutProofV12CsdHk19Joa4cWq2Romg32T9pRrMKYzEBK73rais2m9xKoqPftMzMCqP51pAd6nCJjKH7faHiTTJPL3r4VgpszVGdmLz5eCykuWJ1KfSCsgFbCfHuqDYykSN7YMgFYSZ9BXw"))
+    (is-true (valid-outbound-transaction-proof-p (hex-string->bytes transaction-hash)
+                                                 address
+                                                 (string->bytes message)
+                                                 (hex-string->bytes transaction-public-key)
+                                                 proof))))
+
+(test prove-outbound-transaction
+  (let* ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
+         (transaction-hash "6761c0560ba5fab0ce37b51782cc6e03cd1f3ed8442faba726b444594b384baf")
+         (message "message")
+         (transaction-public-key "fe34e8abd3d1c39686f25f8b5975fa160ae77fda33e3a6183007cc4abaf5ec36")
+         (transaction-secret-key "6f7b540ee4423231136603e4918aa8afcf96eda25156d3d2e96519a9406e0a0c")
+         (proof (prove-outbound-transaction (hex-string->bytes transaction-hash)
+                                            address
+                                            (string->bytes message)
+                                            (hex-string->bytes transaction-secret-key))))
+    (is-true (valid-outbound-transaction-proof-p (hex-string->bytes transaction-hash)
+                                                 address
+                                                 (string->bytes message)
+                                                 (hex-string->bytes transaction-public-key)
+                                                 proof))))
+
 (test make-uri
   (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
         (payment-id (hex-string->bytes "8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5"))

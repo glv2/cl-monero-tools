@@ -158,6 +158,8 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - make-qr-code
  - make-uri
  - output-for-address-p
+ - prove-inbound-transaction
+ - prove-outbound-transaction
  - prove-payment
  - public-keys->address
  - public-keys->subaddress
@@ -166,7 +168,9 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - sign-file
  - sign-message
  - valid-file-signature-p
+ - valid-inbound-transaction-proof-p
  - valid-message-signature-p
+ - valid-outbound-transaction-proof-p
  - valid-payment-proof-p
 
 * Tests
