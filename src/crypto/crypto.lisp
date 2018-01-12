@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -148,6 +148,7 @@
   (length :unsigned-int)
   (hash :pointer))
 
+#+cncrypto-prefer-ffi
 (defun fast-hash (data)
   "Fast hash function (Keccak1600) for the Cryptonote protocol."
   (check-type data octet-vector)
@@ -157,6 +158,11 @@
       (lisp-array->c-array data raw-data)
       (cn-fast-hash raw-data length raw-hash)
       (c-array->lisp-array raw-hash +hash-length+))))
+
+#-cncrypto-prefer-ffi
+(defun fast-hash (data)
+  "Fast hash function (Keccak1600) for the Cryptonote protocol."
+  (subseq (keccak1600 data) 0 +hash-length+))
 
 (defcfun ("cn_slow_hash" cn-slow-hash) :void
   (data :pointer)

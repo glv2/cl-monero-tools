@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -37,7 +37,8 @@
                                            (:file "transaction")))
                              (:module "crypto"
                               :depends-on ("package" "utils")
-                              :components ((:file "crypto")
+                              :components ((:file "crypto" :depends-on ("keccak"))
+                                           (:file "keccak")
                                            (:file "key" :depends-on ("crypto"))
                                            (:file "proof" :depends-on ("crypto" "key"))
                                            (:file "signature" :depends-on ("crypto" "key"))))
