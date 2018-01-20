@@ -164,11 +164,13 @@
   "Fast hash function (Keccak1600) for the Cryptonote protocol."
   (subseq (keccak1600 data) 0 +hash-length+))
 
+#+cncrypto-prefer-ffi
 (defcfun ("cn_slow_hash" cn-slow-hash) :void
   (data :pointer)
   (length :unsigned-int)
   (hash :pointer))
 
+#+cncrypto-prefer-ffi
 (defun slow-hash (data)
   "Slow hash function (CryptoNight) for the Cryptonote protocol."
   (check-type data octet-vector)
@@ -178,6 +180,12 @@
       (lisp-array->c-array data raw-data)
       (cn-slow-hash raw-data length raw-hash)
       (c-array->lisp-array raw-hash +hash-length+))))
+
+#-cncrypto-prefer-ffi
+(defun slow-hash (data)
+  "Slow hash function (CryptoNight) for the Cryptonote protocol."
+  (check-type data octet-vector)
+  (cryptonight data))
 
 (defcfun ("tree_hash" cn-tree-hash) :void
   (hashes :pointer)

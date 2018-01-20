@@ -37,10 +37,13 @@
                                            (:file "transaction")))
                              (:module "crypto"
                               :depends-on ("package" "utils")
-                              :components ((:file "crypto" :depends-on ("keccak"))
+                              :components ((:file "blake")
+                                           (:file "crypto" :depends-on ("cryptonight" "keccak"))
+                                           (:file "cryptonight" :depends-on ("blake" "pseudo-aes"))
                                            (:file "keccak")
                                            (:file "key" :depends-on ("crypto"))
                                            (:file "proof" :depends-on ("crypto" "key"))
+                                           (:file "pseudo-aes")
                                            (:file "signature" :depends-on ("crypto" "key"))))
                              (:module "mine"
                               :depends-on ("blockchain" "package" "rpc")
