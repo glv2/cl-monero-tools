@@ -187,11 +187,13 @@
   (check-type data octet-vector)
   (cryptonight data))
 
+#+cncrypto-prefer-ffi
 (defcfun ("tree_hash" cn-tree-hash) :void
   (hashes :pointer)
   (count :unsigned-int)
   (root-hash :pointer))
 
+#+cncrypto-prefer-ffi
 (defun tree-hash (data count)
   "Tree hash function for the transactions Merkle tree."
   (check-type data octet-vector)
@@ -202,6 +204,41 @@
       (lisp-array->c-array data raw-data)
       (cn-tree-hash raw-data count raw-hash)
       (c-array->lisp-array raw-hash +hash-length+))))
+
+#-cncrypto-prefer-ffi
+(defun tree-hash (data count)
+  "Tree hash function for the transactions Merkle tree."
+  (check-type data octet-vector)
+  (check-type count (integer 1))
+  (flet ((tree-hash-count (count)
+           (loop with pow = 2
+                 while (< pow count)
+                 do (setf pow (ash pow 1))
+                 finally (return (ash pow -1)))))
+    (cond
+      ((= count 1)
+       (subseq data 0 +hash-length+))
+      ((= count 2)
+       (fast-hash (subseq data 0 (* 2 +hash-length+))))
+      (t
+       (let* ((cnt (tree-hash-count count))
+              (tmp (make-array (* cnt +hash-length+)
+                               :element-type '(unsigned-byte 8)
+                               :initial-element 0)))
+         (replace tmp data :end2 (* (- (* 2 cnt) count) +hash-length+))
+         (loop for i from (- (* 2 cnt) count) by 2
+               for j from (- (* 2 cnt) count)
+               while (< j cnt)
+               do (setf (subseq tmp (* j +hash-length+) (* (1+ j) +hash-length+))
+                        (fast-hash (subseq data (* i +hash-length+) (* (+ i 2) +hash-length+)))))
+         (loop while (> cnt 2) do
+           (setf cnt (ash cnt -1))
+           (loop for i from 0 by 2
+                 for j from 0
+                 while (< j cnt)
+                 do (setf (subseq tmp (* j +hash-length+) (* (1+ j) +hash-length+))
+                          (fast-hash (subseq tmp (* i +hash-length+) (* (+ i 2) +hash-length+))))))
+         (fast-hash (subseq tmp 0 (* 2 +hash-length+))))))))
 
 #+cncrypto-prefer-ffi
 (defun hash-to-scalar (data)
