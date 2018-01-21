@@ -32,6 +32,8 @@ or
  - pzmq
  - split-sequence
  - trivial-features
+
+Optional:
  - the zbar C library (to read QR codes)
 
 * Tools
