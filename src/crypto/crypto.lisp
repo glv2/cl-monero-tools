@@ -28,13 +28,16 @@
   (defconstant +key-length+ 32))
 
 (define-constant +g+ ironclad::+ed25519-b+ :test #'equalp)
-(let ((h (coerce '(#x8b #x65 #x59 #x70 #x15 #x37 #x99 #xaf
-                   #x2a #xea #xdc #x9f #xf1 #xad #xd0 #xea
-                   #x6c #x72 #x51 #xd5 #x41 #x54 #xcf #xa9
-                   #x2c #x17 #x3a #x0d #xd3 #x9c #x1f #x94)
-                 'octet-vector)))
+(let ((h (hex-string->bytes "8b655970153799af2aeadc9ff1add0ea6c7251d54154cfa92c173a0dd39c1f94")))
   (define-constant +h+ (ironclad::ed25519-decode-point h) :test #'equalp))
+(defconstant +q+ ironclad::+ed25519-q+)
 (defconstant +l+ ironclad::+ed25519-l+)
+(defconstant +i+ ironclad::+ed25519-i+)
+(defconstant +a+ 486662)
+(defconstant +fffb1+ 57192811444617977854858898469001663971726463542204390960804972474891788632558)
+(defconstant +fffb2+ 34838897745748397871374137087405348832069628406613012804793447631241588021984)
+(defconstant +fffb3+ 46719087769223307720043111813545796356806574765024592941723029582131464514662)
+(defconstant +fffb4+ 11880190023474909848668974726140447524736946358411580136929581950889876492678)
 
 (deftype point ()
   'ironclad::ed25519-point)
@@ -260,6 +263,7 @@ as a byte vector."
   (check-type data octet-vector)
   (reduce-scalar (fast-hash data)))
 
+#+cncrypto-prefer-ffi
 (defun cn-hash-to-ec (raw-data raw-res)
   (with-foreign-objects ((raw-hash :unsigned-char +hash-length+)
                          (raw-point1 '(:struct cn-ge-p2))
@@ -269,6 +273,7 @@ as a byte vector."
     (cn-ge-mul8 raw-point2 raw-point1)
     (cn-ge-p1p1-to-p3 raw-res raw-point2)))
 
+#+cncrypto-prefer-ffi
 (defun hash-to-point (data)
   "Make a point on the ED25519 curve from DATA and return it
 as a byte vector."
@@ -281,6 +286,56 @@ as a byte vector."
       (cn-hash-to-ec raw-data raw-point)
       (cn-ge-p3-tobytes raw-res raw-point)
       (c-array->lisp-array raw-res +key-length+))))
+
+#-cncrypto-prefer-ffi
+(defun hash-to-point (data)
+  "Make a point on the ED25519 curve from DATA and return it
+as a byte vector."
+  (check-type data octet-vector)
+  (let* ((u (mod (bytes->integer (fast-hash data)) +q+))
+         (v (mod (* 2 u u) +q+))
+         (w (mod (+ v 1) +q+))
+         (x (mod (* w w) +q+))
+         (y (mod (* -1 +a+ +a+ v) +q+))
+         (x (mod (+ x y) +q+))
+         (x3 (mod (* x x x) +q+))
+         (wx3 (mod (* w x3) +q+))
+         (wx7 (mod (* wx3 x3 x) +q+))
+         (res-x (mod (* wx3 (ironclad:expt-mod wx7 (/ (- +q+ 5) 8) +q+)) +q+))
+         (y (mod (* res-x res-x) +q+))
+         (x (mod (* y x) +q+))
+         (y (mod (- w x) +q+))
+         (z (mod (- +a+) +q+))
+         sign)
+    (tagbody
+       (if (plusp y)
+           (progn
+             (setf y (mod (+ w x) +q+))
+             (if (plusp y)
+                 (go :negative)
+                 (setf res-x (mod (* res-x +fffb1+) +q+))))
+           (setf res-x (mod (* res-x +fffb2+) +q+)))
+       (setf res-x (mod (* res-x u) +q+))
+       (setf z (mod (* z v) +q+))
+       (setf sign 0)
+       (go :setsign)
+     :negative
+       (setf x (mod (* x +i+) +q+))
+       (setf y (mod (- w x) +q+))
+       (if (plusp y)
+           (setf res-x (mod (* res-x +fffb3+) +q+))
+           (setf res-x (mod (* res-x +fffb4+) +q+)))
+       (setf sign 1)
+     :setsign
+       (unless (= (logand res-x 1) sign)
+         (setf res-x (mod (- res-x) +q+))))
+    (let* ((pz (mod (+ z w) +q+))
+           (py (mod (- z w) +q+))
+           (px (mod (* res-x pz) +q+))
+           (inv-pz (ironclad::ed25519-inv pz))
+           (pw (mod (* px py inv-pz) +q+))
+           (point (vector px py pz pw)))
+      (point->bytes (point*8 point)))))
 
 
 ;;; Data encryption/decryption functions
