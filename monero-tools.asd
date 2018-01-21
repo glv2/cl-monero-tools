@@ -4,6 +4,8 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
+(cl:in-package :asdf-user)
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   #+quicklisp (ql:quickload "trivial-features")
   #-quicklisp (asdf:load-system "trivial-features"))
@@ -87,91 +89,6 @@
                                            (:file "transaction" :depends-on ("address"))
                                            (:file "uri")
                                            (:file "wallet-file")))))))
-
-(defun compile-cncrypto-library (&optional static)
-  (flet ((get-pathname (file)
-           (namestring (asdf:system-relative-pathname "monero-tools" file)))
-         (program-exists-p (program)
-           (handler-case (uiop:run-program (list program) :ignore-error-status t)
-             (t () (return-from program-exists-p nil)))
-           t))
-    (let* ((architecture (or #+(or arm ppc x86) "32"
-                             #+(or arm64 ppc64 x86-64) "64"
-                             (error "Unknown architecture.")))
-           (library (get-pathname (concatenate 'string
-                                               "lib/libcncrypto"
-                                               architecture
-                                               (or #+unix (if static ".a" ".so")
-                                                   #+windows (if static ".lib" ".dll")
-                                                   (error "Unknown platform."))))))
-      (unless (uiop:file-exists-p library)
-        (let* ((sources (loop for file in '("aesb.c"
-                                            "blake256.c"
-                                            "chacha8.c"
-                                            "crypto-ops.c"
-                                            "crypto-ops-data.c"
-                                            "groestl.c"
-                                            "hash-extra-blake.c"
-                                            "hash-extra-groestl.c"
-                                            "hash-extra-jh.c"
-                                            "hash-extra-skein.c"
-                                            "hash.c"
-                                            "jh.c"
-                                            "keccak.c"
-                                            "oaes_lib.c"
-                                            "random.c"
-                                            "skein.c"
-                                            "slow-hash.c"
-                                            "tree-hash.c")
-                              collect (get-pathname (concatenate 'string
-                                                                 "lib/cncrypto/"
-                                                                 file))))
-               (compiler (let ((cc (uiop:getenv "CC")))
-                           (cond
-                             ((and cc (program-exists-p cc)) cc)
-                             ((program-exists-p "gcc") "gcc")
-                             ((program-exists-p "clang") "clang")
-                             (t (error "Compiler not found."))))))
-          (if static
-              (let* ((archiver (cond
-                                 ((program-exists-p "ar") "ar")
-                                 (t (error "Archiver not found."))))
-                     (objects (mapcar (lambda (source)
-                                        (concatenate 'string
-                                                     (subseq source 0 (- (length source) 1))
-                                                     "o"))
-                                      sources))
-                     (compile (mapcar (lambda (c o)
-                                        (list compiler
-                                              "-c"
-                                              "-O2"
-                                              "-pipe"
-                                              "-fPIC"
-                                              "-maes"
-                                              (concatenate 'string "-m" architecture)
-                                              "-o" o
-                                              c))
-                                      sources
-                                      objects))
-                     (archive (append (list archiver "rcs" library) objects)))
-                (dolist (cmd compile)
-                  (uiop:run-program cmd :output t :error-output t))
-                (uiop:run-program archive :output t :error-output t)
-                (dolist (object objects)
-                  (delete-file object)))
-              (let ((compile (append (list compiler
-                                           "-shared"
-                                           "-O2"
-                                           "-pipe"
-                                           "-fPIC"
-                                           "-maes"
-                                           (concatenate 'string "-m" architecture)
-                                           "-o" library)
-                                     sources)))
-                (uiop:run-program compile :output t :error-output t))))))))
-
-(defmethod asdf:perform :before ((op asdf:load-op) (c asdf:cl-source-file))
-  (compile-cncrypto-library))
 
 (defsystem "monero-tools/tests"
   :name "monero-tools/tests"

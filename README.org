@@ -34,29 +34,6 @@ or
  - trivial-features
  - the zbar C library (to read QR codes)
 
-*monero-tools* also depends on the *cncrypto* library (C code of the
-cryptographic primitives used by the Monero cryptocurrency). The
-*monero-tools* system will try to compile it if necessary using GCC or
-CLANG.
-
-If it doesn't work on your machine (e.g. compiler not found), you will
-have to compile the *cncrypto* library by hand and put it the /lib/
-subdirectory of *monero-tools*.
-
-The name of the library depends on the architecture and the operating
-system:
- - /libcncrypto32.so/ on a 32-bit Unix-like system
- - /libcncrypto64.so/ on a 64-bit Unix-like system
- - /libcncrypto32.dll/ on a 32-bit Windows system
- - /libcncrypto64.dll/ on a 64-bit Windows system
-
-For example on a 64-bit Unix-like system:
-
-#+BEGIN_SRC shell
-cd /path-of-monero-tools/lib
-gcc -shared -O2 -pipe -fPIC -maes -m64 -o libcncrypto64.so cncrypto/*.c
-#+END_SRC
-
 * Tools
 ** Blockchain
 
