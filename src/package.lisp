@@ -16,7 +16,7 @@
 
    ;; crypto
    #:fast-hash #:slow-hash #:tree-hash
-   #:chacha8 #:generate-chacha8-key
+   #:chacha8 #:chacha20 #:generate-chacha-key
    #:generate-keys #:generate-secret-key
    #:secret-key->public-key #:secret-spend-key->secret-view-key
    #:recover-keys

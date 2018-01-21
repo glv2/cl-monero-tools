@@ -7,17 +7,21 @@
 (in-package :monero-tools)
 
 
-(defun get-wallet-keys (keys-file password)
-  "Get the wallet view keys and spend keys from an encrypted KEYS-FILE."
+(defun get-wallet-keys (keys-file password &key chacha8)
+  "Get the wallet view keys and spend keys from an encrypted
+KEYS-FILE. Set CHACHA8 to T if the wallet was encrypted with chacha8
+instead of chacha20."
   (let* ((keys-file-data (read-file-into-byte-vector keys-file))
-         (iv (subseq keys-file-data 0 +chacha8-iv-length+)))
+         (iv (subseq keys-file-data 0 +chacha-iv-length+)))
     (multiple-value-bind (encrypted-data-length varint-size)
-        (deserialize-integer keys-file-data +chacha8-iv-length+)
+        (deserialize-integer keys-file-data +chacha-iv-length+)
       (let* ((encrypted-data (subseq keys-file-data
-                                     (+ +chacha8-iv-length+ varint-size)
-                                     (+ +chacha8-iv-length+ varint-size encrypted-data-length)))
-             (key (generate-chacha8-key password))
-             (account-json-data (map 'string #'code-char (chacha8 encrypted-data key iv)))
+                                     (+ +chacha-iv-length+ varint-size)
+                                     (+ +chacha-iv-length+ varint-size encrypted-data-length)))
+             (key (generate-chacha-key password))
+             (account-json-data (map 'string #'code-char (if chacha8
+                                                             (chacha8 encrypted-data key iv)
+                                                             (chacha20 encrypted-data key iv))))
              (account-json (handler-case (decode-json-from-string account-json-data)
                              (t () nil)))
              (key-data (geta account-json :key--data)))
@@ -43,12 +47,13 @@
 (defparameter *bruteforce-result* nil)
 (defparameter *bruteforce-lock* nil)
 
-(defun bruteforce-wallet-keys (keys-file &key (threads 1) dictionary-file (characters " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~") (minimum-length 1) (maximum-length 8) prefix suffix)
+(defun bruteforce-wallet-keys (keys-file &key (threads 1) dictionary-file (characters " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~") (minimum-length 1) (maximum-length 8) prefix suffix chacha8)
   "Try to find the password and keys of an encrypted KEYS-FILE either
 using a DICTIONARY-FILE, or by trying all the passwords composed of
 some CHARACTERS, having a length between MINIMUM-LENGTH and
 MAXIMUM-LENGTH, starting with PREFIX and ending with SUFFIX. Several
-THREADS can be used to go faster."
+THREADS can be used to go faster. Set CHACHA8 to T if the wallet was
+encrypted with chacha8 instead of chacha20."
   (when *bruteforce-lock*
     (error "bruteforce-wallet-keys is already running."))
   (unwind-protect
@@ -99,7 +104,7 @@ THREADS can be used to go faster."
                       (let* ((password (if *bruteforce-dictionary*
                                            (read-dictionary-line)
                                            (generate-next-password)))
-                             (keys (handler-case (get-wallet-keys keys-file password)
+                             (keys (handler-case (get-wallet-keys keys-file password :chacha8 chacha8)
                                      (t () nil))))
                         (when keys
                           (with-lock-held (*bruteforce-lock*)
@@ -119,19 +124,21 @@ THREADS can be used to go faster."
     (setf *bruteforce-lock* nil)
     (setf *bruteforce-result* nil)))
 
-(defun decrypt-wallet-cache (cache-file password &optional keys-file)
+(defun decrypt-wallet-cache (cache-file password &optional keys-file chacha8)
   (let* ((keys-file (or keys-file (concatenate 'string cache-file ".keys")))
-         (wallet-keys (get-wallet-keys keys-file password))
+         (wallet-keys (get-wallet-keys keys-file password :chacha8 chacha8))
          (secret-view-key (geta wallet-keys :secret-view-key))
          (secret-spend-key (geta wallet-keys :secret-spend-key))
-         (key (generate-chacha8-key-from-secret-keys secret-view-key secret-spend-key))
+         (key (generate-chacha-key-from-secret-keys secret-view-key secret-spend-key))
          (cache-file-data (read-file-into-byte-vector cache-file))
-         (iv (subseq cache-file-data 0 +chacha8-iv-length+)))
+         (iv (subseq cache-file-data 0 +chacha-iv-length+)))
     (multiple-value-bind (encrypted-data-length varint-size)
-        (deserialize-integer cache-file-data +chacha8-iv-length+)
+        (deserialize-integer cache-file-data +chacha-iv-length+)
       (let* ((encrypted-data (subseq cache-file-data
-                                     (+ +chacha8-iv-length+ varint-size)
-                                     (+ +chacha8-iv-length+ varint-size encrypted-data-length)))
-             (data (chacha8 encrypted-data key iv)))
+                                     (+ +chacha-iv-length+ varint-size)
+                                     (+ +chacha-iv-length+ varint-size encrypted-data-length)))
+             (data (if chacha8
+                       (chacha8 encrypted-data key iv)
+                       (chacha20 encrypted-data key iv))))
         ;; TODO: deserialize data
         data))))

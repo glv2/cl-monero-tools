@@ -51,12 +51,13 @@ Optional:
 ** Cryptography
 
  - chacha8
+ - chacha20
  - compute-key-image
  - derive-key
  - derive-public-spend-subkey
  - derive-secret-spend-subkey
  - fast-hash
- - generate-chacha8-key
+ - generate-chacha-key
  - generate-keys
  - generate-secret-key
  - generate-ring-signature

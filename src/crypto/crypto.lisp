@@ -178,15 +178,15 @@ as a byte vector."
 ;;; Data encryption/decryption functions
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant +chacha8-key-length+ 32)
-  (defconstant +chacha8-iv-length+ 8))
-(defconstant +chacha8-key-tail+ 140)
+  (defconstant +chacha-key-length+ 32)
+  (defconstant +chacha-iv-length+ 8))
+(defconstant +chacha-key-tail+ 140)
 
 (defun chacha8 (data key iv)
   "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
   (check-type data octet-vector)
-  (check-type key (octet-vector #.+chacha8-key-length+))
-  (check-type iv (octet-vector #.+chacha8-iv-length+))
+  (check-type key (octet-vector #.+chacha-key-length+))
+  (check-type iv (octet-vector #.+chacha-iv-length+))
   (let ((cipher (ironclad:make-cipher :chacha/8 :key key
                                                 :mode :stream
                                                 :initialization-vector iv))
@@ -194,12 +194,24 @@ as a byte vector."
     (ironclad:encrypt cipher data ciphertext)
     ciphertext))
 
-(defun generate-chacha8-key (password)
+(defun chacha20 (data key iv)
+  "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
+  (check-type data octet-vector)
+  (check-type key (octet-vector #.+chacha-key-length+))
+  (check-type iv (octet-vector #.+chacha-iv-length+))
+  (let ((cipher (ironclad:make-cipher :chacha :key key
+                                              :mode :stream
+                                              :initialization-vector iv))
+        (ciphertext (make-array (length data) :element-type '(unsigned-byte 8))))
+    (ironclad:encrypt cipher data ciphertext)
+    ciphertext))
+
+(defun generate-chacha-key (password)
   "Generate the encryption/decryption key matching a PASSWORD."
   (check-type password string)
-  (subseq (slow-hash (utf-8-string->bytes password)) 0 +chacha8-key-length+))
+  (subseq (slow-hash (utf-8-string->bytes password)) 0 +chacha-key-length+))
 
-(defun generate-chacha8-key-from-secret-keys (secret-view-key secret-spend-key)
+(defun generate-chacha-key-from-secret-keys (secret-view-key secret-spend-key)
   "Generate the encryption/decryption key matching a wallet's secret
 keys."
   (check-type secret-view-key (octet-vector #.+key-length+))
@@ -207,5 +219,5 @@ keys."
   (let ((data (concatenate 'octet-vector
                            secret-view-key
                            secret-spend-key
-                           (vector +chacha8-key-tail+))))
-    (subseq (slow-hash data) 0 +chacha8-key-length+)))
+                           (vector +chacha-key-tail+))))
+    (subseq (slow-hash data) 0 +chacha-key-length+)))

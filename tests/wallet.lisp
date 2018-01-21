@@ -44,7 +44,7 @@ testnet: no
 (test get-wallet-keys
   (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
          (password "123456")
-         (keys (get-wallet-keys file password)))
+         (keys (get-wallet-keys file password :chacha8 t)))
     (is (string-equal "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
                       (bytes->hex-string (geta keys :secret-spend-key))))
     (is (string-equal "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
@@ -73,7 +73,8 @@ testnet: no
                                        :minimum-length 5
                                        :maximum-length 6
                                        :prefix "12"
-                                       :suffix "56")))
+                                       :suffix "56"
+                                       :chacha8 t)))
     (is (string= "123456"
                  (geta keys :password)))
     (is (string-equal "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
@@ -85,7 +86,8 @@ testnet: no
                                        :minimum-length 5
                                        :maximum-length 6
                                        :prefix "12"
-                                       :suffix "56")))
+                                       :suffix "56"
+                                       :chacha8 t)))
     (is (null keys)))
   (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
          (dictionary (asdf:system-relative-pathname "monero-tools/tests" "tests/dictionary.txt"))
