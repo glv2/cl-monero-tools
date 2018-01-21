@@ -24,7 +24,7 @@
       (replace text state :start2 64)
       ;; Step 2: Iteratively encrypt the results from Keccak to fill the
       ;; 2MB large random access buffer.
-      (let ((round-keys (pseudo-aes-expand-key state))
+      (let ((round-keys (pseudo-aes-expand-key state 0))
             (scratchpad (make-array +scratchpad-size+ :element-type '(unsigned-byte 8))))
         (declare (type ironclad::aes-round-keys round-keys)
                  (type (simple-array (unsigned-byte 8) (#.(ash 1 21))) scratchpad))
@@ -68,9 +68,8 @@
                      (carry (+ (ash carry -32) (ash b0c1 -32) (ash b1c0 -32)))
                      (s1 (ironclad::mod64+ b1c1 carry)))
                 (declare (type (unsigned-byte 64) b0c0 b0c1 b1c0 b1c1 s0 s1 carry))
-                (setf (ironclad:ub64ref/le d 0) s0)
-                (setf (ironclad:ub64ref/le d 8) s1))
-              (rotatef (ironclad:ub64ref/le d 0) (ironclad:ub64ref/le d 8))
+                (setf (ironclad:ub64ref/le d 0) s1)
+                (setf (ironclad:ub64ref/le d 8) s0))
               (setf (ironclad:ub64ref/le a 0) (ironclad::mod64+ (ironclad:ub64ref/le a 0)
                                                                 (ironclad:ub64ref/le d 0)))
               (setf (ironclad:ub64ref/le a 8) (ironclad::mod64+ (ironclad:ub64ref/le a 8)
@@ -82,7 +81,7 @@
         ;; the TEXT buffer. TEXT was originally created with the output
         ;; of Keccak1600.
         (replace text state :start2 64)
-        (setf round-keys (pseudo-aes-expand-key (subseq state 32)))
+        (setf round-keys (pseudo-aes-expand-key state 32))
         (dotimes (i (/ +scratchpad-size+ +init-size-byte+))
           (dotimes (j +init-size-blk+)
             (setf (ironclad:ub64ref/le text (* j +aes-block-size+))
