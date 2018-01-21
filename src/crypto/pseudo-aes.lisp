@@ -8,7 +8,9 @@
 
 
 (defun pseudo-aes-expand-key (state)
+  (declare (type (simple-array (unsigned-byte 8) (*)) state))
   (let ((key (subseq state 0 32)))
+    (declare (type (simple-array (unsigned-byte 8) (32)) key))
     (ironclad::generate-round-keys-for-encryption key (ironclad::allocate-round-keys key))))
 
 (macrolet ((mix (rk a0 a1 a2 a3 sym0 sym1 sym2 sym3)
@@ -29,7 +31,12 @@
                     s3 (mix (+ ,offset 3) ironclad::Te0 ironclad::Te1 ironclad::Te2 ironclad::Te3 t3 t0 t1 t2)))
            (rk-ref (x) `(aref round-keys (+ ,x round-key-offset))))
   (defun pseudo-aes-round (in in-start out out-start round-key)
+    (declare (type (simple-array (unsigned-byte 8) (*)) in out round-key)
+             (type fixnum in-start out-start)
+             (optimize (speed 3) (space 0) (safety 0) (debug 0)))
     (let ((round-keys (make-array 4 :element-type '(unsigned-byte 32))))
+      (declare (type (simple-array (unsigned-byte 32) (4)) round-keys)
+               (dynamic-extent round-keys))
       (setf (aref round-keys 0) (ironclad:ub32ref/be round-key 0))
       (setf (aref round-keys 1) (ironclad:ub32ref/be round-key 4))
       (setf (aref round-keys 2) (ironclad:ub32ref/be round-key 8))
@@ -43,6 +50,10 @@
           (ironclad::store-words out out-start t0 t1 t2 t3)))))
 
   (defun pseudo-aes-rounds (in in-start out out-start round-keys)
+    (declare (type (simple-array (unsigned-byte 8) (*)) in out)
+             (type ironclad::aes-round-keys round-keys)
+             (type fixnum in-start out-start)
+             (optimize (speed 3) (space 0) (safety 0) (debug 0)))
     (ironclad::with-words ((s0 s1 s2 s3) in in-start)
       (let ((t0 0) (t1 0) (t2 0) (t3 0)
             (round-key-offset 0))

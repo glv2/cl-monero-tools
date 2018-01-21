@@ -8,20 +8,24 @@
 
 
 (defun cryptonight (data)
-  (let* ((+scratchpad-size+ (ash 1 21))
-         (+bounce-iterations+ (ash 1 20))
+  (let* ((+scratchpad-size+ #.(ash 1 21))
+         (+bounce-iterations+ #.(ash 1 20))
          (+aes-block-size+ 16)
          (+init-size-blk+ 8)
          (+init-size-byte+ (* +init-size-blk+ +aes-block-size+)))
+    (declare (optimize (speed 3) (space 0) (safety 0) (debug 0)))
     ;; Step 1: Use Keccak1600 to initialize the STATE and TEXT buffers
     ;; from the DATA.
     (let* ((state (keccak1600 data))
            (text (subseq state 64 (+ 64 +init-size-byte+))))
-      (declare (type (simple-array (unsigned-byte 8) (200)) state))
+      (declare (type (simple-array (unsigned-byte 8) (200)) state)
+               (type (simple-array (unsigned-byte 8) (128)) text))
       ;; Step 2: Iteratively encrypt the results from Keccak to fill the
       ;; 2MB large random access buffer.
       (let ((round-keys (pseudo-aes-expand-key state))
             (scratchpad (make-array +scratchpad-size+ :element-type '(unsigned-byte 8))))
+        (declare (type ironclad::aes-round-keys round-keys)
+                 (type (simple-array (unsigned-byte 8) (#.(ash 1 21))) scratchpad))
         (dotimes (i (/ +scratchpad-size+ +init-size-byte+))
           (dotimes (j +init-size-blk+)
             (pseudo-aes-rounds text (* j +aes-block-size+) text (* j +aes-block-size+) round-keys))
@@ -34,6 +38,8 @@
               (b (make-array 16 :element-type '(unsigned-byte 8)))
               (c (make-array 16 :element-type '(unsigned-byte 8)))
               (d (make-array 16 :element-type '(unsigned-byte 8))))
+          (declare (type (simple-array (unsigned-byte 8) (16)) a b c d)
+                   (dynamic-extent a b c d))
           (setf (ironclad:ub64ref/le a 0) (logxor (ironclad:ub64ref/le state 0)
                                                   (ironclad:ub64ref/le state 32)))
           (setf (ironclad:ub64ref/le a 8) (logxor (ironclad:ub64ref/le state 8)
@@ -44,6 +50,7 @@
                                                   (ironclad:ub64ref/le state 56)))
           (dotimes (i (/ +bounce-iterations+ 2))
             (let ((scratchpad-address (logand (ironclad:ub32ref/le a 0) #x1ffff0)))
+              (declare (type (unsigned-byte 21) scratchpad-address))
               (replace c scratchpad :start2 scratchpad-address)
               (pseudo-aes-round c 0 c 0 a)
               (ironclad::xor-block 16 b c 0 scratchpad scratchpad-address)
