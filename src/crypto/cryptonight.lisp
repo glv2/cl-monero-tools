@@ -17,9 +17,11 @@
     ;; Step 1: Use Keccak1600 to initialize the STATE and TEXT buffers
     ;; from the DATA.
     (let* ((state (keccak1600 data))
-           (text (subseq state 64 (+ 64 +init-size-byte+))))
+           (text (make-array +init-size-byte+ :element-type '(unsigned-byte 8))))
       (declare (type (simple-array (unsigned-byte 8) (200)) state)
-               (type (simple-array (unsigned-byte 8) (128)) text))
+               (type (simple-array (unsigned-byte 8) (128)) text)
+               (dynamic-extent text))
+      (replace text state :start2 64)
       ;; Step 2: Iteratively encrypt the results from Keccak to fill the
       ;; 2MB large random access buffer.
       (let ((round-keys (pseudo-aes-expand-key state))
@@ -57,9 +59,17 @@
               (replace b c)
               (setf scratchpad-address (logand (ironclad:ub32ref/le b 0) #x1ffff0))
               (replace c scratchpad :start2 scratchpad-address)
-              (integer->bytes (* (ironclad:ub64ref/le b 0) (ironclad:ub64ref/le c 0))
-                              :buffer d
-                              :size 16)
+              (let* ((b0c0 (* (ironclad:ub32ref/le b 0) (ironclad:ub32ref/le c 0)))
+                     (b0c1 (* (ironclad:ub32ref/le b 0) (ironclad:ub32ref/le c 4)))
+                     (b1c0 (* (ironclad:ub32ref/le b 4) (ironclad:ub32ref/le c 0)))
+                     (b1c1 (* (ironclad:ub32ref/le b 4) (ironclad:ub32ref/le c 4)))
+                     (carry (+ (ash b0c0 -32) (logand b0c1 #xffffffff) (logand b1c0 #xffffffff)))
+                     (s0 (logior (logand b0c0 #xffffffff) (ironclad::mod64ash carry 32)))
+                     (carry (+ (ash carry -32) (ash b0c1 -32) (ash b1c0 -32)))
+                     (s1 (ironclad::mod64+ b1c1 carry)))
+                (declare (type (unsigned-byte 64) b0c0 b0c1 b1c0 b1c1 s0 s1 carry))
+                (setf (ironclad:ub64ref/le d 0) s0)
+                (setf (ironclad:ub64ref/le d 8) s1))
               (rotatef (ironclad:ub64ref/le d 0) (ironclad:ub64ref/le d 8))
               (setf (ironclad:ub64ref/le a 0) (ironclad::mod64+ (ironclad:ub64ref/le a 0)
                                                                 (ironclad:ub64ref/le d 0)))
