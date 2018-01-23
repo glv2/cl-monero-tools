@@ -54,6 +54,8 @@ Optional:
  - chacha20
  - compute-key-image
  - derive-key
+ - derive-output-public-key
+ - derive-output-secret-key
  - derive-public-spend-subkey
  - derive-secret-spend-subkey
  - fast-hash

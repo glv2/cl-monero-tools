@@ -21,6 +21,7 @@
    #:secret-key->public-key #:secret-spend-key->secret-view-key
    #:recover-keys
    #:derive-key
+   #:derive-output-public-key #:derive-output-secret-key
    #:derive-secret-spend-subkey #:derive-public-spend-subkey
    #:public-spend-subkey->public-view-subkey
    #:generate-signature #:valid-signature-p

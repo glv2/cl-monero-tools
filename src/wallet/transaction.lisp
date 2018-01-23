@@ -29,7 +29,7 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
   "Check if an ADDRESS is the destination of an output."
   (let* ((public-spend-key (geta (decode-address address) :public-spend-key))
          (derivation (derive-key transaction-public-key secret-view-key))
-         (key (derive-public-key derivation output-index public-spend-key)))
+         (key (derive-output-public-key derivation output-index public-spend-key)))
     (equalp key output-key)))
 
 (defun prove-payment (transaction-hash address transaction-secret-key)

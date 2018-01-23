@@ -58,7 +58,7 @@ from a key DERIVATION and an OUTPUT-INDEX."
   (let ((data (concatenate 'octet-vector derivation (integer->bytes output-index :varint t))))
     (hash-to-scalar data)))
 
-(defun derive-public-key (derivation output-index public-spend-key)
+(defun derive-output-public-key (derivation output-index public-spend-key)
   "Compute an output's public key from a key DERIVATION, an
 OUTPUT-INDEX and a PUBLIC-SPEND-KEY."
   (check-type derivation (octet-vector #.+key-length+))
@@ -68,7 +68,7 @@ OUTPUT-INDEX and a PUBLIC-SPEND-KEY."
         (p (bytes->point public-spend-key)))
     (point->bytes (point+ p (point* +g+ x)))))
 
-(defun derive-secret-key (derivation output-index secret-spend-key)
+(defun derive-output-secret-key (derivation output-index secret-spend-key)
   "Compute an output's secret key from a key DERIVATION, an
 OUTPUT-INDEX and a SECRET-SPEND-KEY."
   (check-type derivation (octet-vector #.+key-length+))
