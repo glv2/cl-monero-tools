@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -65,6 +65,7 @@ testnet: no
     (is (string-equal "d302c0849107819a5301b91e08928617bdadcf303b05122dca9adc24d80238e3"
                       (bytes->hex-string (geta keys :public-view-key))))))
 
+#+sbcl
 (test bruteforce-wallet-keys
   (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
          (keys (bruteforce-wallet-keys file
