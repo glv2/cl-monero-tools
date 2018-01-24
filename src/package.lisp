@@ -36,6 +36,9 @@
    #:mnemonic-seed->secret-key #:secret-key->mnemonic-seed
    #:encrypt-mnemonic-seed #:decrypt-mnemonic-seed
 
+   ;; openalias
+   #:get-openalias-info
+
    ;; rpc
    #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
    #:rpc #:json-rpc

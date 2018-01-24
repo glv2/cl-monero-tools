@@ -85,6 +85,10 @@ Optional:
  - mnemonic-seed->secret-key
  - secret-key->mnemonic-seed
 
+** Openalias
+
+ - get-openalias-info
+
 ** Remote procedure call
 
  - =*rpc-host*=

@@ -6,10 +6,6 @@
 
 (cl:in-package :asdf-user)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  #+quicklisp (ql:quickload "trivial-features")
-  #-quicklisp (asdf:load-system "trivial-features"))
-
 (defsystem "monero-tools"
   :name "monero-tools"
   :description "Tools to work with the Monero crypto-currency"
@@ -22,6 +18,7 @@
                "cffi"
                "cl-base64"
                "cl-json"
+               "cl-ppcre"
                "cl-qrencode"
                "dexador"
                "ieee-floats"
@@ -29,7 +26,7 @@
                "png-read"
                "pzmq"
                "split-sequence"
-               "trivial-features")
+               "uiop")
   :in-order-to ((test-op (test-op "monero-tools/tests")))
   :components ((:module "src"
                 :components ((:file "package")
@@ -65,6 +62,9 @@
                                            (:file "portuguese" :depends-on ("mnemonic"))
                                            (:file "russian" :depends-on ("mnemonic"))
                                            (:file "spanish" :depends-on ("mnemonic"))))
+                             (:module "openalias"
+                              :depends-on ("package")
+                              :components ((:file "openalias")))
                              (:module "rpc"
                               :depends-on ("blockchain" "package" "serialization" "utils")
                               :components ((:file "daemon" :depends-on ("rpc" "zmq"))
