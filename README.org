@@ -24,6 +24,7 @@ or
  - cffi
  - cl-base64
  - cl-json
+ - cl-ppcre
  - cl-qrencode
  - dexador
  - ieee-floats
@@ -31,7 +32,7 @@ or
  - png-read
  - pzmq
  - split-sequence
- - trivial-features
+ - uiop
 
 Optional:
  - the zbar C library (to read QR codes)
