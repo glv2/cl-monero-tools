@@ -71,7 +71,7 @@ otherwise."
          (subaddress (geta address-info :subaddress))
          (public-spend-key (if subaddress
                                (geta address-info :public-spend-key)
-                               #.(point->bytes +g+))))
+                               (point->bytes +g+))))
     (multiple-value-bind (shared-secret proof)
         (generate-inbound-transaction-proof transaction-hash
                                             transaction-public-key
@@ -95,7 +95,7 @@ and NIL otherwise."
              (subaddress (geta address-info :subaddress))
              (public-spend-key (if subaddress
                                    (geta address-info :public-spend-key)
-                                   #.(point->bytes +g+)))
+                                   (point->bytes +g+)))
              (public-view-key (geta address-info :public-view-key))
              (shared-secret (base58-decode (subseq proof
                                                    header-length
@@ -116,7 +116,7 @@ and NIL otherwise."
          (subaddress (geta address-info :subaddress))
          (public-spend-key (if subaddress
                                (geta address-info :public-spend-key)
-                               #.(point->bytes +g+)))
+                               (point->bytes +g+)))
          (public-view-key (geta address-info :public-view-key)))
     (multiple-value-bind (shared-secret proof)
         (generate-outbound-transaction-proof transaction-hash
@@ -141,7 +141,7 @@ valid, and NIL otherwise."
              (subaddress (geta address-info :subaddress))
              (public-spend-key (if subaddress
                                    (geta address-info :public-spend-key)
-                                   #.(point->bytes +g+)))
+                                   (point->bytes +g+)))
              (public-view-key (geta address-info :public-view-key))
              (shared-secret (base58-decode (subseq proof
                                                    header-length
