@@ -150,7 +150,14 @@
         ;; Skein). Use this hash to squeeze the state array down to the
         ;; final 256 bit hash output.
         (replace state text :start1 64)
-        (keccakf state)
+        (let ((state-64 (make-array 25 :element-type '(unsigned-byte 64))))
+          (declare (type (simple-array (unsigned-byte 64) (25)) state-64)
+                   (dynamic-extent state-64))
+          (dotimes (i 25)
+            (setf (aref state-64 i) (ironclad:ub64ref/le state (* 8 i))))
+          (keccakf state-64)
+          (dotimes (i 25)
+            (setf (ironclad:ub64ref/le state (* 8 i)) (aref state-64 i))))
         (ironclad:digest-sequence (case (logand (aref state 0) 3)
                                     ((0) :blake256)
                                     ((1) :groestl/256)
