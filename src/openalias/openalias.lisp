@@ -14,19 +14,11 @@
   "Return an alist containing the openalias information of an ADDRESS.
 The second returned value is T is the validity of the information has
 been verified (DNSSEC), and NIL otherwise."
-  (let* ((normalized-address (normalize-openalias-address address))
-         ;; TODO: use Lisp code instead of external program for DNS query
-         (answer (uiop:run-program (format nil "nslookup -q=TXT ~a" normalized-address)
-                                   :output :string
-                                   :ignore-error-status t))
-         ;; TODO: DNSSEC validation
-         (valid-dnssec nil)
-         (fields (nth-value 1 (cl-ppcre:scan-to-strings "text = \"oa1:xmr (.*)\"" answer)))
-         (info (when fields
-                 (aref fields 0))))
+  (multiple-value-bind (text validated)
+      (get-monero-txt-record (normalize-openalias-address address))
     (flet ((get-field (name)
              (let* ((regexp (format nil "~a=(.*?);" name))
-                    (fields (nth-value 1 (cl-ppcre:scan-to-strings regexp info))))
+                    (fields (nth-value 1 (cl-ppcre:scan-to-strings regexp text))))
                (when fields
                  (aref fields 0)))))
       (let ((address (get-field "recipient_address"))
@@ -44,4 +36,4 @@ been verified (DNSSEC), and NIL otherwise."
                           (list (cons :payment-id payment-id)))
                         (when amount
                           (list (cons :amount amount))))
-                valid-dnssec)))))
+                validated)))))

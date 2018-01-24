@@ -63,8 +63,9 @@
                                            (:file "russian" :depends-on ("mnemonic"))
                                            (:file "spanish" :depends-on ("mnemonic"))))
                              (:module "openalias"
-                              :depends-on ("package")
-                              :components ((:file "openalias")))
+                              :depends-on ("package" "utils")
+                              :components ((:file "dns")
+                                           (:file "openalias" :depends-on ("dns"))))
                              (:module "rpc"
                               :depends-on ("blockchain" "package" "serialization" "utils")
                               :components ((:file "daemon" :depends-on ("rpc" "zmq"))
@@ -107,6 +108,7 @@
                              (:file "crypto" :depends-on ("tests"))
                              (:file "mine" :depends-on ("tests"))
                              (:file "mnemonic" :depends-on ("tests"))
+                             (:file "openalias" :depends-on ("tests"))
                              (:file "tests")
                              (:file "serialization" :depends-on ("tests"))
                              (:file "utils" :depends-on ("tests"))

@@ -35,6 +35,7 @@ or
  - uiop
 
 Optional:
+ - the unbound C library (to resolve OpenAlias names)
  - the zbar C library (to read QR codes)
 
 * Tools
@@ -86,7 +87,7 @@ Optional:
  - mnemonic-seed->secret-key
  - secret-key->mnemonic-seed
 
-** Openalias
+** OpenAlias
 
  - get-openalias-info
 
