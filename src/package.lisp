@@ -37,6 +37,7 @@
    #:encrypt-mnemonic-seed #:decrypt-mnemonic-seed
 
    ;; openalias
+   #:*dnssec-trust-anchors*
    #:get-openalias-info
 
    ;; rpc

@@ -32,26 +32,32 @@
   (why-bogus :pointer)
   (ttl :int))
 
+(defparameter *dnssec-trust-anchors*
+  (asdf:system-relative-pathname "monero-tools" "conf/dnssec-trust-anchors.txt"))
+
 (defun get-monero-txt-record (name)
   "Make a DNS query for NAME and return the Monero TXT record.
-The second returned value is T if the DNS answer was validated
-(DNSSEC), and NIL otherwise."
+The second returned value is T if the DNS answer was validated by
+DNSSEC, and NIL otherwise. The DNSSEC keys are taken from the file
+specified in the *DNSSEC-TRUST-ANCHORS* parameter."
   (if (foreign-library-loaded-p 'unbound)
-      (let* ((name-bytes (utf-8-string->bytes name))
-             (context (foreign-funcall "ub_ctx_create" :pointer))
+      (let* ((context (foreign-funcall "ub_ctx_create" :pointer))
              (text nil)
              (validated nil))
-        (with-foreign-objects ((raw-name :unsigned-char (length name-bytes))
-                               (result :pointer))
-          (lisp-array->c-array name-bytes raw-name)
+        (with-foreign-object (result :pointer)
+          (when (uiop:file-exists-p *dnssec-trust-anchors*)
+            (foreign-funcall "ub_ctx_add_ta_autr"
+                             :pointer context
+                             :string (namestring *dnssec-trust-anchors*)
+                             :int))
           (foreign-funcall "ub_resolve"
                            :pointer context
-                           :pointer raw-name
+                           :string name
                            :int 16 ; type TXT
                            :int 1 ; class IN
                            :pointer result
                            :int)
-          (with-foreign-slots ((data len secure) (mem-ref result :pointer) (:struct ub-result))
+          (with-foreign-slots ((data len secure bogus) (mem-ref result :pointer) (:struct ub-result))
             (setf validated (= secure 1))
             (setf text (do* ((i 0 (1+ i))
                              (record (mem-aref data :pointer i) (mem-aref data :pointer i)))

@@ -89,6 +89,7 @@ Optional:
 
 ** OpenAlias
 
+ - =*dnssec-trust-anchors*=
  - get-openalias-info
 
 ** Remote procedure call
