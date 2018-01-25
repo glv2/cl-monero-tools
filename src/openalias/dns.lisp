@@ -32,23 +32,31 @@
   (why-bogus :pointer)
   (ttl :int))
 
-(defparameter *dnssec-trust-anchors*
-  (asdf:system-relative-pathname "monero-tools" "conf/dnssec-trust-anchors.txt"))
+(defparameter *dnssec-trust-anchor*
+  ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5")
 
 (defun get-monero-txt-record (name)
   "Make a DNS query for NAME and return the Monero TXT record.
 The second returned value is T if the DNS answer was validated by
-DNSSEC, and NIL otherwise. The DNSSEC keys are taken from the file
-specified in the *DNSSEC-TRUST-ANCHORS* parameter."
+DNSSEC, and NIL otherwise. The trust anchor used for DNSSEC validation
+is specified in the *DNSSEC-TRUST-ANCHOR* parameter."
   (if (foreign-library-loaded-p 'unbound)
       (let* ((context (foreign-funcall "ub_ctx_create" :pointer))
              (text nil)
              (validated nil))
         (with-foreign-object (result :pointer)
-          (when (uiop:file-exists-p *dnssec-trust-anchors*)
-            (foreign-funcall "ub_ctx_add_ta_autr"
+          (foreign-funcall "ub_ctx_resolvconf"
+                           :pointer context
+                           :pointer (null-pointer)
+                           :int)
+          (foreign-funcall "ub_ctx_hosts"
+                           :pointer context
+                           :pointer (null-pointer)
+                           :int)
+          (when *dnssec-trust-anchor*
+            (foreign-funcall "ub_ctx_add_ta"
                              :pointer context
-                             :string (namestring *dnssec-trust-anchors*)
+                             :string *dnssec-trust-anchor*
                              :int))
           (foreign-funcall "ub_resolve"
                            :pointer context
@@ -57,7 +65,7 @@ specified in the *DNSSEC-TRUST-ANCHORS* parameter."
                            :int 1 ; class IN
                            :pointer result
                            :int)
-          (with-foreign-slots ((data len secure bogus) (mem-ref result :pointer) (:struct ub-result))
+          (with-foreign-slots ((data len secure) (mem-ref result :pointer) (:struct ub-result))
             (setf validated (= secure 1))
             (setf text (do* ((i 0 (1+ i))
                              (record (mem-aref data :pointer i) (mem-aref data :pointer i)))
