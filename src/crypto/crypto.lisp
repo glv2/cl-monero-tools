@@ -42,6 +42,16 @@
   (check-type p2 point)
   (ironclad::ed25519-edwards-add p1 p2))
 
+(defun point- (p1 p2)
+  "Point subtraction on Ed25519."
+  (check-type p1 point)
+  (check-type p2 point)
+  (let ((inv-p2 (vector (- +q+ (aref p2 0))
+                        (aref p2 1)
+                        (aref p2 2)
+                        (- +q+ (aref p2 3)))))
+    (point+ p1 inv-p2)))
+
 (defun point* (point n)
   "Scalar multiplication on Ed25519."
   (check-type point point)
