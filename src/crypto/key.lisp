@@ -94,6 +94,20 @@ its MINOR-INDEX and the main SECRET-VIEW-KEY."
                            (integer->bytes minor-index :size 4))))
     (hash-to-scalar data)))
 
+(defun derive-output-secret-subkey (derivation output-index secret-view-key secret-spend-key major-index minor-index)
+  "Compute the secret key of an output to a subaddress from a key
+DERIVATION, an OUTPUT-INDEX, a SECRET-VIEW-KEY, a SECRET-SPEND-KEY,
+and the subaddress' MAJOR-INDEX and MINOR-INDEX."
+  (check-type derivation (octet-vector #.+key-length+))
+  (check-type output-index (integer 0 *))
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type secret-spend-key (octet-vector #.+key-length+))
+  (check-type major-index (integer 0 *))
+  (check-type minor-index (integer 0 *))
+  (let ((x (bytes->integer (derive-output-secret-key derivation output-index secret-spend-key)))
+        (s (bytes->integer (derive-subkey-secret secret-view-key major-index minor-index))))
+    (integer->bytes (mod (+ x s) +l+) :size +key-length+)))
+
 (defun derive-secret-spend-subkey (secret-view-key secret-spend-key major-index minor-index)
   "Compute the secret spend key of a subaddress from its MAJOR-INDEX,
 its MINOR-INDEX, the main SECRET-VIEW-KEY and the main
