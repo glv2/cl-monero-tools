@@ -112,7 +112,6 @@
     (fill tmp 0 :start (+ data-length 1))
     (setf (aref tmp 135) (logior (aref tmp 135) #x80))
 
-    (setf start 0)
     (ironclad::dotimes-unrolled (i 17)
       (setf (aref state i) (logxor (aref state i) (ironclad:ub64ref/le tmp (* i 8)))))
     (keccakf state)
