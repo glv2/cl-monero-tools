@@ -89,6 +89,7 @@ Optional:
 
 ** OpenAlias
 
+ - =*dns-server*=
  - =*dnssec-trust-anchor*=
  - get-openalias-info
 

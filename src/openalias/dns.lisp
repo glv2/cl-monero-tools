@@ -32,27 +32,49 @@
   (why-bogus :pointer)
   (ttl :int))
 
-(defparameter *dnssec-trust-anchor*
-  ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5")
+(defparameter *dns-server* nil
+  "Server to forward DNS queries to. If NIL, use what the operating
+system uses")
+
+(defparameter *dnssec-trust-anchor* ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5"
+  "Trust anchor used for DNSSEC validation. The format is a string,
+similar to the zone-file format, [domainname] [type] [rdata contents].
+Both DS and DNSKEY records are accepted.")
 
 (defun get-monero-txt-record (name)
-  "Make a DNS query for NAME and return the Monero TXT record.
-The second returned value is T if the DNS answer was validated by
-DNSSEC, and NIL otherwise. The trust anchor used for DNSSEC validation
-is specified in the *DNSSEC-TRUST-ANCHOR* parameter."
+  "Make a DNS query for NAME and return the Monero TXT record. The
+second returned value is T if the DNS answer was validated by DNSSEC,
+and NIL otherwise. The DNS query is forwarded to *DNS-SERVER*. The
+trust anchor used for DNSSEC validation is specified in the
+*DNSSEC-TRUST-ANCHOR* parameter."
   (if (foreign-library-loaded-p 'unbound)
       (let* ((context (foreign-funcall "ub_ctx_create" :pointer))
              (text nil)
              (validated nil))
         (with-foreign-object (result :pointer)
-          (foreign-funcall "ub_ctx_resolvconf"
-                           :pointer context
-                           :pointer (null-pointer)
-                           :int)
-          (foreign-funcall "ub_ctx_hosts"
-                           :pointer context
-                           :pointer (null-pointer)
-                           :int)
+          (if *dns-server*
+              (progn
+                (foreign-funcall "ub_ctx_set_fwd"
+                                 :pointer context
+                                 :string *dns-server*
+                                 :int)
+                (foreign-funcall "ub_ctx_set_option"
+                                 :pointer context
+                                 :string "do-udp:"
+                                 :string "no")
+                (foreign-funcall "ub_ctx_set_option"
+                                 :pointer context
+                                 :string "do-tcp:"
+                                 :string "yes"))
+              (progn
+                (foreign-funcall "ub_ctx_resolvconf"
+                                 :pointer context
+                                 :pointer (null-pointer)
+                                 :int)
+                (foreign-funcall "ub_ctx_hosts"
+                                 :pointer context
+                                 :pointer (null-pointer)
+                                 :int)))
           (when *dnssec-trust-anchor*
             (foreign-funcall "ub_ctx_add_ta"
                              :pointer context
