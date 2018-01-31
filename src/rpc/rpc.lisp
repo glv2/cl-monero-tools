@@ -7,10 +7,14 @@
 (in-package :monero-tools)
 
 
-(defparameter *rpc-host* "127.0.0.1")
-(defparameter *rpc-port* 18081)
-(defparameter *rpc-user* nil)
-(defparameter *rpc-password* nil)
+(defparameter *rpc-host* "127.0.0.1"
+  "Location of the RPC server.")
+(defparameter *rpc-port* 18081
+  "Port on which the RPC server expects connections.")
+(defparameter *rpc-user* nil
+  "Username to use to connect to the RPC server.")
+(defparameter *rpc-password* nil
+  "Password to use to connect to the RPC server.")
 
 (defun parse-digest-authentication-challenge (challenge)
   "Parse a 'Digest' authentication CHALLENGE received from a HTTP server."
