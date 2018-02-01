@@ -37,6 +37,16 @@
                               :password password)))
     (geta answer :height)))
 
+(defun get-money-supply-from-daemon (start-height block-count &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+  (let ((parameters (list (cons "height" start-height)
+                          (cons "count" block-count))))
+    (json-rpc "get_coinbase_tx_sum"
+              :parameters parameters
+              :host host
+              :port port
+              :user user
+              :password password)))
+
 (defun get-transactions-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
                            (cons "decode_as_json" t)))
