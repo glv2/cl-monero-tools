@@ -52,6 +52,7 @@ Optional:
 
 ** Cryptography
 
+ - =*cryptonight-variant*=
  - chacha8
  - chacha20
  - compute-key-image

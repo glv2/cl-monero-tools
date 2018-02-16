@@ -15,6 +15,7 @@
    #:compute-transaction-tree-hash
 
    ;; crypto
+   #:*cryptonight-variant*
    #:fast-hash #:slow-hash #:tree-hash
    #:chacha8 #:chacha20 #:generate-chacha-key
    #:generate-keys #:generate-secret-key

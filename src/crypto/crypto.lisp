@@ -90,10 +90,12 @@
   (check-type data octet-vector)
   (subseq (keccak1600 data) 0 +hash-length+))
 
-(defun slow-hash (data)
+(defparameter *cryptonight-variant* 0)
+
+(defun slow-hash (data &optional (variant *cryptonight-variant*))
   "Slow hash function (CryptoNight) for the Cryptonote protocol."
   (check-type data octet-vector)
-  (cryptonight data))
+  (cryptonight data variant))
 
 (defun tree-hash (data count)
   "Tree hash function for the transactions Merkle tree."
