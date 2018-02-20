@@ -297,3 +297,5 @@
   (blake256-finalize state digest digest-start))
 
 (defdigest blake256 :digest-length 32 :block-length 64)
+
+(export 'blake256)
