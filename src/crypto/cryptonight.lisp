@@ -70,12 +70,14 @@
          (+init-size-byte+ (* +init-size-blk+ +aes-block-size+)))
     ;; Step 1: Use Keccak1600 to initialize the STATE and TEXT buffers
     ;; from the DATA.
-    (let ((state (keccak1600 data))
-          (text (make-array +init-size-byte+ :element-type '(unsigned-byte 8)))
-          (nonce (if (plusp variant) (ironclad:ub32ref/le data 39) 0)))
+    (let* ((state (keccak1600 data))
+           (text (make-array +init-size-byte+ :element-type '(unsigned-byte 8)))
+           (tweak (case variant
+                    ((1) (logxor (ironclad:ub64ref/le state 192) (ironclad:ub64ref/le data 35)))
+                    (t 0))))
       (declare (type (simple-array (unsigned-byte 8) (200)) state)
                (type (simple-array (unsigned-byte 8) (128)) text)
-               (type (unsigned-byte 32) nonce)
+               (type (unsigned-byte 64) tweak)
                (dynamic-extent text))
       (replace text state :start2 64)
       ;; Step 2: Iteratively encrypt the results from Keccak to fill the
@@ -114,12 +116,13 @@
               (pseudo-aes-round c 0 c 0 a)
               (ironclad::xor-block 16 b c 0 scratchpad scratchpad-address)
               (replace-16 b 0 c 0)
-              (when (plusp variant)
-                (let* ((tmp (aref scratchpad (+ scratchpad-address 11)))
-                       (index (logand (ash (logior (logand (ash tmp -3) 6) (logand tmp 1)) 1) #xff)))
-                  (declare (type (unsigned-byte 8) tmp index))
-                  (setf (aref scratchpad (+ scratchpad-address 11))
-                        (logxor tmp (logand (ash #x75310 (- index)) #x30)))))
+              (case variant
+                ((1)
+                 (let* ((tmp (aref scratchpad (+ scratchpad-address 11)))
+                        (index (logand (ash (logior (logand (ash tmp -3) 6) (logand tmp 1)) 1) #xff)))
+                   (declare (type (unsigned-byte 8) tmp index))
+                   (setf (aref scratchpad (+ scratchpad-address 11))
+                         (logxor tmp (logand (ash #x75310 (- index)) #x30))))))
               ;; Iteration 2
               (setf scratchpad-address (logand (ironclad:ub32ref/le b 0) #x1ffff0))
               (replace-16 c 0 scratchpad scratchpad-address)
@@ -140,9 +143,10 @@
                                                                 (ironclad:ub64ref/le d 8)))
               (replace-16 scratchpad scratchpad-address a 0)
               (ironclad::xor-block 16 a c 0 a 0)
-              (when (plusp variant)
-                (setf (ironclad:ub32ref/le scratchpad (+ scratchpad-address 8))
-                      (logxor (ironclad:ub32ref/le scratchpad (+ scratchpad-address 8)) nonce))))))
+              (case variant
+                ((1)
+                 (setf (ironclad:ub64ref/le scratchpad (+ scratchpad-address 8))
+                       (logxor (ironclad:ub64ref/le scratchpad (+ scratchpad-address 8)) tweak)))))))
         ;; Step 4: Sequentially pass through the mixing buffer and use
         ;; 10 rounds of AES encryption to mix the random data back into
         ;; the TEXT buffer. TEXT was originally created with the output
