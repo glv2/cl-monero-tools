@@ -200,12 +200,12 @@ testnet: no
     (is (equalp public-view-subkey (geta keys :public-view-key)))))
 
 (test public-keys->subaddress
-  (flet ((public-keys->subaddress/hex (public-spend-key secret-view-key major-index minor-index &key testnet)
+  (flet ((public-keys->subaddress/hex (public-spend-key secret-view-key major-index minor-index &key chain)
            (public-keys->subaddress (hex-string->bytes public-spend-key)
                                     (hex-string->bytes secret-view-key)
                                     major-index
                                     minor-index
-                                    :testnet testnet)))
+                                    :chain chain)))
     (is (string= "841P6Q51rJJcTR9PgCFNtP6gq2oAJpKtiNh9hQ9AcJ8jabzZRpy8acqHoriBmqCFBPVRBsAseVBmfduEj3Ys2FyGDEpQZ7C"
                  (public-keys->subaddress/hex "2c124acc92d2bc5999156bae00f552167a396080cd4100e4d5107bb2d102cd49"
                                               "777cd85ce14d5be04de46f348144e78fdccc79fb0599864f867cb02ce389450b"
@@ -220,11 +220,11 @@ testnet: no
                                               1 1)))))
 
 (test secret-spend-key->subaddress
-  (flet ((secret-spend-key->subaddress/hex (secret-spend-key major-index minor-index &key testnet)
+  (flet ((secret-spend-key->subaddress/hex (secret-spend-key major-index minor-index &key chain)
            (secret-spend-key->subaddress (hex-string->bytes secret-spend-key)
                                          major-index
                                          minor-index
-                                         :testnet testnet)))
+                                         :chain chain)))
     (is (string= "841P6Q51rJJcTR9PgCFNtP6gq2oAJpKtiNh9hQ9AcJ8jabzZRpy8acqHoriBmqCFBPVRBsAseVBmfduEj3Ys2FyGDEpQZ7C"
                  (secret-spend-key->subaddress/hex "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
                                                    0 1)))
