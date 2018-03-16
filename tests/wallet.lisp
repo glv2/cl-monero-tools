@@ -275,6 +275,55 @@ testnet: no
                                     (hex-string->bytes transaction-public-key)
                                     proof))))
 
+(test encrypt-payment-id
+  (let* ((payment-id (ironclad:random-data 8))
+         (secret-view-key (generate-secret-key))
+         (public-view-key (secret-key->public-key secret-view-key))
+         (transaction-secret-key (generate-secret-key))
+         (transaction-public-key (secret-key->public-key transaction-secret-key)))
+    (is (equalp payment-id
+                (decrypt-payment-id (encrypt-payment-id payment-id
+                                                        public-view-key
+                                                        transaction-secret-key)
+                                    transaction-public-key
+                                    secret-view-key)))))
+
+(test decrypt-payment-id
+  ;; TODO
+  )
+
+(test output-for-address-p
+  (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+        (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+        (output-key "49b37a01ae9f4864776fef678bdbdbde0d07825f70e9e0c45e02d38fc1e615d7")
+        (output-index 0)
+        (transaction-public-key "cebcf16a2a1e44a3204f502a6a979ba0d77b1be39859cab283df052c8f99da99"))
+    (is-true (output-for-address-p (hex-string->bytes output-key)
+                                   output-index
+                                   (hex-string->bytes transaction-public-key)
+                                   address
+                                   (hex-string->bytes secret-view-key)))))
+
+(test decrypt-amount
+  (let ((encrypted-amount "3d09a2bf7867c9b90be6789f2a694b854fb8f014a4cb347ab7996389516c4d00")
+        (output-index 0)
+        (transaction-public-key "5dd5e0faabe08ccf904a45e486d19ae8e67cb5a17e7e03104070dce80dd26f08")
+        (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00"))
+    (is (= 3783303208739
+           (decrypt-amount (hex-string->bytes encrypted-amount)
+                           output-index
+                           (hex-string->bytes transaction-public-key)
+                           (hex-string->bytes secret-view-key)))))
+  (let ((encrypted-amount "5474d0b5fe10b407a880713ed78f2118e9928b2a170fe0878e0671c3d860ae0e")
+        (output-index 1)
+        (transaction-public-key "5dd5e0faabe08ccf904a45e486d19ae8e67cb5a17e7e03104070dce80dd26f08")
+        (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00"))
+    (is (= 30000000000000
+           (decrypt-amount (hex-string->bytes encrypted-amount)
+                           output-index
+                           (hex-string->bytes transaction-public-key)
+                           (hex-string->bytes secret-view-key))))))
+
 (test prove-payment
   (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
         (transaction-hash "8d245fc820dac077a32db250074c50f995f93630bd374ba3566f5e1d3fde3d4a")
