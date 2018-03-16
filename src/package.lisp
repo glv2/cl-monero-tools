@@ -69,6 +69,7 @@
    #:public-keys->subaddress #:secret-spend-key->subaddress
    #:encrypt-payment-id #:decrypt-payment-id
    #:output-for-address-p
+   #:decrypt-amount
    #:prove-payment #:valid-payment-proof-p
    #:prove-inbound-transaction #:valid-inbound-transaction-proof-p
    #:prove-outbound-transaction #:valid-outbound-transaction-proof-p

@@ -142,6 +142,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - decode-address
  - decode-qr-code
  - decode-uri
+ - decrypt-amount
  - decrypt-payment-id
  - encrypt-payment-id
  - get-wallet-keys

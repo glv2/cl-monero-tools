@@ -32,6 +32,14 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
          (key (derive-output-public-key derivation output-index public-spend-key)))
     (equalp key output-key)))
 
+(defun decrypt-amount (encrypted-amount output-index transaction-public-key secret-view-key)
+  "Decrypt a transaction output's ENCRYPTED-AMOUNT."
+  (let* ((amount (bytes->integer encrypted-amount))
+         (derivation (derive-key transaction-public-key secret-view-key))
+         (secret (derivation->scalar derivation output-index))
+         (amount-mask (bytes->integer (hash-to-scalar (hash-to-scalar secret)))))
+    (mod (- amount amount-mask) +l+)))
+
 (defun prove-payment (transaction-hash address transaction-secret-key)
   "Prove that a payment to an ADDRESS was made."
   (let* ((recipient-public-view-key (geta (decode-address address) :public-view-key))
