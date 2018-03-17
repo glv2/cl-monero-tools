@@ -66,6 +66,14 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
             (incf received amount)))))
     received))
 
+(defun spent-key-images (transaction)
+  "Return the key images matching the real inputs of a TRANSACTION."
+  (let ((inputs (geta (geta transaction :prefix) :inputs)))
+    (map 'list
+         (lambda (input)
+           (geta (geta input :key) :key-image))
+         inputs)))
+
 (defun prove-payment (transaction-hash address transaction-secret-key)
   "Prove that a payment to an ADDRESS was made."
   (let* ((recipient-public-view-key (geta (decode-address address) :public-view-key))

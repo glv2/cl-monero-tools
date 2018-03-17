@@ -160,6 +160,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - secret-spend-key->subaddress
  - sign-file
  - sign-message
+ - spent-key-images
  - valid-file-signature-p
  - valid-inbound-transaction-proof-p
  - valid-message-signature-p
