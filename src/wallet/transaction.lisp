@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -39,6 +39,32 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
          (secret (derivation->scalar derivation output-index))
          (amount-mask (bytes->integer (hash-to-scalar (hash-to-scalar secret)))))
     (mod (- amount amount-mask) +l+)))
+
+(defun received-amount (transaction address secret-view-key)
+  "Return the total amount that an ADDRESS received in a TRANSACTION."
+  (let* ((prefix (geta transaction :prefix))
+         (outputs (geta prefix :outputs))
+         (extra (geta prefix :extra))
+         (transaction-public-key (dolist (field extra)
+                                   (let ((key (geta field :transaction-public-key)))
+                                     (when key
+                                       (return key)))))
+         (rct-signature (geta transaction :rct-signature))
+         (received 0))
+    (dotimes (i (length outputs))
+      (let* ((output (aref outputs i))
+             (key (geta (geta output :target) :key)))
+        (when (output-for-address-p key i transaction-public-key address secret-view-key)
+          (let ((amount (if (null rct-signature)
+                            (geta output :amount)
+                            (let* ((ecdh-info (aref (geta rct-signature :ecdh-info) i))
+                                   (encrypted-amount (geta ecdh-info :amount)))
+                              (decrypt-amount encrypted-amount
+                                              i
+                                              transaction-public-key
+                                              secret-view-key)))))
+            (incf received amount)))))
+    received))
 
 (defun prove-payment (transaction-hash address transaction-secret-key)
   "Prove that a payment to an ADDRESS was made."

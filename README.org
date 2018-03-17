@@ -155,6 +155,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - prove-payment
  - public-keys->address
  - public-keys->subaddress
+ - received-amount
  - secret-spend-key->address
  - secret-spend-key->subaddress
  - sign-file

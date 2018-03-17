@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -69,7 +69,7 @@
    #:public-keys->subaddress #:secret-spend-key->subaddress
    #:encrypt-payment-id #:decrypt-payment-id
    #:output-for-address-p
-   #:decrypt-amount
+   #:decrypt-amount #:received-amount
    #:prove-payment #:valid-payment-proof-p
    #:prove-inbound-transaction #:valid-inbound-transaction-proof-p
    #:prove-outbound-transaction #:valid-outbound-transaction-proof-p
