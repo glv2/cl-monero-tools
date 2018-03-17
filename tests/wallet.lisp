@@ -276,21 +276,22 @@ testnet: no
                                     proof))))
 
 (test encrypt-payment-id
-  (let* ((payment-id (ironclad:random-data 8))
-         (secret-view-key (generate-secret-key))
-         (public-view-key (secret-key->public-key secret-view-key))
-         (transaction-secret-key (generate-secret-key))
-         (transaction-public-key (secret-key->public-key transaction-secret-key)))
-    (is (equalp payment-id
-                (decrypt-payment-id (encrypt-payment-id payment-id
-                                                        public-view-key
-                                                        transaction-secret-key)
-                                    transaction-public-key
-                                    secret-view-key)))))
+  (let ((payment-id "1122334455667788")
+        (public-view-key "68c55751c35ec5347064aac50c5368e6f9dea74cb540646f762c39bf4044b804")
+        (transaction-secret-key "e00408cc0e3f5b435c1e10c70757ace784d3f732b268ec94ba7d48388c223e0b"))
+    (is (equalp "833ddb809b9c21dd"
+                (bytes->hex-string (encrypt-payment-id (hex-string->bytes payment-id)
+                                                       (hex-string->bytes public-view-key)
+                                                       (hex-string->bytes transaction-secret-key)))))))
 
 (test decrypt-payment-id
-  ;; TODO
-  )
+  (let ((encrypted-payment-id "833ddb809b9c21dd")
+        (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+        (transaction-public-key "c0156f605aa27e302041a2f18a1954ce7cf4535211a5beaa5d6b9fd55317c850"))
+    (is (equalp "1122334455667788"
+                (bytes->hex-string (decrypt-payment-id (hex-string->bytes encrypted-payment-id)
+                                                       (hex-string->bytes transaction-public-key)
+                                                       (hex-string->bytes secret-view-key)))))))
 
 (test output-for-address-p
   (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
