@@ -175,6 +175,36 @@
          (multilayered-group-signatures #'serialize-custom-vector
                                         #'serialize-multilayered-group-signature))))))
 
+(defun serialize-rct-signature-prunable-bulletproof (object type)
+  (flet ((serialize-bulletproof (object)
+           (serialize object
+             ((a1 #'serialize-key)
+              (s #'serialize-key)
+              (t1 #'serialize-key)
+              (t2 #'serialize-key)
+              (taux #'serialize-key)
+              (mu #'serialize-key)
+              (l #'serialize-vector #'serialize-key)
+              (r #'serialize-vector #'serialize-key)
+              (a2 #'serialize-key)
+              (b #'serialize-key)
+              (t #'serialize-key))))
+
+         (serialize-multilayered-group-signature (object)
+           (serialize object
+             ((ss #'serialize-custom-vector #'serialize-custom-vector #'serialize-key)
+              (cc #'serialize-key))))
+
+         (serialize-pseudo-outputs (object type)
+           (when (= type +rct-type-simple-bulletproof+)
+             (serialize-custom-vector object #'serialize-key))))
+    (when object
+      (serialize object
+        ((bulletproofs #'serialize-custom-vector #'serialize-bulletproof)
+         (multilayered-group-signatures #'serialize-custom-vector
+                                        #'serialize-multilayered-group-signature)
+         (pseudo-outputs #'serialize-pseudo-outputs type))))))
+
 (defun serialize-rct-signature (object)
   (flet ((serialize-pseudo-outputs (object type)
            (when (= type +rct-type-simple+)
@@ -187,13 +217,25 @@
     (let ((type (geta object :type)))
       (concatenate 'octet-vector
                    (vector type)
-                   (unless (= type +rct-type-null+)
-                     (serialize object
-                       ((fee #'serialize-integer)
-                        (pseudo-outputs #'serialize-pseudo-outputs type)
-                        (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
-                        (output-public-keys #'serialize-custom-vector #'serialize-key)
-                        (rct-signature-prunable #'serialize-rct-signature-prunable))))))))
+                   (ecase type
+                     ((#.+rct-type-null+)
+                      nil)
+
+                     ((#.+rct-type-full+ #.+rct-type-simple+)
+                      (serialize object
+                        ((fee #'serialize-integer)
+                         (pseudo-outputs #'serialize-pseudo-outputs type)
+                         (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
+                         (output-public-keys #'serialize-custom-vector #'serialize-key)
+                         (rct-signature-prunable #'serialize-rct-signature-prunable))))
+
+                     ((#.+rct-type-full-bulletproof+ #.+rct-type-simple-bulletproof+)
+                      (serialize object
+                        ((fee #'serialize-integer)
+                         (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
+                         (output-public-keys #'serialize-custom-vector #'serialize-key)
+                         (rct-signature-prunable #'serialize-rct-signature-prunable-bulletproof
+                                                 type)))))))))
 
 
 ;;; Transaction extra data

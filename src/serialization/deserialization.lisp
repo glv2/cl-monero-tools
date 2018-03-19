@@ -199,6 +199,41 @@
                                       (if (= type +rct-type-simple+) inputs-size 1)
                                       #'deserialize-multilayered-group-signature)))))
 
+(defun deserialize-rct-signature-prunable-bulletproof (data offset ring-size inputs-size outputs-size type)
+  (flet ((deserialize-bulletproof (data offset)
+           (deserialize data offset
+             ((a1 #'deserialize-key)
+              (s #'deserialize-key)
+              (t1 #'deserialize-key)
+              (t2 #'deserialize-key)
+              (taux #'deserialize-key)
+              (mu #'deserialize-key)
+              (l #'deserialize-vector #'deserialize-key)
+              (r #'deserialize-vector #'deserialize-key)
+              (a2 #'deserialize-key)
+              (b #'deserialize-key)
+              (t #'deserialize-key))))
+
+         (deserialize-multilayered-group-signature (data offset)
+           (deserialize data offset
+             ((ss #'deserialize-custom-vector ring-size
+                  #'deserialize-custom-vector
+                  (+ 1 (if (= type +rct-type-simple-bulletproof+) 1 inputs-size))
+                  #'deserialize-key)
+              (cc #'deserialize-key))))
+
+         (deserialize-pseudo-outputs (data offset type inputs-size)
+           (if (= type +rct-type-simple-bulletproof+)
+               (deserialize-custom-vector data offset inputs-size #'deserialize-key)
+               (values nil 0))))
+    (deserialize data offset
+      ((bulletproofs #'deserialize-custom-vector outputs-size
+                     #'deserialize-bulletproof)
+       (multilayered-group-signatures #'deserialize-custom-vector
+                                      (if (= type +rct-type-simple-bulletproof+) inputs-size 1)
+                                      #'deserialize-multilayered-group-signature)
+       (pseudo-outputs #'deserialize-pseudo-outputs type inputs-size)))))
+
 (defun deserialize-rct-signature (data offset ring-size inputs-size outputs-size)
   (flet ((deserialize-pseudo-outputs (data offset type inputs-size)
            (if (= type +rct-type-simple+)
@@ -210,20 +245,36 @@
              ((mask #'deserialize-key)
               (amount #'deserialize-key)))))
     (let ((type (deserialize-single-byte data offset)))
-      (if (= type +rct-type-null+)
-          (values (list (cons :type type)) 1)
-          (multiple-value-bind (signature size)
-              (deserialize data (+ offset 1)
-                ((fee #'deserialize-integer)
-                 (pseudo-outputs #'deserialize-pseudo-outputs type inputs-size)
-                 (ecdh-info #'deserialize-custom-vector outputs-size
-                            #'deserialize-ecdh-tuple)
-                 (output-public-keys #'deserialize-custom-vector outputs-size
-                                     #'deserialize-key)
-                 (rct-signature-prunable #'deserialize-rct-signature-prunable
-                                         ring-size inputs-size outputs-size type)))
-            (values (acons :type type signature)
-                    (+ 1 size)))))))
+      (ecase type
+        ((#.+rct-type-null+)
+         (values (list (cons :type type)) 1))
+
+        ((#.+rct-type-full+ #.+rct-type-simple+)
+         (multiple-value-bind (signature size)
+             (deserialize data (+ offset 1)
+               ((fee #'deserialize-integer)
+                (pseudo-outputs #'deserialize-pseudo-outputs type inputs-size)
+                (ecdh-info #'deserialize-custom-vector outputs-size
+                           #'deserialize-ecdh-tuple)
+                (output-public-keys #'deserialize-custom-vector outputs-size
+                                    #'deserialize-key)
+                (rct-signature-prunable #'deserialize-rct-signature-prunable
+                                        ring-size inputs-size outputs-size type)))
+           (values (acons :type type signature)
+                   (+ 1 size))))
+
+        ((#.+rct-type-full-bulletproof+ #.+rct-type-simple-bulletproof+)
+         (multiple-value-bind (signature size)
+             (deserialize data (+ offset 1)
+               ((fee #'deserialize-integer)
+                (ecdh-info #'deserialize-custom-vector outputs-size
+                           #'deserialize-ecdh-tuple)
+                (output-public-keys #'deserialize-custom-vector outputs-size
+                                    #'deserialize-key)
+                (rct-signature-prunable #'deserialize-rct-signature-prunable-bulletproof
+                                        ring-size inputs-size outputs-size type)))
+           (values (acons :type type signature)
+                   (+ 1 size))))))))
 
 
 ;;; Transaction extra data
