@@ -14,20 +14,29 @@
 alist format."
   (let* ((prefix (geta transaction :prefix))
          (version (geta prefix :version)))
-    (case version
-      ((1) (fast-hash (serialize-transaction transaction)))
-      ((2) (let* ((rct-sig (geta transaction :rct-signature))
-                  (base (remove :rct-signature-prunable rct-sig :key #'car))
-                  (prunable (geta rct-sig :rct-signature-prunable))
-                  (prefix-hash (fast-hash (serialize-transaction-prefix prefix)))
-                  (base-hash (fast-hash (serialize-rct-signature base)))
-                  (prunable-hash (if prunable
-                                     (fast-hash (serialize-rct-signature-prunable prunable))
-                                     (make-array +hash-length+
-                                                 :element-type '(unsigned-byte 8)
-                                                 :initial-element 0))))
-             (fast-hash (concatenate 'octet-vector prefix-hash base-hash prunable-hash))))
-      (t (error "Transaction version ~d not supported." version)))))
+    (ecase version
+      ((1)
+       (fast-hash (serialize-transaction transaction)))
+
+      ((2)
+       (let* ((rct-sig (geta transaction :rct-signature))
+              (rct-type (geta rct-sig :type))
+              (base (remove :rct-signature-prunable rct-sig :key #'car))
+              (prunable (geta rct-sig :rct-signature-prunable))
+              (prefix-hash (fast-hash (serialize-transaction-prefix prefix)))
+              (base-hash (fast-hash (serialize-rct-signature base)))
+              (prunable-hash (if prunable
+                                 (fast-hash (ecase rct-type
+                                              ((#.+rct-type-full+ #.+rct-type-simple+)
+                                               (serialize-rct-range-proof prunable))
+
+                                              ((#.+rct-type-full-bulletproof+
+                                                #.+rct-type-simple-bulletproof+)
+                                               (serialize-rct-bulletproof prunable rct-type))))
+                                 (make-array +hash-length+
+                                             :element-type '(unsigned-byte 8)
+                                             :initial-element 0))))
+         (fast-hash (concatenate 'octet-vector prefix-hash base-hash prunable-hash)))))))
 
 (defun compute-transaction-hash-from-data (transaction-data)
   "Return the hash of the transaction represented by the

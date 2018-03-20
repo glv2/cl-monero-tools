@@ -170,7 +170,7 @@
 
 ;;; Ring confidential transaction signatures
 
-(defun deserialize-rct-signature-prunable (data offset ring-size inputs-size outputs-size type)
+(defun deserialize-rct-range-proof (data offset ring-size inputs-size outputs-size type)
   (labels ((deserialize-key64 (data offset)
              (deserialize-custom-vector data offset 64 #'deserialize-key))
 
@@ -199,7 +199,7 @@
                                       (if (= type +rct-type-simple+) inputs-size 1)
                                       #'deserialize-multilayered-group-signature)))))
 
-(defun deserialize-rct-signature-prunable-bulletproof (data offset ring-size inputs-size outputs-size type)
+(defun deserialize-rct-bulletproof (data offset ring-size inputs-size outputs-size type)
   (flet ((deserialize-bulletproof (data offset)
            (deserialize data offset
              ((a1 #'deserialize-key)
@@ -258,7 +258,7 @@
                            #'deserialize-ecdh-tuple)
                 (output-public-keys #'deserialize-custom-vector outputs-size
                                     #'deserialize-key)
-                (rct-signature-prunable #'deserialize-rct-signature-prunable
+                (rct-signature-prunable #'deserialize-rct-range-proof
                                         ring-size inputs-size outputs-size type)))
            (values (acons :type type signature)
                    (+ 1 size))))
@@ -271,7 +271,7 @@
                            #'deserialize-ecdh-tuple)
                 (output-public-keys #'deserialize-custom-vector outputs-size
                                     #'deserialize-key)
-                (rct-signature-prunable #'deserialize-rct-signature-prunable-bulletproof
+                (rct-signature-prunable #'deserialize-rct-bulletproof
                                         ring-size inputs-size outputs-size type)))
            (values (acons :type type signature)
                    (+ 1 size))))))))

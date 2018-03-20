@@ -150,7 +150,7 @@
 
 ;;; Ring confidential transaction signatures
 
-(defun serialize-rct-signature-prunable (object)
+(defun serialize-rct-range-proof (object)
   (labels ((serialize-key64 (object)
              (serialize-custom-vector object #'serialize-key))
 
@@ -175,7 +175,7 @@
          (multilayered-group-signatures #'serialize-custom-vector
                                         #'serialize-multilayered-group-signature))))))
 
-(defun serialize-rct-signature-prunable-bulletproof (object type)
+(defun serialize-rct-bulletproof (object type)
   (flet ((serialize-bulletproof (object)
            (serialize object
              ((a1 #'serialize-key)
@@ -227,15 +227,14 @@
                          (pseudo-outputs #'serialize-pseudo-outputs type)
                          (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
                          (output-public-keys #'serialize-custom-vector #'serialize-key)
-                         (rct-signature-prunable #'serialize-rct-signature-prunable))))
+                         (rct-signature-prunable #'serialize-rct-range-proof))))
 
                      ((#.+rct-type-full-bulletproof+ #.+rct-type-simple-bulletproof+)
                       (serialize object
                         ((fee #'serialize-integer)
                          (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
                          (output-public-keys #'serialize-custom-vector #'serialize-key)
-                         (rct-signature-prunable #'serialize-rct-signature-prunable-bulletproof
-                                                 type)))))))))
+                         (rct-signature-prunable #'serialize-rct-bulletproof type)))))))))
 
 
 ;;; Transaction extra data
