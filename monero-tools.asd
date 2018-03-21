@@ -18,6 +18,7 @@
                "cffi"
                "cl-base64"
                "cl-json"
+               "cl-octet-streams"
                "cl-ppcre"
                "cl-qrencode"
                "dexador"

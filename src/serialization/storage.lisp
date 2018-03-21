@@ -205,18 +205,19 @@
           1))
 
 (defun storage-serialize-vector (objects &key in-vector)
-  (let* ((size (length objects))
-         (type (lisp-type->storage-type (let ((type (array-element-type objects)))
-                                          (if (eq type 't)
-                                              (type-of (aref objects 0))
-                                              type))))
-         (serialization-function (storage-type->serialization-function type))
-         (result (concatenate 'octet-vector
-                              (unless in-vector (vector (logior type +portable-storage-array-flag+)))
-                              (storage-serialize-varint size))))
-    (dotimes (i size result)
-      (let ((data (funcall serialization-function (aref objects i) :in-vector t)))
-        (setf result (concatenate 'octet-vector result data))))))
+  (with-octet-output-stream (result)
+    (let* ((size (length objects))
+           (type (lisp-type->storage-type (let ((type (array-element-type objects)))
+                                            (if (eq type 't)
+                                                (type-of (aref objects 0))
+                                                type))))
+           (serialization-function (storage-type->serialization-function type)))
+      (unless in-vector
+        (write-byte (logior type +portable-storage-array-flag+) result))
+      (write-sequence (storage-serialize-varint size) result)
+      (dotimes (i size)
+        (let ((data (funcall serialization-function (aref objects i) :in-vector t)))
+          (write-sequence data result))))))
 
 (defun storage-deserialize-vector (data offset type)
   (multiple-value-bind (size s0)
@@ -245,20 +246,19 @@
             (+ s0 size))))
 
 (defun storage-serialize-section (object &key in-vector)
-  (let* ((size (length object))
-         (result (concatenate 'octet-vector
-                              (unless in-vector (vector +portable-storage-type-object+))
-                              (storage-serialize-varint size))))
-    (dolist (pair object result)
-      (let ((name (string->bytes (lisp-to-camel-case (symbol-name (car pair)))))
-            (thing (cdr pair)))
-        (when (> (length name) 255)
-          (error "storage entry name is too long: ~a" name))
-        (setf result (concatenate 'octet-vector
-                                  result
-                                  (vector (length name))
-                                  name
-                                  (storage-serialize thing)))))))
+  (with-octet-output-stream (result)
+    (let ((size (length object)))
+      (unless in-vector
+        (write-byte +portable-storage-type-object+ result))
+      (write-sequence (storage-serialize-varint size) result)
+      (dolist (pair object)
+        (let ((name (string->bytes (lisp-to-camel-case (symbol-name (car pair)))))
+              (thing (cdr pair)))
+          (when (> (length name) 255)
+            (error "storage entry name is too long: ~a" name))
+          (write-byte (length name) result)
+          (write-sequence name result)
+          (write-sequence (storage-serialize thing) result))))))
 
 (defun storage-deserialize-section (data offset)
   (declare (optimize (debug 3)))

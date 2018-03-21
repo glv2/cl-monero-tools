@@ -18,11 +18,10 @@
         collect `(let* ((,id ,(intern (string-upcase (symbol-name name)) :keyword))
                         (,data (apply ,writer (geta ,object ,id) (list ,@writer-parameters))))
                    (when ,data
-                     (setf ,result (concatenate 'octet-vector ,result ,data))))
+                     (write-sequence ,data ,result)))
           into forms
-        finally (return `(let ((,result (make-array 0 :element-type '(unsigned-byte 8))))
-                           ,@forms
-                           ,result))))
+        finally (return `(with-octet-output-stream (,result)
+                           ,@forms))))
 
 (defmacro serialize-variant (object specs)
   (loop with type = (gensym)
@@ -54,18 +53,19 @@
   (integer->bytes object :varint t))
 
 (defun serialize-vector (objects element-writer &rest element-writer-parameters)
-  (let* ((size (length objects))
-         (result (serialize-integer size)))
-    (dotimes (i size result)
-      (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
-        (setf result (concatenate 'octet-vector result data))))))
+  (with-octet-output-stream (result)
+    (let ((size (length objects)))
+      (write-sequence (serialize-integer size) result)
+      (dotimes (i size)
+        (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
+          (write-sequence data result))))))
 
 (defun serialize-custom-vector (objects element-writer &rest element-writer-parameters)
-  (let ((size (length objects))
-        (result (make-array 0 :element-type '(unsigned-byte 8))))
-    (dotimes (i size result)
-      (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
-        (setf result (concatenate 'octet-vector result data))))))
+  (with-octet-output-stream (result)
+    (let ((size (length objects)))
+      (dotimes (i size)
+        (let ((data (apply element-writer (aref objects i) element-writer-parameters)))
+          (write-sequence data result))))))
 
 (defun serialize-byte-vector (object)
   (concatenate 'octet-vector (serialize-integer (length object)) object))
@@ -275,11 +275,10 @@
           ((data #'serialize-bytes))))))
 
 (defun serialize-transaction-extra-data (object)
-  (let ((result #()))
-    (dolist (field object)
-      (let ((data (serialize-transaction-extra-data-field field)))
-        (setf result (concatenate 'octet-vector result data))))
-    (serialize-byte-vector result)))
+  (serialize-byte-vector (with-octet-output-stream (result)
+                           (dolist (field object)
+                             (let ((data (serialize-transaction-extra-data-field field)))
+                               (write-sequence data result))))))
 
 
 ;;; Transactions

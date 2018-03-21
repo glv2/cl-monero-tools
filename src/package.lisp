@@ -5,7 +5,16 @@
 
 
 (defpackage :monero-tools
-  (:use :cl :alexandria :babel :base64 :bordeaux-threads :cffi :ieee-floats :json :split-sequence)
+  (:use :cl
+        :alexandria
+        :babel
+        :base64
+        :bordeaux-threads
+        :cffi
+        :ieee-floats
+        :json
+        :octet-streams
+        :split-sequence)
   (:export
    ;; blockchain
    #:acceptable-hash-p
