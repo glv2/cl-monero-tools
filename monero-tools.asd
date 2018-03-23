@@ -83,8 +83,9 @@
                               :components ((:file "base58" :depends-on ("utils"))
                                            (:file "utils")))
                              (:module "wallet"
-                              :depends-on ("crypto" "package" "serialization" "utils")
+                              :depends-on ("crypto" "package" "rpc" "serialization" "utils")
                               :components ((:file "address")
+                                           (:file "history" :depends-on ("address" "transaction"))
                                            (:file "qr" :depends-on ("uri"))
                                            (:file "signature" :depends-on ("address"))
                                            (:file "transaction" :depends-on ("address"))

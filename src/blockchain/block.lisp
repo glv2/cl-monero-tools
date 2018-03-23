@@ -7,6 +7,13 @@
 (in-package :monero-tools)
 
 
+(defun transaction-hashes (block)
+  "Return the hashes of the transactions in a BLOCK (miner transaction
+included)."
+  (concatenate 'list
+               (list (compute-transaction-hash (geta block :miner-transaction)))
+               (geta block :transaction-hashes)))
+
 (defun compute-block-hash (block &optional slow-hash)
   "Return the hash of a BLOCK. The BLOCK must be in alist format. If
 SLOW-HASH is not NIL, compute the hash using slow-hash (used for the
@@ -21,11 +28,7 @@ mining process) instead of fast-hash (used for the block id)."
             #.(hex-string->bytes "84f64766475d51837ac9efbef1926486e58563c95a19fef4aec3254f03000000")
             #.(hex-string->bytes "bbd604d2ba11ba27935e006ed39c9bfdd99b76bf4a50654bc1e1e61217962698"))))
     (let* ((header (geta block :header))
-           (miner-transaction (geta block :miner-transaction))
-           (miner-transaction-hash (compute-transaction-hash miner-transaction))
-           (transaction-hashes (concatenate 'list
-                                            (list miner-transaction-hash)
-                                            (geta block :transaction-hashes)))
+           (transaction-hashes (transaction-hashes block))
            (root-hash (compute-transaction-tree-hash transaction-hashes))
            (header-data (serialize-block-header header))
            (count (serialize-integer (length transaction-hashes)))

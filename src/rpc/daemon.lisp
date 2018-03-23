@@ -70,7 +70,7 @@
     answer))
 
 (defun get-transaction-data-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))))
+  (let* ((parameters (list (cons "txs_hashes" (map 'vector #'bytes->hex-string transaction-ids))))
          (answer (rpc "gettransactions"
                       :parameters parameters
                       :host host
@@ -131,7 +131,7 @@
          (block-data (hex-string->bytes (geta answer :blob)))
          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
          (regular-transaction-hashes (geta answer :tx--hashes)))
-    (concatenate 'list (list miner-transaction-hash) regular-transaction-hashes)))
+    (cons (bytes->hex-string miner-transaction-hash) regular-transaction-hashes)))
 
 (defun get-block-template-from-daemon (address reserve-size &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let ((parameters (list (cons "wallet_address" address)
