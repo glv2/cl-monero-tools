@@ -201,7 +201,7 @@
                (vector (if object 1 0))))
 
 (defun storage-deserialize-boolean (data offset)
-  (values (plusp (aref data (+ offset 1)))
+  (values (plusp (aref data offset))
           1))
 
 (defun storage-serialize-vector (objects &key in-vector)
