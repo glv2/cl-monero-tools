@@ -51,6 +51,7 @@
 (defconstant +transaction-extra-public-key-tag+ 1)
 (defconstant +transaction-extra-nonce-tag+ 2)
 (defconstant +transaction-extra-merge-mining-tag+ 3)
+(defconstant +transaction-extra-additional-public-keys-tag+ 4)
 (defconstant +transaction-extra-nonce-payment-id-tag+ 0)
 (defconstant +transaction-extra-nonce-encrypted-payment-id-tag+ 1)
 (defconstant +transaction-extra-padding-max-size+ 254)

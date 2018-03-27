@@ -307,6 +307,8 @@
                   #'deserialize-bytes (min (- max-size 1) +transaction-extra-padding-max-size+))
          (transaction-public-key +transaction-extra-public-key-tag+
                                  #'deserialize-key)
+         (additional-public-keys +transaction-extra-additional-public-keys-tag+
+                                 #'deserialize-vector #'deserialize-key)
          (nonce +transaction-extra-nonce-tag+
                 #'deserialize-transaction-extra-nonce)))
     (if field

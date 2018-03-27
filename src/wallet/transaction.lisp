@@ -25,10 +25,16 @@ a PUBLIC-VIEW-KEY and a TRANSACTION-SECRET-KEY."
 a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
   (encrypt-payment-id encrypted-payment-id transaction-public-key secret-view-key))
 
-(defun output-for-address-p (output-key output-index transaction-public-key address secret-view-key)
+(defun output-for-address-p (output-key output-index transaction-public-key additional-public-keys address secret-view-key)
   "Check if an ADDRESS is the destination of an output."
-  (let* ((public-spend-key (geta (decode-address address) :public-spend-key))
-         (derivation (derive-key transaction-public-key secret-view-key))
+  (let* ((address-info (decode-address address))
+         (use-additional-key (and (> (length additional-public-keys) output-index)
+                                  (geta address-info :subaddress)))
+         (public-spend-key (geta address-info :public-spend-key))
+         (derivation (derive-key (if use-additional-key
+                                     (elt additional-public-keys output-index)
+                                     transaction-public-key)
+                                 secret-view-key))
          (key (derive-output-public-key derivation output-index public-spend-key)))
     (equalp key output-key)))
 
@@ -40,21 +46,34 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
          (amount-mask (bytes->integer (hash-to-scalar (hash-to-scalar secret)))))
     (mod (- amount amount-mask) +l+)))
 
+(defun find-extra-field (extra name)
+  "Return the value matching a specific NAME in the EXTRA field of
+a transaction."
+  (dolist (field extra)
+    (let ((key (geta field name)))
+      (when key
+        (return key)))))
+
 (defun received-amount (transaction address secret-view-key)
   "Return the total amount that an ADDRESS received in a TRANSACTION."
   (let* ((prefix (geta transaction :prefix))
          (outputs (geta prefix :outputs))
          (extra (geta prefix :extra))
-         (transaction-public-key (dolist (field extra)
-                                   (let ((key (geta field :transaction-public-key)))
-                                     (when key
-                                       (return key)))))
+         (transaction-public-key (find-extra-field extra :transaction-public-key))
+         (additional-public-keys (find-extra-field extra :additional-public-keys))
          (rct-signature (geta transaction :rct-signature))
+         (use-additional-key (and (= (length additional-public-keys) (length outputs))
+                                  (geta (decode-address address) :subaddress)))
          (received 0))
     (dotimes (i (length outputs))
       (let* ((output (aref outputs i))
              (key (geta (geta output :target) :key)))
-        (when (output-for-address-p key i transaction-public-key address secret-view-key)
+        (when (output-for-address-p key
+                                    i
+                                    transaction-public-key
+                                    additional-public-keys
+                                    address
+                                    secret-view-key)
           (let ((amount (if (or (null rct-signature)
                                 (eql (geta rct-signature :type) +rct-type-null+))
                             (geta output :amount)
@@ -62,7 +81,9 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
                                    (encrypted-amount (geta ecdh-info :amount)))
                               (decrypt-amount encrypted-amount
                                               i
-                                              transaction-public-key
+                                              (if use-additional-key
+                                                  (elt additional-public-keys i)
+                                                  transaction-public-key)
                                               secret-view-key)))))
             (incf received amount)))))
     received))

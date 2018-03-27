@@ -266,6 +266,8 @@
                                   (serialize-bytes data))))
                    (transaction-public-key +transaction-extra-public-key-tag+
                                            #'serialize-key)
+                   (additional-public-keys +transaction-extra-additional-public-keys-tag+
+                                           #'serialize-vector #'serialize-key)
                    (nonce +transaction-extra-nonce-tag+
                           #'serialize-transaction-extra-nonce)))))
     (or result
