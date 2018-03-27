@@ -16,23 +16,23 @@ alist format."
          (version (geta prefix :version)))
     (ecase version
       ((1)
-       (fast-hash (serialize-transaction transaction)))
+       (fast-hash (serialize-transaction nil transaction)))
 
       ((2)
        (let* ((rct-sig (geta transaction :rct-signature))
               (rct-type (geta rct-sig :type))
               (base (remove :rct-signature-prunable rct-sig :key #'car))
               (prunable (geta rct-sig :rct-signature-prunable))
-              (prefix-hash (fast-hash (serialize-transaction-prefix prefix)))
-              (base-hash (fast-hash (serialize-rct-signature base)))
+              (prefix-hash (fast-hash (serialize-transaction-prefix nil prefix)))
+              (base-hash (fast-hash (serialize-rct-signature nil base)))
               (prunable-hash (if prunable
                                  (fast-hash (ecase rct-type
                                               ((#.+rct-type-full+ #.+rct-type-simple+)
-                                               (serialize-rct-range-proof prunable))
+                                               (serialize-rct-range-proof nil prunable))
 
                                               ((#.+rct-type-full-bulletproof+
                                                 #.+rct-type-simple-bulletproof+)
-                                               (serialize-rct-bulletproof prunable rct-type))))
+                                               (serialize-rct-bulletproof nil prunable rct-type))))
                                  (make-array +hash-length+
                                              :element-type '(unsigned-byte 8)
                                              :initial-element 0))))

@@ -18,7 +18,7 @@ included)."
   "Return the hash of a BLOCK. The BLOCK must be in alist format. If
 SLOW-HASH is not NIL, compute the hash using slow-hash (used for the
 mining process) instead of fast-hash (used for the block id)."
-  (let* ((block-data (serialize-block block))
+  (let* ((block-data (serialize-block nil block))
          (block-data-hash (fast-hash block-data)))
     ;; Exception for block 202612 because there was a bug in the tree hash function
     (when (equalp block-data-hash
@@ -30,15 +30,15 @@ mining process) instead of fast-hash (used for the block id)."
     (let* ((header (geta block :header))
            (transaction-hashes (transaction-hashes block))
            (root-hash (compute-transaction-tree-hash transaction-hashes))
-           (header-data (serialize-block-header header))
-           (count (serialize-integer (length transaction-hashes)))
-           (data (concatenate 'octet-vector header-data root-hash count))
-           (size (serialize-integer (+ (length header-data)
-                                       (length root-hash)
-                                       (length count)))))
+           (data (with-octet-output-stream (result)
+                   (serialize-block-header result header)
+                   (write-sequence root-hash result)
+                   (serialize-integer result (length transaction-hashes)))))
       (if slow-hash
           (slow-hash data)
-          (fast-hash (concatenate 'octet-vector size data))))))
+          (fast-hash (concatenate 'octet-vector
+                                  (serialize-integer nil (length data))
+                                  data))))))
 
 (defun compute-block-hash-from-data (block-data &optional slow-hash)
   "Return the hash of the block represented by the BLOCK-DATA byte
