@@ -138,6 +138,7 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
 ** Wallet
 
+ - =+monero-unit+=
  - bruteforce-wallet-keys
  - decode-address
  - decode-qr-code

@@ -1,13 +1,11 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
 (in-package :monero-tools)
 
-
-(defconstant +monero-unit+ #.(expt 10 12))
 
 (defun compute-transaction-hash (transaction)
   "Return the hash of a TRANSACTION. The TRANSACTION must be in

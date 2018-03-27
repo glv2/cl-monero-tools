@@ -73,6 +73,7 @@
    #:read-float #:format-float
 
    ;; wallet
+   #:+monero-unit+
    #:decode-address #:make-integrated-address
    #:public-keys->address #:secret-spend-key->address
    #:public-keys->subaddress #:secret-spend-key->subaddress
@@ -88,3 +89,8 @@
    #:sign-file #:valid-file-signature-p
    #:make-uri #:decode-uri
    #:make-qr-code #:decode-qr-code))
+
+(in-package :monero-tools)
+
+
+(defconstant +monero-unit+ #.(expt 10 12))
