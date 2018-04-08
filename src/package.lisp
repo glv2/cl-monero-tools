@@ -40,6 +40,7 @@
 
    ;; mine
    #:miner
+   #:mining-profitability
 
    ;; mnemonic
    #:available-mnemonic-seed-languages
@@ -94,3 +95,4 @@
 
 
 (defconstant +monero-unit+ #.(expt 10 12))
+(defconstant +block-time+ 120)

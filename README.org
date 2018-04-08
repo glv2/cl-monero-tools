@@ -80,6 +80,7 @@ Optional:
 ** Mining
 
  - miner
+ - mining-profitability
 
 ** Mnemonic seed
 
