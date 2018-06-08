@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools)
+(in-package :monero-tools-rpc)
 
 
 (defun transaction-history (address secret-view-key &key secret-spend-key key-images (start 0) end)
@@ -21,7 +21,7 @@
                                      'vector
                                       (map 'list
                                            (lambda (data)
-                                             (transaction-hashes (deserialize-block data 0)))
+                                             (monero-tools::transaction-hashes (deserialize-block data 0)))
                                            (get-blocks-by-height-from-daemon block-heights))))
              (transactions (map 'vector
                                 (lambda (data)
@@ -33,8 +33,8 @@
                  (prefix (geta transaction :prefix))
                  (outputs (geta prefix :outputs))
                  (extra (geta prefix :extra))
-                 (transaction-public-key (find-extra-field extra :transaction-public-key))
-                 (additional-public-keys (find-extra-field extra :additional-public-keys))
+                 (transaction-public-key (monero-tools::find-extra-field extra :transaction-public-key))
+                 (additional-public-keys (monero-tools::find-extra-field extra :additional-public-keys))
                  (rct-signature (geta transaction :rct-signature))
                  (use-additional-key (and subaddress-p
                                           (= (length additional-public-keys) (length outputs))))
@@ -62,7 +62,7 @@
                                           (derive-output-secret-key derivation k secret-spend-key))))
                 (when (equalp key output-public-key)
                   (let ((amount (if (or (null rct-signature)
-                                        (eql (geta rct-signature :type) +rct-type-null+))
+                                        (eql (geta rct-signature :type) monero-tools::+rct-type-null+))
                                     (geta output :amount)
                                     (let* ((ecdh-info (aref (geta rct-signature :ecdh-info) k))
                                            (encrypted-amount (geta ecdh-info :amount)))

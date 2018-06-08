@@ -1,6 +1,10 @@
 #+TITLE: Monero tools
 
-Common Lisp toolbox to work with the Monero cryptocurrency.
+This is a Common Lisp toolbox to work with the Monero cryptocurrency.
+
+The *monero-tools* system contains basic tools that can be use offline. The
+*monero-tools-rpc* system contains tools requiring a running *monerod* or/and
+*monero-wallet-rpc* daemon to connect to.
 
 * Installation
 
@@ -17,29 +21,45 @@ or
 (ql:quickload "monero-tools")
 #+END_SRC
 
+** *monero-tools* dependencies
 *monero-tools* requires the following libraries:
  - alexandria
  - babel
  - bordeaux-threads
  - cffi
- - cl-base64
  - cl-json
  - cl-octet-streams
  - cl-ppcre
  - cl-qrencode
- - dexador
  - ieee-floats
  - ironclad
  - png-read
- - pzmq
  - split-sequence
- - uiop
 
 Optional:
  - the unbound C library (to resolve OpenAlias names)
  - the zbar C library (to read QR codes)
 
-* Tools
+If the optional C libraries are not available, the system should load
+successfully but some functions will not work.
+
+** *monero-tools-rpc* dependencies
+
+*monero-tools-rpc* requires the following libraries:
+ - bordeaux-threads
+ - cl-base64
+ - cl-json
+ - dexador
+ - ironclad
+ - monero-tools
+ - pzmq
+ - split-sequence
+
+* Basic tools
+
+After loading the *monero-tools* system, the following functions and variables
+are in the *:monero-tools* package.
+
 ** Blockchain
 
  - acceptable-hash-p
@@ -95,19 +115,6 @@ Optional:
  - =*dns-server*=
  - =*dnssec-trust-anchor*=
  - get-openalias-info
-
-** Remote procedure call
-
- - =*rpc-host*=
- - =*rpc-password*=
- - =*rpc-port*=
- - =*rpc-user*=
- - json-rpc
- - rpc
- - zmq-json-rpc
-
-There are some examples of functions using RPCs in
-src/rpc/daemon.lisp and src/rpc/wallet.lisp.
 
 ** Serialization
 
@@ -169,6 +176,40 @@ src/rpc/daemon.lisp and src/rpc/wallet.lisp.
  - valid-message-signature-p
  - valid-outbound-transaction-proof-p
  - valid-payment-proof-p
+
+* RPC tools
+
+After loading the *monero-tools-rpc* system, the following functions and
+variables are in the *:monero-tools-rpc* package.
+
+** Remote procedure call
+
+ - =*rpc-host*=
+ - =*rpc-password*=
+ - =*rpc-port*=
+ - =*rpc-user*=
+ - json-rpc
+ - rpc
+ - zmq-json-rpc
+
+** Mining
+
+ - mine-block
+
+** Wallet
+
+ - transaction-history
+
+** Calling *monerod*
+
+TODO
+There are some examples in src/rpc/daemon.lisp.
+
+** Calling *monero-wallet-rpc*
+
+TODO
+There are some examples in src/rpc/wallet.lisp.
+
 
 * Tests
 

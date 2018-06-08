@@ -16,18 +16,14 @@
                "babel"
                "bordeaux-threads"
                "cffi"
-               "cl-base64"
                "cl-json"
                "cl-octet-streams"
                "cl-ppcre"
                "cl-qrencode"
-               "dexador"
                "ieee-floats"
                "ironclad"
                "png-read"
-               "pzmq"
-               "split-sequence"
-               "uiop")
+               "split-sequence")
   :in-order-to ((test-op (test-op "monero-tools/tests")))
   :components ((:module "src"
                 :components ((:file "package")
@@ -46,7 +42,7 @@
                                            (:file "pseudo-aes")
                                            (:file "signature" :depends-on ("crypto" "key"))))
                              (:module "mine"
-                              :depends-on ("blockchain" "package" "rpc")
+                              :depends-on ("blockchain" "package")
                               :components ((:file "miner")
                                            (:file "profitability")))
                              (:module "mnemonic"
@@ -68,12 +64,6 @@
                               :depends-on ("package" "utils")
                               :components ((:file "dns")
                                            (:file "openalias" :depends-on ("dns"))))
-                             (:module "rpc"
-                              :depends-on ("blockchain" "package" "serialization" "utils")
-                              :components ((:file "daemon" :depends-on ("rpc" "zmq"))
-                                           (:file "rpc")
-                                           (:file "wallet" :depends-on ("rpc" "zmq"))
-                                           (:file "zmq" :depends-on ("rpc"))))
                              (:module "serialization"
                               :depends-on ("crypto" "package" "utils")
                               :components ((:file "constants")
@@ -85,9 +75,8 @@
                               :components ((:file "base58" :depends-on ("utils"))
                                            (:file "utils")))
                              (:module "wallet"
-                              :depends-on ("crypto" "package" "rpc" "serialization" "utils")
+                              :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
-                                           (:file "history" :depends-on ("address" "transaction"))
                                            (:file "qr" :depends-on ("uri"))
                                            (:file "signature" :depends-on ("address"))
                                            (:file "transaction" :depends-on ("address"))
@@ -101,7 +90,8 @@
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
   :depends-on ("fiveam"
-               "monero-tools")
+               "monero-tools"
+               "uiop")
   :in-order-to ((test-op (load-op "monero-tools/tests")))
   :perform (test-op (op s)
                     (let ((tests (uiop:find-symbol* 'monero-tools-tests :monero-tools/tests)))

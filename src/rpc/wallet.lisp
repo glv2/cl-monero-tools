@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools)
+(in-package :monero-tools-rpc)
 
 
 (defun get-address-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))

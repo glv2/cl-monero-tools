@@ -8,7 +8,6 @@
   (:use :cl
         :alexandria
         :babel
-        :base64
         :bordeaux-threads
         :cffi
         :ieee-floats
@@ -51,11 +50,6 @@
    #:*dns-server*
    #:*dnssec-trust-anchor*
    #:get-openalias-info
-
-   ;; rpc
-   #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
-   #:rpc #:json-rpc
-   #:zmq-json-rpc
 
    ;; serialization
    #:serialize-block #:deserialize-block

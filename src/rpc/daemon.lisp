@@ -1,10 +1,10 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools)
+(in-package :monero-tools-rpc)
 
 
 (defun get-info-from-daemon (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
@@ -203,12 +203,12 @@
                       :password password)))
     (flet ((split (data-string)
              (let ((size (length data-string)))
-               (unless (zerop (mod size +key-length+))
+               (unless (zerop (mod size monero-tools::+key-length+))
                  (error "Invalid length"))
                (map 'vector
                     #'string->bytes
-                    (loop for i from 0 below size by +key-length+
-                          collect (subseq data-string i (+ i +key-length+)))))))
+                    (loop for i from 0 below size by monero-tools::+key-length+
+                          collect (subseq data-string i (+ i monero-tools::+key-length+)))))))
       (setf (geta answer :m--block--ids) (split (geta answer :m--block--ids)))
       answer)))
 
