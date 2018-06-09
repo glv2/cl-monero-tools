@@ -43,8 +43,7 @@ bytes of extra nonce."
                                                           :password password))
                                 (template (hex-string->bytes (geta info :blocktemplate-blob)))
                                 (difficulty (geta info :difficulty))
-                                ;;(reserve-offset (geta info :reserved-offset))
-                                (reserve-offset (1- (geta info :reserved-offset))) ; off by 1 bug?
+                                (reserve-offset (geta info :reserved-offset))
                                 (height (geta info :height)))
                            (format t "height=~a difficulty=~d~%" height difficulty)
                            (update-miners template reserve-size reserve-offset difficulty)
