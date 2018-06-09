@@ -7,8 +7,10 @@
 (in-package :monero-tools-rpc)
 
 
-;;; HTTP RPCs
-;;; https://getmonero.org/resources/developer-guides/daemon-rpc.html
+;;; Specs in https://getmonero.org/resources/developer-guides/daemon-rpc.html
+
+
+;;; HTTP JSON RPCs
 
 (defjsonrpc flush-txpool ("flush_txpool" transaction-ids)
   "Flush transaction ids from transaction pool. If TRANSACTION-IDS is NIL,
@@ -73,17 +75,50 @@ at START-HEIGHT."
 (defjsonrpc get-last-block-header ("get_last_block_header")
   "Look up the block header of the most recent block.")
 
-#|
-    get_output_distribution
-    get_output_histogram
-    get_txpool_backlog
-    get_version
-    hard_fork_info
-    relay_tx
-    set_bans
-    submit_block
-    sync_info
-|#
+(defjsonrpc get-output-distribution ("get_output_distribution" amounts cumulative start-height end-height)
+  "Get output distribution. CUMULATIVE, START-HEIGHT and END-HEIGHT can be NIL."
+  (append (list (cons "amounts" amounts))
+          (when cumulative
+            (list (cons "cumulative" t)))
+          (when start-height
+            (list (cons "from_height" start-height)))
+          (when end-height
+            (list (cons "to_height" end-height)))))
+
+(defjsonrpc get-output-histogram ("get_output_histogram" amounts min-count max-count unlocked recent-cutoff)
+  "Get a histogram of output amounts."
+  (list (cons "amounts" amounts)
+        (cons "min_count" min-count)
+        (cons "max_count" max-count)
+        (cons "unlocked" unlocked)
+        (cons "recent_cutoff" recent-cutoff)))
+
+(defjsonrpc get-txpool-backlog ("get_txpool_backlog")
+  "Get all transaction pool backlog.")
+
+(defjsonrpc get-version ("get_version")
+  "Get the node current version.")
+
+(defjsonrpc hard-fork-info ("hard_fork_info")
+  "Look up information regarding hard fork voting and readiness.")
+
+(defjsonrpc relay-tx ("relay_tx" transaction-ids)
+  "Relay a list of transaction IDs."
+  (list (cons "txids" transaction-ids)))
+
+(defjsonrpc set-bans ("set_bans" bans)
+  "Ban some nodes."
+  (list (cons "bans" bans)))
+
+(defjsonrpc submit-block ("submit_block" block-data)
+  "Submit a mined block to the network."
+  (list block-data))
+
+(defjsonrpc sync-info ("sync_info")
+  "Get synchronisation information.")
+
+
+;;; Other HTTP RPCs
 
 (defun get-transactions-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
@@ -137,15 +172,6 @@ at START-HEIGHT."
          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
          (regular-transaction-hashes (geta answer :tx-hashes)))
     (cons (bytes->hex-string miner-transaction-hash) regular-transaction-hashes)))
-
-(defun submit-block-to-daemon (block-data &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let ((parameters (list (bytes->hex-string block-data))))
-    (json-rpc "submitblock"
-              :parameters parameters
-              :host host
-              :port port
-              :user user
-              :password password)))
 
 (defun send-raw-transaction-to-daemon (transaction-data &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let ((parameters (list (cons "tx_as_hex" (bytes->hex-string transaction-data)))))

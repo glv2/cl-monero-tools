@@ -49,7 +49,7 @@ bytes of extra nonce."
                            (update-miners template reserve-size reserve-offset difficulty)
                            (sleep *mine-refresh-delay*)))))
              (stop-threads)
-             (submit-block-to-daemon data :host host :port port :user user :password password))))
+             (submit-block (bytes->hex-string data) :host host :port port :user user :password password))))
     (setf monero-tools::*mine-stop* nil)
     (setf monero-tools::*mine-lock* nil)
     (setf monero-tools::*mine-result* nil)))
