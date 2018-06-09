@@ -25,6 +25,9 @@
    #:get-block-template
    #:get-coinbase-tx-sum
    #:get-connections
+   #:get-fee-estimate
+   #:get-info
+   #:get-last-block-header
 
    ;; mine
    #:mine-block

@@ -13,102 +13,67 @@
 (defjsonrpc flush-txpool ("flush_txpool" transaction-ids)
   "Flush transaction ids from transaction pool. If TRANSACTION-IDS is NIL,
 everything is flushed."
-  (let ((parameters (list (cons "txids" transaction-ids))))
-    (get-answer parameters)
-    t))
+  (list (cons "txids" transaction-ids)))
 
 (defjsonrpc get-alternate-chains ("get_alternate_chains")
-  "Get alternative chains seen by the node."
-  (let ((answer (get-answer)))
-    (geta answer :chains)))
+  "Get alternative chains seen by the node.")
 
 (defjsonrpc get-bans ("get_bans")
-  "Get list of banned IPs."
-  (let ((answer (get-answer)))
-    (geta answer :bans)))
+  "Get list of banned IPs.")
 
 (defjsonrpc get-block ("get_block" block-id)
-  "Get full block information. BLOCK-ID can be a block height or hash. The
-second returned value is T is the answer comes from an untrusted daemon and NIL
-otherwise."
-  (let* ((parameters (list (cons (etypecase block-id
-                                   (integer "height")
-                                   (string "hash"))
-                                 block-id)))
-         (answer (get-answer parameters))
-         (untrusted (geta answer :untrusted)))
-    (values answer untrusted)))
+  "Get full block information. BLOCK-ID can be a block height or hash."
+  (list (cons (etypecase block-id
+                (integer "height")
+                (string "hash"))
+              block-id)))
 
 (defjsonrpc get-block-count ("get_block_count")
-  "Look up how many blocks are in the longest chain known to the node."
-  (let ((answer (get-answer)))
-    (geta answer :count)))
+  "Look up how many blocks are in the longest chain known to the node.")
 
 (defjsonrpc get-block-hash ("on_get_block_hash" block-height)
   "Look up a block's hash by its height."
-  (let ((parameters (vector block-height)))
-    (get-answer parameters)))
+  (vector block-height))
 
 (defjsonrpc get-block-header-by-hash ("get_block_header_by_hash" block-hash)
-  "Look up a block's header by its hash. The first returned value is the block
-header. The second returned value is T is the answer comes from an untrusted
-daemon and NIL otherwise."
-  (let* ((parameters (list (cons "hash" block-hash)))
-         (answer (get-answer parameters))
-         (block-header (geta answer :block-header))
-         (untrusted (geta answer :untrusted)))
-    (values block-header untrusted)))
+  "Look up a block's header by its hash."
+  (list (cons "hash" block-hash)))
 
 (defjsonrpc get-block-header-by-height ("get_block_header_by_height" block-height)
-  "Look up a block's header by its height. The first returned value is the block
-header. The second returned value is T is the answer comes from an untrusted
-daemon and NIL otherwise."
-  (let* ((parameters (list (cons "height" block-height)))
-         (answer (get-answer parameters))
-         (block-header (geta answer :block-header))
-         (untrusted (geta answer :untrusted)))
-    (values block-header untrusted)))
+  "Look up a block's header by its height."
+  (list (cons "height" block-height)))
 
 (defjsonrpc get-block-headers-range ("get_block_headers_range" start-height end-height)
-  "Look up headers of a range of blocks. The first returned value is an array of
-block headers. The second returned value is T is the answer comes from an
-untrusted daemon and NIL otherwise."
-  (let* ((parameters (list (cons "start_height" start-height)
-                           (cons "end_height" end-height)))
-         (answer (get-answer parameters))
-         (block-headers (geta answer :headers))
-         (untrusted (geta answer :untrusted)))
-    (values block-headers untrusted)))
+  "Look up headers of a range of blocks."
+  (list (cons "start_height" start-height)
+        (cons "end_height" end-height)))
 
 (defjsonrpc get-block-template ("get_block_template" address reserve-size)
-  "Get a block template on which mining can be done. The second returned value
-is T is the answer comes from an untrusted daemon and NIL otherwise."
-  (let* ((parameters (list (cons "wallet_address" address)
-                           (cons "reserve_size" reserve-size)))
-         (answer (get-answer parameters))
-         (untrusted (geta answer :untrusted)))
-    (values answer untrusted)))
+  "Get a block template on which mining can be done."
+  (list (cons "wallet_address" address)
+        (cons "reserve_size" reserve-size)))
 
 (defjsonrpc get-coinbase-tx-sum ("get_coinbase_tx_sum" start-height block-count)
-  "The first returned value is the amount of money emitted in the BLOCK-COUNT
-blocks starting at START-HEIGHT. The second returned value is the amount of fees
-in these blocks."
-  (let* ((parameters (list (cons "height" start-height)
-                           (cons "count" block-count)))
-         (answer (get-answer parameters))
-         (emission (geta answer :emission-amount))
-         (fees (geta answer :fee-amount)))
-    (values emission fees)))
+  "Get the amount of money emitted and fees in the BLOCK-COUNT blocks starting
+at START-HEIGHT."
+  (list (cons "height" start-height)
+        (cons "count" block-count)))
 
 (defjsonrpc get-connections ("get_connections")
-  "Retrieve information about incoming and outgoing connections to your node."
-  (let ((answer (get-answer)))
-    (geta answer :connections)))
+  "Retrieve information about incoming and outgoing connections to your node.")
+
+(defjsonrpc get-fee-estimate ("get_fee_estimate" grace-blocks)
+  "Gives an estimation on fees per kB. GRACE-BLOCKS can be NIL."
+  (when grace-blocks
+    (list (cons "grace_blocks" grace-blocks))))
+
+(defjsonrpc get-info ("get_info")
+  "Retrieve general information about the state of your node and the network.")
+
+(defjsonrpc get-last-block-header ("get_last_block_header")
+  "Look up the block header of the most recent block.")
 
 #|
-    get_fee_estimate
-    get_info
-    get_last_block_header
     get_output_distribution
     get_output_histogram
     get_txpool_backlog
@@ -119,9 +84,6 @@ in these blocks."
     submit_block
     sync_info
 |#
-
-(defjsonrpc get-info ("get_info")
-  (get-answer))
 
 (defun get-transactions-from-daemon (transaction-ids &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
