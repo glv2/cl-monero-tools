@@ -12,6 +12,20 @@
         :monero-tools
         :split-sequence)
   (:export
+   ;; daemon
+   #:flush-txpool
+   #:get-alternate-chain
+   #:get-bans
+   #:get-block
+   #:get-block-count
+   #:get-block-hash
+   #:get-block-header-by-hash
+   #:get-block-header-by-height
+   #:get-block-headers-range
+   #:get-block-template
+   #:get-coinbase-tx-sum
+   #:get-connections
+
    ;; mine
    #:mine-block
 

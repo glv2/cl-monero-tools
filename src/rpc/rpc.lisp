@@ -16,6 +16,11 @@
 (defparameter *rpc-password* nil
   "Password to use to connect to the RPC server.")
 
+(setf *json-identifier-name-to-lisp* (lambda (key)
+                                       (map 'string
+                                            (lambda (c) (if (char= c #\_) #\- c))
+                                            (string-upcase key))))
+
 (defun parse-digest-authentication-challenge (challenge)
   "Parse a 'Digest' authentication CHALLENGE received from a HTTP server."
   (let* ((tmp (split-sequence #\space challenge))
@@ -120,4 +125,22 @@ PARAMETERS."
          (err (geta answer :error)))
     (if err
         (error (geta err :message))
-        (geta answer :result))))
+        (let ((status (geta answer :status)))
+          (when (and status (string/= status "OK"))
+            (error status))
+          (geta answer :result)))))
+
+(defmacro defjsonrpc (name (method &rest args) &body body)
+  (let* ((docstring (when (stringp (car body))
+                      (list (car body))))
+         (body (if docstring (cdr body) body)))
+    `(defun ,name (,@args &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+       ,@docstring
+       (flet ((get-answer (&optional parameters)
+                (json-rpc ,method
+                          :parameters parameters
+                          :host host
+                          :port port
+                          :user user
+                          :password password)))
+         ,@body))))

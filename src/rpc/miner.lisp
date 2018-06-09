@@ -35,16 +35,16 @@ bytes of extra nonce."
                         (setf (aref thread-handles i) (make-thread miner))))))
            (let ((data (do ()
                            (monero-tools::*mine-result* monero-tools::*mine-result*)
-                         (let* ((info (get-block-template-from-daemon address
-                                                                      reserve-size
-                                                                      :host host
-                                                                      :port port
-                                                                      :user user
-                                                                      :password password))
-                                (template (hex-string->bytes (geta info :blocktemplate--blob)))
+                         (let* ((info (get-block-template address
+                                                          reserve-size
+                                                          :host host
+                                                          :port port
+                                                          :user user
+                                                          :password password))
+                                (template (hex-string->bytes (geta info :blocktemplate-blob)))
                                 (difficulty (geta info :difficulty))
-                                ;;(reserve-offset (geta info :reserved--offset))
-                                (reserve-offset (1- (geta info :reserved--offset))) ; off by 1 bug?
+                                ;;(reserve-offset (geta info :reserved-offset))
+                                (reserve-offset (1- (geta info :reserved-offset))) ; off by 1 bug?
                                 (height (geta info :height)))
                            (format t "height=~a difficulty=~d~%" height difficulty)
                            (update-miners template reserve-size reserve-offset difficulty)

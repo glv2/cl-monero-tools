@@ -12,7 +12,7 @@
          (public-spend-key (geta address-info :public-spend-key))
          (subaddress-p (geta address-info :subaddress))
          (key-images (or key-images (make-hash-table :test #'equalp)))
-         (end (or end (get-block-count-from-daemon)))
+         (end (or end (get-block-count)))
          (history '()))
     (loop while (<= start end) do
       (let* ((block-heights (loop for i from start to (min (+ start 99) end)

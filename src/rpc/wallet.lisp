@@ -7,6 +7,9 @@
 (in-package :monero-tools-rpc)
 
 
+;;; HTTP RPCs
+;;; https://getmonero.org/resources/developer-guides/wallet-rpc.html
+
 (defun get-address-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let ((answer (json-rpc "getaddress"
                           :host host
@@ -22,7 +25,7 @@
                            :user user
                            :password password))
          (balance (geta answer :balance))
-         (unlocked-balance (geta answer :unlocked--balance)))
+         (unlocked-balance (geta answer :unlocked-balance)))
     ;; (append (when balance
     ;;           (acons :balance (/ balance +monero-unit+) '()))
     ;;         (when unlocked-balance
