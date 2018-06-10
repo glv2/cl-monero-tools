@@ -26,6 +26,7 @@
                 #:mem-ref
                 #:null-pointer
                 #:null-pointer-p
+                #:pointer-eq
                 #:use-foreign-library
                 #:with-foreign-object
                 #:with-foreign-slots)
