@@ -139,8 +139,11 @@
                             (cons "minor" address-index)))
         (cons "label" label)))
 
+(defjsonrpc make-integrated-address ("make_integrated_address" payment-id)
+  "Make an integrated address from the wallet address and a payment id."
+  (list (cons "payment_id" payment-id)))
+
 #|
-    make_integrated_address
     make_uri
     open_wallet
     parse_uri

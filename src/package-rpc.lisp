@@ -5,12 +5,42 @@
 
 
 (defpackage :monero-tools-rpc
-  (:use :cl
-        :bordeaux-threads
-        :base64
-        :json
-        :monero-tools
-        :split-sequence)
+  (:use :cl)
+  (:import-from :bordeaux-threads
+                #:join-thread
+                #:make-lock
+                #:make-thread
+                #:with-lock-held)
+  (:import-from :base64
+                #:usb8-array-to-base64-string)
+  (:import-from :json
+                #:*json-identifier-name-to-lisp*
+                #:*lisp-identifier-name-to-json*
+                #:decode-json-from-string
+                #:encode-json-to-string)
+  (:import-from :monero-tools
+                #:*mine-lock*
+                #:bytes->hex-string
+                #:bytes->string
+                #:compute-key-image
+                #:compute-miner-transaction-hash-from-data
+                #:decode-address
+                #:decrypt-amount
+                #:derive-key
+                #:derive-output-public-key
+                #:derive-output-secret-key
+                #:deserialize-block
+                #:deserialize-from-binary-storage
+                #:deserialize-transaction
+                #:geta
+                #:hex-string->bytes
+                #:miner
+                #:serialize-to-binary-storage
+                #:spent-key-images
+                #:string->bytes
+                #:utf-8-string->bytes)
+  (:import-from :split-sequence
+                #:split-sequence)
   (:export
    ;; daemon
    #:flush-txpool
@@ -71,4 +101,5 @@
    #:import-key-images
    #:incoming_transfers
    #:label-account
-   #:label-address))
+   #:label-address
+   #:make-integrated-address))
