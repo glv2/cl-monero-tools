@@ -12,10 +12,10 @@
 
 ;;; HTTP JSON RPCs
 
-(defjsonrpc flush-txpool ("flush_txpool" transaction-ids)
-  "Flush transaction ids from transaction pool. If TRANSACTION-IDS is NIL,
-everything is flushed."
-  (list (cons "txids" transaction-ids)))
+(defjsonrpc flush-txpool ("flush_txpool" &key transaction-ids)
+  "Flush transaction ids from transaction pool."
+  (when transaction-ids
+    (list (cons "txids" transaction-ids))))
 
 (defjsonrpc get-alternate-chains ("get_alternate_chains")
   "Get alternative chains seen by the node.")
@@ -64,8 +64,8 @@ at START-HEIGHT."
 (defjsonrpc get-connections ("get_connections")
   "Retrieve information about incoming and outgoing connections to your node.")
 
-(defjsonrpc get-fee-estimate ("get_fee_estimate" grace-blocks)
-  "Gives an estimation on fees per kB. GRACE-BLOCKS can be NIL."
+(defjsonrpc get-fee-estimate ("get_fee_estimate" &key grace-blocks)
+  "Gives an estimation on fees per kB."
   (when grace-blocks
     (list (cons "grace_blocks" grace-blocks))))
 
@@ -75,8 +75,8 @@ at START-HEIGHT."
 (defjsonrpc get-last-block-header ("get_last_block_header")
   "Look up the block header of the most recent block.")
 
-(defjsonrpc get-output-distribution ("get_output_distribution" amounts cumulative start-height end-height)
-  "Get output distribution. CUMULATIVE, START-HEIGHT and END-HEIGHT can be NIL."
+(defjsonrpc get-output-distribution ("get_output_distribution" amounts &key cumulative start-height end-height)
+  "Get output distribution."
   (append (list (cons "amounts" amounts))
           (when cumulative
             (list (cons "cumulative" t)))
@@ -85,13 +85,17 @@ at START-HEIGHT."
           (when end-height
             (list (cons "to_height" end-height)))))
 
-(defjsonrpc get-output-histogram ("get_output_histogram" amounts min-count max-count unlocked recent-cutoff)
+(defjsonrpc get-output-histogram ("get_output_histogram" amounts &key min-count max-count unlocked recent-cutoff)
   "Get a histogram of output amounts."
-  (list (cons "amounts" amounts)
-        (cons "min_count" min-count)
-        (cons "max_count" max-count)
-        (cons "unlocked" unlocked)
-        (cons "recent_cutoff" recent-cutoff)))
+  (append (list (cons "amounts" amounts))
+          (when min-count
+            (list (cons "min_count" min-count)))
+          (when max-count
+            (list (cons "max_count" max-count)))
+          (when unlocked
+            (list (cons "unlocked" unlocked)))
+          (when recent-cutoff
+            (list (cons "recent_cutoff" recent-cutoff)))))
 
 (defjsonrpc get-txpool-backlog ("get_txpool_backlog")
   "Get all transaction pool backlog.")
@@ -164,10 +168,10 @@ at START-HEIGHT."
 
 (defun get-block-transaction-hashes-from-daemon (block-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
   (let* ((answer (get-block block-id
-                            :host host
-                            :port port
-                            :user user
-                            :password password))
+                            :rpc-host host
+                            :rpc-port port
+                            :rpc-user user
+                            :rpc-password password))
          (block-data (hex-string->bytes (geta answer :blob)))
          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
          (regular-transaction-hashes (geta answer :tx-hashes)))

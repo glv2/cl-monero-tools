@@ -201,10 +201,40 @@ variables are in the *:monero-tools-rpc* package.
  - transaction-history
 
 ** Calling *monerod*
+*** HTTP JSON RPCs
 
-TODO
-There are some examples in src/rpc/daemon.lisp.
+The following functions are thin wrappers for the HTTP JSON RPCs of *monerod*.
+They use alists instead of JSON objects, where a key named =some_key= in a JSON
+object becomes =:some-key= in the alist. The specifications of these RPCs can be
+found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 
+ - flush-txpool
+ - get-alternate-chain
+ - get-bans
+ - get-block
+ - get-block-count
+ - get-block-hash
+ - get-block-header-by-hash
+ - get-block-header-by-height
+ - get-block-headers-range
+ - get-block-template
+ - get-coinbase-tx-sum
+ - get-connections
+ - get-fee-estimate
+ - get-info
+ - get-last-block-header
+ - get-output-distribution
+ - get-output-histogram
+ - get-txpool-backlog
+ - get-version
+ - hard-fork-info
+ - relay-tx
+ - set-bans
+ - submit-block
+ - sync-info
+
+*** Other HTTP RPCs
+*** ZeroMQ RPCs
 ** Calling *monero-wallet-rpc*
 
 TODO

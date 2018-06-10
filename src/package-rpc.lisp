@@ -28,6 +28,15 @@
    #:get-fee-estimate
    #:get-info
    #:get-last-block-header
+   #:get-output-distribution
+   #:get-output-histogram
+   #:get-txpool-backlog
+   #:get-version
+   #:hard-fork-info
+   #:relay-tx
+   #:set-bans
+   #:submit-block
+   #:sync-info
 
    ;; mine
    #:mine-block

@@ -9,7 +9,7 @@
 
 (defparameter *mine-refresh-delay* 10)
 
-(defun mine-block (address reserve-size &key (threads 1) (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+(defun mine-block (address reserve-size &key (threads 1) (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   "Mine a block with several THREADS for an ADDRESS using RESERVE-SIZE
 bytes of extra nonce."
   (when monero-tools::*mine-lock*
@@ -37,10 +37,10 @@ bytes of extra nonce."
                            (monero-tools::*mine-result* monero-tools::*mine-result*)
                          (let* ((info (get-block-template address
                                                           reserve-size
-                                                          :host host
-                                                          :port port
-                                                          :user user
-                                                          :password password))
+                                                          :rpc-host rpc-host
+                                                          :rpc-port rpc-port
+                                                          :rpc-user rpc-user
+                                                          :rpc-password rpc-password))
                                 (template (hex-string->bytes (geta info :blocktemplate-blob)))
                                 (difficulty (geta info :difficulty))
                                 (reserve-offset (geta info :reserved-offset))
@@ -49,7 +49,11 @@ bytes of extra nonce."
                            (update-miners template reserve-size reserve-offset difficulty)
                            (sleep *mine-refresh-delay*)))))
              (stop-threads)
-             (submit-block (bytes->hex-string data) :host host :port port :user user :password password))))
+             (submit-block (bytes->hex-string data)
+                           :rpc-host rpc-host
+                           :rpc-port rpc-port
+                           :rpc-user rpc-user
+                           :rpc-password rpc-password))))
     (setf monero-tools::*mine-stop* nil)
     (setf monero-tools::*mine-lock* nil)
     (setf monero-tools::*mine-result* nil)))

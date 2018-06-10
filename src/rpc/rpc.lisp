@@ -128,18 +128,21 @@ PARAMETERS."
         (geta answer :result))))
 
 (defmacro defjsonrpc (name (method &rest args) &body docstring-param)
-  (let* ((docstring (when (stringp (car docstring-param))
+  (let* ((key-args-p (member '&key args))
+         (docstring (when (stringp (car docstring-param))
                       (car docstring-param)))
          (parameters-form (if docstring
                               (cdr docstring-param)
                               docstring-param)))
     (assert (<= 0 (length parameters-form) 1))
-    `(defun ,name (,@args &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
+    `(defun ,name (,@args ,@(unless key-args-p (list '&key))
+                   (rpc-host *rpc-host*) (rpc-port *rpc-port*)
+                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
        ,@(list docstring)
        (let ((parameters ,@parameters-form))
          (json-rpc ,method
                    :parameters parameters
-                   :host host
-                   :port port
-                   :user user
-                   :password password)))))
+                   :host rpc-host
+                   :port rpc-port
+                   :user rpc-user
+                   :password rpc-password)))))
