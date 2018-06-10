@@ -5,14 +5,36 @@
 
 
 (defpackage :monero-tools
-  (:use :cl
-        :alexandria
-        :babel
-        :bordeaux-threads
-        :cffi
-        :ieee-floats
-        :octet-streams
-        :split-sequence)
+  (:use :cl)
+  (:import-from :alexandria
+                #:define-constant
+                #:hash-table-keys
+                #:read-file-into-byte-vector)
+  (:import-from :bordeaux-threads
+                #:join-thread
+                #:make-lock
+                #:make-thread
+                #:with-lock-held)
+  (:import-from :cffi
+                #:defcstruct
+                #:define-foreign-library
+                #:foreign-funcall
+                #:foreign-library-loaded-p
+                #:inc-pointer
+                #:load-foreign-library-error
+                #:mem-aref
+                #:mem-ref
+                #:null-pointer
+                #:null-pointer-p
+                #:use-foreign-library
+                #:with-foreign-object
+                #:with-foreign-slots)
+  (:import-from :octet-streams
+                #:get-output-stream-octets
+                #:make-octet-output-stream
+                #:with-octet-output-stream)
+  (:import-from :split-sequence
+                #:split-sequence)
   (:export
    ;; blockchain
    #:acceptable-hash-p

@@ -66,11 +66,11 @@ supplied, put the bytes in it starting at index START."
 
 (defun utf-8-string->bytes (string)
   "Convert a UTF-8 STRING to a sequence of bytes."
-  (string-to-octets string :encoding :utf-8))
+  (babel:string-to-octets string :encoding :utf-8))
 
 (defun bytes->utf-8-string (byte-vector &key (start 0) end)
   "Convert a sequence of bytes to a UTF-8 string."
-  (octets-to-string byte-vector :start start :end end :encoding :utf-8))
+  (babel:octets-to-string byte-vector :start start :end end :encoding :utf-8))
 
 (defun hex-string->bytes (hex-string &key (start 0) end)
   "Return the part of the HEX-STRING between START and END as a byte vector."

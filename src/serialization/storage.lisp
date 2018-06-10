@@ -189,10 +189,10 @@
 (defun storage-serialize-double-float (object &key in-vector)
   (concatenate 'octet-vector
                (unless in-vector (vector +portable-storage-type-double+))
-               (integer->bytes (encode-float64 object))))
+               (integer->bytes (ieee-floats:encode-float64 object))))
 
 (defun storage-deserialize-double-float (data offset)
-  (values (decode-float64 (bytes->integer data :start offset :end (+ offset 8)))
+  (values (ieee-floats:decode-float64 (bytes->integer data :start offset :end (+ offset 8)))
           8))
 
 (defun storage-serialize-boolean (object &key in-vector)
