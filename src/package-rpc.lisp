@@ -38,6 +38,9 @@
    #:submit-block
    #:sync-info
 
+   ;; history
+   #:transaction-history
+
    ;; mine
    #:mine-block
 
@@ -47,4 +50,25 @@
    #:zmq-json-rpc
 
    ;; wallet
-   #:transaction-history))
+   #:add-address-book
+   #:create-account
+   #:create-address
+   #:create-wallet
+   #:delete-address-book
+   #:export-key-images
+   #:get-account-tags
+   #:get-accounts
+   #:get-address
+   #:get-address-book
+   #:get-balance
+   #:get-bulk-payments
+   #:get-height
+   #:get-languages
+   #:get-payments
+   #:get-transfer-by-txid
+   #:get-transfers
+   #:get-tx-notes
+   #:import-key-images
+   #:incoming_transfers
+   #:label-account
+   #:label-address))

@@ -7,68 +7,159 @@
 (in-package :monero-tools-rpc)
 
 
-;;; HTTP RPCs
-;;; https://getmonero.org/resources/developer-guides/wallet-rpc.html
+;;; Specs in https://getmonero.org/resources/developer-guides/wallet-rpc.html
 
-(defun get-address-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let ((answer (json-rpc "getaddress"
-                          :host host
-                          :port port
-                          :user user
-                          :password password)))
-    (geta answer :address)))
 
-(defun get-balance-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let* ((answer (json-rpc "getbalance"
-                           :host host
-                           :port port
-                           :user user
-                           :password password))
-         (balance (geta answer :balance))
-         (unlocked-balance (geta answer :unlocked-balance)))
-    ;; (append (when balance
-    ;;           (acons :balance (/ balance +monero-unit+) '()))
-    ;;         (when unlocked-balance
-    ;;           (acons :unlocked-balance (/ unlocked-balance +monero-unit+) '())))))
-    (append (when balance
-              (acons :balance balance '()))
-            (when unlocked-balance
-              (acons :unlocked-balance unlocked-balance '())))))
+;;; HTTP JSON RPCs
 
-(defun get-block-height-from-wallet (&key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let ((answer (json-rpc "getheight"
-                          :host host
-                          :port port
-                          :user user
-                          :password password)))
-    (geta answer :height)))
+(defjsonrpc add-address-book ("add_address_book" address &key payment-id description)
+  "Add an entry to the address book."
+  (append (list (cons "address" address))
+          (when payment-id
+            (list (cons "payment_id" payment-id)))
+          (when description
+            (list (cons "description" description)))))
 
-(defun get-transfers-from-wallet (&key (in t) (out t) (pending t) (failed t) (pool t) (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let* ((parameters (append (when in '((:in . t)))
-                             (when out '((:out . t)))
-                             (when pending '((:pending . t)))
-                             (when failed '((:failed . t)))
-                             (when pool '((:pool . t)))))
-         (answer (json-rpc "get_transfers"
-                           :parameters parameters
-                           :host host
-                           :port port
-                           :user user
-                           :password password))
-         (transactions (loop for x in answer
-                             append (cdr x))))
-    ;; (dolist (transaction transactions)
-    ;;   (setf (geta transaction :amount) (/ (geta transaction :amount) +monero-unit+)
-    ;;         (geta transaction :fee) (/ (geta transaction :fee) +monero-unit+))
-    ;;   (dolist (destination (geta transaction :destinations))
-    ;;     (setf (geta destination :amount) (/ (geta destination :amount) +monero-unit+))))
-    (sort transactions (lambda (x y) (< (geta x :timestamp) (geta y :timestamp))))))
+(defjsonrpc create-account ("create_account" &key label)
+  "Create a new account."
+  (when label
+    (list (cons "label" label))))
 
-(defun get-transfer-from-wallet (transaction-id &key (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  (let ((parameters (list (cons "txid" transaction-id))))
-    (json-rpc "get_transfer_by_txid"
-              :parameters parameters
-              :host host
-              :port port
-              :user user
-              :password password)))
+(defjsonrpc create-address ("create_address" account-index &key label)
+  "Create a new address for an account."
+  (append (list (cons "account_index" account-index))
+          (when label
+            (list (cons "label" label)))))
+
+(defjsonrpc create-wallet ("create_wallet" filename password language)
+  "Create a new wallet."
+  (list (cons "filename" filename)
+        (cons "password" password)
+        (cons "language" language)))
+
+(defjsonrpc delete-address-book ("delete_address_book" index)
+  "Delete an entry from the address book."
+  (list (cons "index" index)))
+
+(defjsonrpc export-key-images ("export_key_images")
+  "Export a signed set of key images.")
+
+(defjsonrpc get-account-tags ("get_account_tags")
+  "Get a list of user-defined account tags.")
+
+(defjsonrpc get-accounts ("get_accounts" &key tag)
+  "Get all accounts for a wallet."
+  (when tag
+    (list (cons "tag" tag))))
+
+(defjsonrpc get-address ("get_address" account-index &key address-indexes)
+  "Return the wallet's addresses for an account."
+  (append (list (cons "account_index" account-index))
+          (when address-indexes
+            (list (cons "address_index" address-indexes)))))
+
+(defjsonrpc get-address-book ("get_address_book" entries)
+  "Retrieves entries from the address book."
+  (list (cons "entries" entries)))
+
+(defjsonrpc get-balance ("get_balance" account-index)
+  "Return the wallet's balance."
+  (list (cons "account_index" account-index)))
+
+(defjsonrpc get-bulk-payments ("get_bulk_payments" payment-ids min-block-height)
+  "Get a list of incoming payments."
+  (list (cons "payment_ids" payment-ids)
+        (cons "min_block_height" min-block-height)))
+
+(defjsonrpc get-height ("get_height")
+  "Returns the wallet's current block height.")
+
+(defjsonrpc get-languages ("get_languages")
+  "Get a list of available languages for your wallet's seed.")
+
+(defjsonrpc get-payments ("get_payments" payment-id)
+  "Get a list of incoming payments."
+  (list (cons "payment_id" payment-id)))
+
+(defjsonrpc get-transfer-by-txid ("get_transfer_by_txid" transaction-id &key account-index)
+  "Show information about a transfer."
+  (append (list (cons "txid" transaction-id))
+          (when account-index
+            (list (cons "account_index" account-index)))))
+
+(defjsonrpc get-transfers ("get_transfers" &key incoming outgoing pending failed pool filter-by-height min-height max-height account-index subaddress-indices)
+  "Returns a list of transfers."
+  (append (when incoming
+            (list (cons "in" t)))
+          (when outgoing
+            (list (cons "out" t)))
+          (when pending
+            (list (cons "pending" t)))
+          (when failed
+            (list (cons "failed" t)))
+          (when pool
+            (list (cons "pool" t)))
+          (when filter-by-height
+            (list (cons "filter_by_height" t)))
+          (when min-height
+            (list (cons "min_height" min-height)))
+          (when max-height
+            (list (cons "max_height" max-height)))
+          (when account-index
+            (list (cons "account_index" account-index)))
+          (when subaddress-indices
+            (list (cons "subaddr_indices" subaddress-indices)))))
+
+(defjsonrpc get-tx-notes ("get_tx_notes" transaction-ids)
+  "Get string notes for transactions."
+  (list (cons "txids" transaction-ids)))
+
+(defjsonrpc import-key-images ("import_key_images" signed-key-images)
+  "Import signed key images list and verify their spent status."
+  (list (cons "signed_key_images" signed-key-images)))
+
+(defjsonrpc incoming-transfers ("incoming_transfers" transfer-type &key account-index subaddress-indices verbose)
+  "Return a list of incoming transfers to the wallet."
+  (append (list (cons "transfer_type" transfer-type))
+          (when account-index
+            (list (cons "account_index" account-index)))
+          (when subaddress-indices
+            (list (cons "subaddr_indices" subaddress-indices)))
+          (when verbose
+            (list (cons "verbose" t)))))
+
+(defjsonrpc label-account ("label_account" account-index label)
+  "Label an account."
+  (list (cons "account_index" account-index)
+        (cons "label" label)))
+
+(defjsonrpc label-address ("label_address" account-index address-index label)
+  "Label an address."
+  (list (cons "index" (list (cons "major" account-index)
+                            (cons "minor" address-index)))
+        (cons "label" label)))
+
+#|
+    make_integrated_address
+    make_uri
+    open_wallet
+    parse_uri
+    query_key
+    rescan_blockchain
+    rescan_spent
+    set_account_tag_description
+    set_tx_notes
+    sign
+    split_integrated_address
+    start_mining
+    stop_mining
+    stop_wallet
+    store
+    sweep_all
+    sweep_dust
+    tag_accounts
+    transfer
+    transfer_split
+    untag_accounts
+    verify
+|#

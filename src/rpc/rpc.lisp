@@ -21,6 +21,11 @@
                                             (lambda (c) (if (char= c #\_) #\- c))
                                             (string-upcase key))))
 
+(setf *lisp-identifier-name-to-json* (lambda (key)
+                                       (map 'string
+                                            (lambda (c) (if (char= c #\-) #\_ c))
+                                            (string-downcase key))))
+
 (defun parse-digest-authentication-challenge (challenge)
   "Parse a 'Digest' authentication CHALLENGE received from a HTTP server."
   (let* ((tmp (split-sequence #\space challenge))
