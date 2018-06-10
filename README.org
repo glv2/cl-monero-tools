@@ -137,6 +137,8 @@ are in the *:monero-tools* package.
  - bytes->integer
  - bytes->string
  - bytes->utf-8-string
+ - decode-json-from-string
+ - encode-json-to-string
  - format-float
  - geta
  - hex-string->bytes

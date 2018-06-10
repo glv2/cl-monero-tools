@@ -16,24 +16,6 @@
 (defparameter *rpc-password* nil
   "Password to use to connect to the RPC server.")
 
-(defun json-name->lisp-name (name)
-  (map 'string
-       (lambda (c) (if (char= c #\_) #\- c))
-       (string-upcase name)))
-
-(defun lisp-name->json-name (name)
-  (map 'string
-       (lambda (c) (if (char= c #\-) #\_ c))
-       (string-downcase name)))
-
-(defun decode-json-from-string (json-string)
-  (let ((json:*json-identifier-name-to-lisp* #'json-name->lisp-name))
-    (json:decode-json-from-string json-string)))
-
-(defun encode-json-to-string (object)
-  (let ((json:*lisp-identifier-name-to-json* #'lisp-name->json-name))
-    (json:encode-json-to-string object)))
-
 (defun parse-digest-authentication-challenge (challenge)
   "Parse a 'Digest' authentication CHALLENGE received from a HTTP server."
   (let* ((tmp (split-sequence #\space challenge))

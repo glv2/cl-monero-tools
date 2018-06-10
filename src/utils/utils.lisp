@@ -158,3 +158,25 @@ is not specfied, a new LISP-ARRAY is created."
   (let ((lisp-array (or lisp-array (make-array length :element-type '(unsigned-byte 8)))))
     (dotimes (i length lisp-array)
       (setf (aref lisp-array i) (mem-aref c-array :unsigned-char i)))))
+
+(defun json-name->lisp-name (name)
+  "Convert a JSON name to a Lisp name."
+  (map 'string
+       (lambda (c) (if (char= c #\_) #\- c))
+       (string-upcase name)))
+
+(defun lisp-name->json-name (name)
+  "Convert a Lisp name to a JSON name."
+  (map 'string
+       (lambda (c) (if (char= c #\-) #\_ c))
+       (string-downcase name)))
+
+(defun decode-json-from-string (json-string)
+  "Convert a JSON object to a Lisp object."
+  (let ((json:*json-identifier-name-to-lisp* #'json-name->lisp-name))
+    (json:decode-json-from-string json-string)))
+
+(defun encode-json-to-string (object)
+  "Convert a Lisp object to a JSON object."
+  (let ((json:*lisp-identifier-name-to-json* #'lisp-name->json-name))
+    (json:encode-json-to-string object)))

@@ -252,7 +252,7 @@
         (write-byte +portable-storage-type-object+ result))
       (write-sequence (storage-serialize-varint size) result)
       (dolist (pair object)
-        (let ((name (string->bytes (lisp-to-camel-case (symbol-name (car pair)))))
+        (let ((name (string->bytes (lisp-name->json-name (symbol-name (car pair)))))
               (thing (cdr pair)))
           (when (> (length name) 255)
             (error "storage entry name is too long: ~a" name))
@@ -267,9 +267,9 @@
     (let ((result '()))
       (dotimes (i size)
         (let* ((name-size (aref data (+ offset s0)))
-               (name (intern (camel-case-to-lisp (bytes->string (subseq data
-                                                                        (+ offset s0 1)
-                                                                        (+ offset s0 1 name-size))))
+               (name (intern (json-name->lisp-name (bytes->string (subseq data
+                                                                          (+ offset s0 1)
+                                                                          (+ offset s0 1 name-size))))
                              :keyword)))
             (multiple-value-bind (thing s1)
                 (storage-deserialize data (+ offset s0 1 name-size))

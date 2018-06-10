@@ -20,6 +20,7 @@
                 #:compute-key-image
                 #:compute-miner-transaction-hash-from-data
                 #:decode-address
+                #:decode-json-from-string
                 #:decrypt-amount
                 #:derive-key
                 #:derive-output-public-key
@@ -27,6 +28,7 @@
                 #:deserialize-block
                 #:deserialize-from-binary-storage
                 #:deserialize-transaction
+                #:encode-json-to-string
                 #:geta
                 #:hex-string->bytes
                 #:miner

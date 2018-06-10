@@ -11,7 +11,6 @@
         :bordeaux-threads
         :cffi
         :ieee-floats
-        :json
         :octet-streams
         :split-sequence)
   (:export
@@ -66,6 +65,7 @@
    #:hex-string->bytes #:bytes->hex-string
    #:geta
    #:read-float #:format-float
+   #:decode-json-from-string #:encode-json-to-string
 
    ;; wallet
    #:+monero-unit+
