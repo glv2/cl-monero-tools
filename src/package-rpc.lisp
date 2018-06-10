@@ -13,11 +13,6 @@
                 #:with-lock-held)
   (:import-from :base64
                 #:usb8-array-to-base64-string)
-  (:import-from :json
-                #:*json-identifier-name-to-lisp*
-                #:*lisp-identifier-name-to-json*
-                #:decode-json-from-string
-                #:encode-json-to-string)
   (:import-from :monero-tools
                 #:*mine-lock*
                 #:bytes->hex-string

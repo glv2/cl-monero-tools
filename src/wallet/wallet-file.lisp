@@ -7,11 +7,6 @@
 (in-package :monero-tools)
 
 
-(setf *json-identifier-name-to-lisp* (lambda (key)
-                                       (map 'string
-                                            (lambda (c) (if (char= c #\_) #\- c))
-                                            (string-upcase key))))
-
 (defun get-wallet-keys (keys-file password &key chacha8)
   "Get the wallet view keys and spend keys from an encrypted
 KEYS-FILE. Set CHACHA8 to T if the wallet was encrypted with chacha8
@@ -27,7 +22,12 @@ instead of chacha20."
              (account-json-data (map 'string #'code-char (if chacha8
                                                              (chacha8 encrypted-data key iv)
                                                              (chacha20 encrypted-data key iv))))
-             (account-json (handler-case (decode-json-from-string account-json-data)
+             (account-json (handler-case
+                               (let ((json:*json-identifier-name-to-lisp* (lambda (key)
+                                                                            (map 'string
+                                                                                 (lambda (c) (if (char= c #\_) #\- c))
+                                                                                 (string-upcase key)))))
+                                 (decode-json-from-string account-json-data))
                              (t () nil)))
              (key-data (geta account-json :key-data)))
         (unless key-data
