@@ -7,10 +7,11 @@
 (in-package :monero-tools-rpc)
 
 
-(defun zmq-json-rpc (method &key parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  "Send a METHOD JSON-RPC request to HOST:PORT with optional PARAMETERS."
-  (declare (ignore user password))
-  (let* ((server-uri (format nil "tcp://~a:~a" host port))
+(defun zmq-json-rpc (method &key parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+  "Send a METHOD JSON RPC request to RPC-HOST:RPC-PORT with optional
+PARAMETERS."
+  (declare (ignore rpc-user rpc-password))
+  (let* ((server-uri (format nil "tcp://~a:~a" rpc-host rpc-port))
          (request (list (cons :jsonrpc "2.0")
                         (cons :id (random 1000000))
                         (cons :method (string-downcase (string method)))

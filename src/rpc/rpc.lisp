@@ -60,18 +60,18 @@
                    ", response=\"" response "\""
                    ", algorithm=\"" algorithm "\""))))
 
-(defun rpc (method &key binary parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  "Send a METHOD RPC request to the server at HOST:PORT with optional
+(defun rpc (method &key binary parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+  "Send a METHOD RPC request to the server at RPC-HOST:RPC-PORT with optional
 PARAMETERS."
   (let* ((page (format nil "/~(~a~)" method))
          (parameters (when parameters
                        (if binary
                            (serialize-to-binary-storage parameters)
                            (encode-json-to-string parameters))))
-         (server-uri (format nil "http://~a:~d~a" host port page))
+         (server-uri (format nil "http://~a:~d~a" rpc-host rpc-port page))
          (auth (handler-case (progn (dex:head server-uri) nil)
                  (dex:http-request-unauthorized (e)
-                   (unless (and user password)
+                   (unless (and rpc-user rpc-password)
                      (error "USER and PASSWORD required."))
                    (let* ((response-headers (dex:response-headers e))
                           (www-authenticate (gethash "www-authenticate" response-headers))
@@ -80,8 +80,8 @@ PARAMETERS."
                           (algorithm (geta challenge :algorithm))
                           (realm (geta challenge :realm))
                           (nonce (geta challenge :nonce)))
-                     (compute-digest-authentication-response user
-                                                             password
+                     (compute-digest-authentication-response rpc-user
+                                                             rpc-password
                                                              qop
                                                              algorithm
                                                              realm
@@ -105,18 +105,19 @@ PARAMETERS."
           (deserialize-from-binary-storage body 0)
           (decode-json-from-string body)))))
 
-(defun json-rpc (method &key parameters (host *rpc-host*) (port *rpc-port*) (user *rpc-user*) (password *rpc-password*))
-  "Send a METHOD JSON-RPC request to HOST:PORT with optional PARAMETERS."
+(defun json-rpc (method &key parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+  "Send a METHOD JSON RPC request to RPC-HOST:RPC-PORT with optional
+PARAMETERS."
   (let* ((request (list (cons :jsonrpc "2.0")
                         (cons :id (random 1000000))
                         (cons :method (string-downcase (string method)))
                         (cons :params parameters)))
          (answer (rpc "json_rpc"
                       :parameters request
-                      :host host
-                      :port port
-                      :user user
-                      :password password))
+                      :rpc-host rpc-host
+                      :rpc-port rpc-port
+                      :rpc-user rpc-user
+                      :rpc-password rpc-password))
          (err (geta answer :error)))
     (if err
         (error (geta err :message))
@@ -137,7 +138,7 @@ PARAMETERS."
        (let ((parameters ,@parameters-form))
          (json-rpc ,method
                    :parameters parameters
-                   :host rpc-host
-                   :port rpc-port
-                   :user rpc-user
-                   :password rpc-password)))))
+                   :rpc-host rpc-host
+                   :rpc-port rpc-port
+                   :rpc-user rpc-user
+                   :rpc-password rpc-password)))))
