@@ -70,7 +70,6 @@
    #:get-blocks.bin
    #:get-blocks-by-height.bin
    #:get-hashes.bin
-   #:get-height
    #:get-limit
    #:get-o-indexes.bin
    #:get-outs

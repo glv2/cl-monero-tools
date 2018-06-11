@@ -179,9 +179,6 @@ at START-HEIGHT."
 
 ;; (get-hashes.bin (list "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148" "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"))
 
-(defrpc get-height ("get_height")
-  "Get the node's current height.")
-
 (defrpc get-limit ("get_limit")
   "Get daemon bandwidth limits.")
 
@@ -246,14 +243,14 @@ at START-HEIGHT."
   (lambda (result)
     (let ((transactions (geta result :transactions)))
       (dolist (transaction transactions)
-        (setf (geta transaction :tx-blob) (utf-8-string->bytes (geta transaction :tx-blob)))))
+        (setf (geta transaction :tx-blob) (string->bytes (geta transaction :tx-blob)))))
     result))
 
 (defrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")
   "Get hashes from transaction pool."
   nil
   (lambda (result)
-    (let* ((data-string (utf-8-string->bytes (geta result :tx-hashes)))
+    (let* ((data-string (string->bytes (geta result :tx-hashes)))
            (transaction-hashes (loop for i from 0 below (length data-string) by 32
                                      collect (subseq data-string i (+ i 32)))))
       (setf (geta result :tx-hashes) transaction-hashes))
