@@ -16,6 +16,7 @@
   (:import-from :monero-tools
                 #:*mine-lock*
                 #:bytes->hex-string
+                #:bytes->integer
                 #:bytes->string
                 #:compute-key-image
                 #:compute-miner-transaction-hash-from-data
@@ -64,6 +65,19 @@
    #:set-bans
    #:submit-block
    #:sync-info
+
+   #:get-alt-blocks-hashes
+   #:get-blocks.bin
+   #:get-blocks-by-height.bin
+   #:get-hashes.bin
+   #:get-height
+   #:get-limit
+   #:get-o-indexes.bin
+   #:get-outs
+   #:get-outs.bin
+   #:get-peer-list
+   #:get-random-outs.bin
+   #:get-random-rctouts.bin
 
    ;; history
    #:transaction-history

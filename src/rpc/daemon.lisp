@@ -124,6 +124,143 @@ at START-HEIGHT."
 
 ;;; Other HTTP RPCs
 
+(defrpc get-alt-blocks-hashes ("get_alt_blocks_hashes")
+  "Get the known blocks hashes which are not on the main chain.")
+
+(defbinrpc get-blocks.bin ("get_blocks.bin" block-ids &key start-height prune)
+  "Get all blocks info."
+  (let ((hex-block-ids (with-output-to-string (s)
+                         (dolist (id (coerce block-ids 'list))
+                           (write-string id s)))))
+    (append (list (cons "block_ids" (bytes->string (hex-string->bytes hex-block-ids))))
+            (when start-height
+              (list (cons "start_height" start-height)))
+            (when prune
+              (list (cons "prune" t)))))
+  (lambda (result)
+    (let ((blocks (geta result :blocks)))
+      (dotimes (i (length blocks))
+        (let ((b (aref blocks i)))
+          (setf (geta b :block) (string->bytes (geta b :block))))))
+    result))
+
+;; (get-blocks.bin (list "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148" "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"))
+
+(defbinrpc get-blocks-by-height.bin ("get_blocks_by_height.bin" heights)
+  "Get blocks by height."
+  (list (cons "heights" (coerce heights '(simple-array (unsigned-byte 64) (*)))))
+  (lambda (result)
+    (let ((blocks (geta result :blocks)))
+      (dotimes (i (length blocks))
+        (let ((b (aref blocks i)))
+          (setf (geta b :block) (string->bytes (geta b :block))))))
+    result))
+
+(defbinrpc get-hashes.bin ("get_hashes.bin" block-ids &key start-height)
+  "Get hashes."
+  (let ((hex-block-ids (with-output-to-string (s)
+                         (dolist (id (coerce block-ids 'list))
+                           (write-string id s)))))
+    (append (list (cons "block_ids" (bytes->string (hex-string->bytes hex-block-ids))))
+            (when start-height
+              (list (cons "start_height" start-height)))))
+  (lambda (result)
+    (let* ((data-string (geta result :m-block-ids))
+           (size (length data-string))
+           (key-length 32))
+      (unless (zerop (mod size key-length))
+        (error "Invalid length"))
+      (setf (geta result :m-block-ids)
+            (map 'vector
+                 #'string->bytes
+                 (loop for i from 0 below size by key-length
+                       collect (subseq data-string i (+ i key-length))))))
+    result))
+
+;; (get-hashes.bin (list "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148" "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"))
+
+(defrpc get-height ("get_height")
+  "Get the node's current height.")
+
+(defrpc get-limit ("get_limit")
+  "Get daemon bandwidth limits.")
+
+(defbinrpc get-o-indexes.bin ("get_o_indexes.bin" transaction-id)
+  "Get global output indexes of a transaction."
+  (list (cons "txid" (bytes->string (hex-string->bytes transaction-id)))))
+
+(defrpc get-outs ("get_outs" outputs)
+  "Get outputs."
+  (list (cons "outputs" outputs)))
+
+(defbinrpc get-outs.bin ("get_outs.bin" outputs)
+  "Get outputs."
+  (list (cons "outputs" outputs))
+  (lambda (result)
+    (let ((outs (geta result :outs)))
+      (dotimes (i (length outs))
+        (let ((out (aref outs i)))
+          (setf (geta out :key) (string->bytes (geta out :key)))
+          (setf (geta out :mask) (string->bytes (geta out :mask)))
+          (setf (geta out :txid) (string->bytes (geta out :txid))))))
+    result))
+
+(defrpc get-peer-list ("get_peer_list")
+  "Get the known peers list.")
+
+(defbinrpc get-random-outs.bin ("get_random_outs.bin" amounts output-count)
+  "Get a list of random outputs for a specific list of amounts."
+  (list (cons "amounts" amounts)
+        (cons "outs_count" output-count))
+  (lambda (result)
+    (let ((outs (geta result :outs)))
+      (dotimes (i (length outs))
+        (let* ((x (aref outs i))
+               (y (string->bytes (geta x :outs)))
+               (z (loop for j from 0 below (length y) by 40
+                        collect (list (cons :amount-index (bytes->integer y :start j :end (+ j 8)))
+                                      (cons :output-key (subseq y (+ j 8) (+ j 40)))))))
+          (setf (geta x :outs) z))))
+    result))
+
+(defbinrpc get-random-rctouts.bin ("get_random_rctouts.bin" output-count)
+  "Get random RingCT outputs."
+  (list (cons "outs_count" output-count))
+  (lambda (result)
+    (let* ((outs (geta result :outs))
+           (x (string->bytes outs))
+           (y (loop for i from 0 below (length x) by 80
+                    collect (list (cons :amount (bytes->integer x :start i :end (+ i 8)))
+                                  (cons :amount-index (bytes->integer x :start (+ i 8) :end (+ i 16)))
+                                  (cons :output-key (subseq x (+ i 16) (+ i 48)))
+                                  (cons :commitment (subseq x (+ i 48) (+ i 80)))))))
+      (setf (geta result :outs) y))
+    result))
+
+#|
+    /get_transaction_pool
+    /get_transaction_pool_hashes.bin
+    /get_transaction_pool_stats
+    /get_transactions
+    /in_peers
+    /is_key_image_spent
+    /mining_status
+    /out_peers
+    /save_bc
+    /send_raw_transaction
+    /set_limit
+    /set_log_categories
+    /set_log_hash_rate
+    /set_log_level
+    /start_mining
+    /start_save_graph
+    /stop_daemon
+    /stop_mining
+    /stop_save_graph
+    /update
+|#
+
+
 (defun get-transactions-from-daemon (transaction-ids &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
                            (cons "decode_as_json" t)))
@@ -185,62 +322,6 @@ at START-HEIGHT."
          :rpc-port rpc-port
          :rpc-user rpc-user
          :rpc-password rpc-password)))
-
-(defun get-blocks-from-daemon (block-ids start-height prune &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((block-ids (bytes->string (apply #'concatenate 'octet-vector block-ids)))
-         (parameters (list (cons :block-ids block-ids)
-                           (cons :prune prune)
-                           (cons :start-height (cons start-height '(unsigned-byte 64))))))
-    (rpc "getblocks.bin"
-         :binary t
-         :parameters parameters
-         :rpc-host rpc-host
-         :rpc-port rpc-port
-         :rpc-user rpc-user
-         :rpc-password rpc-password)))
-
-;; (get-blocks-from-daemon (list (hex-string->bytes "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148") (hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")) 0 t)
-
-(defun get-hashes-from-daemon (block-ids start-height &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((block-ids (bytes->string (apply #'concatenate 'octet-vector block-ids)))
-         (parameters (list (cons :block-ids block-ids)
-                           (cons :start-height (cons start-height '(unsigned-byte 64)))))
-         (answer (rpc "gethashes.bin"
-                      :binary t
-                      :parameters parameters
-                      :rpc-host rpc-host
-                      :rpc-port rpc-port
-                      :rpc-user rpc-user
-                      :rpc-password rpc-password)))
-    (flet ((split (data-string)
-             (let ((size (length data-string)))
-               (unless (zerop (mod size monero-tools::+key-length+))
-                 (error "Invalid length"))
-               (map 'vector
-                    #'string->bytes
-                    (loop for i from 0 below size by monero-tools::+key-length+
-                          collect (subseq data-string i (+ i monero-tools::+key-length+)))))))
-      (setf (geta answer :m-block-ids) (split (geta answer :m-block-ids)))
-      answer)))
-
-;; (get-hashes-from-daemon (list (hex-string->bytes "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148") (hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")) 0)
-
-(defun get-blocks-by-height-from-daemon (block-heights &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((block-heights (make-array (length block-heights)
-                                    :element-type '(unsigned-byte 64)
-                                    :initial-contents block-heights))
-         (parameters (list (cons :heights block-heights)))
-         (answer (rpc "getblocks_by_height.bin"
-                      :binary t
-                      :parameters parameters
-                      :rpc-host rpc-host
-                      :rpc-port rpc-port
-                      :rpc-user rpc-user
-                      :rpc-password rpc-password))
-         (blocks (geta answer :blocks)))
-    (map 'vector (lambda (x) (string->bytes (geta x :block))) blocks)))
-
-;; (get-blocks-by-height-from-daemon '(1000000))
 
 
 ;;; ZeroMQ RPCs

@@ -123,6 +123,48 @@ PARAMETERS."
         (error (geta err :message))
         (geta answer :result))))
 
+(defmacro defrpc (name (method &rest args) &body docstring-param)
+  (let* ((key-args-p (member '&key args))
+         (docstring (when (stringp (car docstring-param))
+                      (car docstring-param)))
+         (parameters-form (if docstring
+                              (cdr docstring-param)
+                              docstring-param)))
+    (assert (<= 0 (length parameters-form) 1))
+    `(defun ,name (,@args ,@(unless key-args-p (list '&key))
+                   (rpc-host *rpc-host*) (rpc-port *rpc-port*)
+                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+       ,@(list docstring)
+       (let ((parameters ,@parameters-form))
+         (rpc ,method
+              :parameters parameters
+              :rpc-host rpc-host
+              :rpc-port rpc-port
+              :rpc-user rpc-user
+              :rpc-password rpc-password)))))
+
+(defmacro defbinrpc (name (method &rest args) &body docstring-param-postprocess)
+  (let* ((key-args-p (member '&key args))
+         (docstring (when (stringp (car docstring-param-postprocess))
+                      (pop docstring-param-postprocess)))
+         (parameters-form (pop docstring-param-postprocess))
+         (postprocess-function (car docstring-param-postprocess)))
+    `(defun ,name (,@args ,@(unless key-args-p (list '&key))
+                   (rpc-host *rpc-host*) (rpc-port *rpc-port*)
+                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+       ,@(list docstring)
+       (let* ((parameters ,parameters-form)
+              (result (rpc ,method
+                           :binary t
+                           :parameters parameters
+                           :rpc-host rpc-host
+                           :rpc-port rpc-port
+                           :rpc-user rpc-user
+                           :rpc-password rpc-password)))
+         ,(if postprocess-function
+              `(funcall ,postprocess-function result)
+              `result)))))
+
 (defmacro defjsonrpc (name (method &rest args) &body docstring-param)
   (let* ((key-args-p (member '&key args))
          (docstring (when (stringp (car docstring-param))
