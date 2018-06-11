@@ -237,10 +237,37 @@ at START-HEIGHT."
       (setf (geta result :outs) y))
     result))
 
+;; TODO: (let ((json:*use-strict-json-rules* nil)) ...) ?
+(defrpc get-transaction-pool ("get_transaction_pool")
+  "Show information about valid transactions seen by the node but not yet mined
+  into a block, as well as spent key image information for the txpool in the
+  node's memory."
+  nil
+  (lambda (result)
+    (let ((transactions (geta result :transactions)))
+      (dolist (transaction transactions)
+        (setf (geta transaction :tx-blob) (utf-8-string->bytes (geta transaction :tx-blob)))))
+    result))
+
+(defrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")
+  "Get hashes from transaction pool."
+  nil
+  (lambda (result)
+    (let* ((data-string (utf-8-string->bytes (geta result :tx-hashes)))
+           (transaction-hashes (loop for i from 0 below (length data-string) by 32
+                                     collect (subseq data-string i (+ i 32)))))
+      (setf (geta result :tx-hashes) transaction-hashes))
+    result))
+
+(defrpc get-transaction-pool-stats ("get_transaction_pool_stats")
+  "Get the transaction pool statistics."
+  nil
+  (lambda (result)
+    (let ((stats (geta result :pool-stats)))
+      (setf (geta stats :histo) (string->bytes (geta stats :histo))))
+    result))
+
 #|
-    /get_transaction_pool
-    /get_transaction_pool_hashes.bin
-    /get_transaction_pool_stats
     /get_transactions
     /in_peers
     /is_key_image_spent

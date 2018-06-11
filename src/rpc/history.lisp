@@ -20,9 +20,9 @@
              (transaction-ids (apply #'concatenate
                                      'vector
                                       (map 'list
-                                           (lambda (data)
-                                             (monero-tools::transaction-hashes (deserialize-block data 0)))
-                                           (get-blocks-by-height-from-daemon block-heights))))
+                                           (lambda (block)
+                                             (monero-tools::transaction-hashes (deserialize-block (geta block :block) 0)))
+                                           (geta (get-blocks-by-height.bin block-heights) :blocks))))
              (transactions (map 'vector
                                 (lambda (data)
                                   (deserialize-transaction data 0))

@@ -78,6 +78,9 @@
    #:get-peer-list
    #:get-random-outs.bin
    #:get-random-rctouts.bin
+   #:get-transaction-pool
+   #:get-transaction-pool-hashes.bin
+   #:get-transaction-pool-stats
 
    ;; history
    #:transaction-history
