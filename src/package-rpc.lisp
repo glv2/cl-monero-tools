@@ -99,4 +99,25 @@
    #:incoming_transfers
    #:label-account
    #:label-address
-   #:make-integrated-address))
+   #:make-integrated-address
+   #:make-uri
+   #:open-wallet
+   #:parse-uri
+   #:query-key
+   #:rescan-blockchain
+   #:rescan-spent
+   #:set-account-tag-description
+   #:set-tx-notes
+   #:sign
+   #:split-integrated-address
+   #:start-mining
+   #:stop-mining
+   #:stop-wallet
+   #:store
+   #:sweep-all
+   #:sweep-dust
+   #:tag-accounts
+   #:transfer
+   #:transfer-split
+   #:untag-accounts
+   #:verify))

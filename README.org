@@ -184,7 +184,7 @@ are in the *:monero-tools* package.
 After loading the *monero-tools-rpc* system, the following functions and
 variables are in the *:monero-tools-rpc* package.
 
-** Remote procedure call
+** Basic remote procedure call
 
  - =*rpc-host*=
  - =*rpc-password*=
@@ -193,14 +193,6 @@ variables are in the *:monero-tools-rpc* package.
  - json-rpc
  - rpc
  - zmq-json-rpc
-
-** Mining
-
- - mine-block
-
-** Wallet
-
- - transaction-history
 
 ** Calling *monerod*
 *** HTTP JSON RPCs
@@ -238,10 +230,67 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 *** Other HTTP RPCs
 *** ZeroMQ RPCs
 ** Calling *monero-wallet-rpc*
+*** HTTP JSON RPCs
 
-TODO
-There are some examples in src/rpc/wallet.lisp.
+The following functions are thin wrappers for the HTTP JSON RPCs of
+*monero-wallet-rpc*. They use alists instead of JSON objects, where a key named
+=some_key= in a JSON object becomes =:some-key= in the alist. The specifications
+of these RPCs can be found in
+https://getmonero.org/resources/developer-guides/wallet-rpc.html.
 
+ - add-address-book
+ - create-account
+ - create-address
+ - create-wallet
+ - delete-address-book
+ - export-key-images
+ - get-account-tags
+ - get-accounts
+ - get-address
+ - get-address-book
+ - get-balance
+ - get-bulk-payments
+ - get-height
+ - get-languages
+ - get-payments
+ - get-transfer-by-txid
+ - get-transfers
+ - get-tx-notes
+ - import-key-images
+ - incoming_transfers
+ - label-account
+ - label-address
+ - make-integrated-address
+ - make-uri
+ - open-wallet
+ - parse-uri
+ - query-key
+ - rescan-blockchain
+ - rescan-spent
+ - set-account-tag-description
+ - set-tx-notes
+ - sign
+ - split-integrated-address
+ - start-mining
+ - stop-mining
+ - stop-wallet
+ - store
+ - sweep-all
+ - sweep-dust
+ - tag-accounts
+ - transfer
+ - transfer-split
+ - untag-accounts
+ - verify
+
+** Custom RPCs
+*** Mining
+
+ - mine-block
+
+*** Wallet
+
+ - transaction-history
 
 * Tests
 
