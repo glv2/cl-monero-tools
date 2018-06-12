@@ -62,7 +62,7 @@
 (defjsonrpc get-address-book ("get_address_book" &key entries)
   "Retrieves entries from the address book."
   (when entries
-    (list (cons "entries" entries))))
+    (list (cons "entries" (coerce entries 'vector)))))
 
 (defjsonrpc get-balance ("get_balance" &key account-index)
   "Return the wallet's balance."
@@ -71,7 +71,7 @@
 
 (defjsonrpc get-bulk-payments ("get_bulk_payments" payment-ids min-block-height)
   "Get a list of incoming payments."
-  (list (cons "payment_ids" payment-ids)
+  (list (cons "payment_ids" (coerce payment-ids 'vector))
         (cons "min_block_height" min-block-height)))
 
 (defjsonrpc get-height ("get_height")
@@ -111,15 +111,15 @@
           (when account-index
             (list (cons "account_index" account-index)))
           (when subaddress-indices
-            (list (cons "subaddr_indices" subaddress-indices)))))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))))
 
 (defjsonrpc get-tx-notes ("get_tx_notes" transaction-ids)
   "Get string notes for transactions."
-  (list (cons "txids" transaction-ids)))
+  (list (cons "txids" (coerce transaction-ids 'vector))))
 
 (defjsonrpc import-key-images ("import_key_images" signed-key-images)
   "Import signed key images list and verify their spent status."
-  (list (cons "signed_key_images" signed-key-images)))
+  (list (cons "signed_key_images" (coerce signed-key-images 'vector))))
 
 (defjsonrpc incoming-transfers ("incoming_transfers" transfer-type &key account-index subaddress-indices verbose)
   "Return a list of incoming transfers to the wallet."
@@ -127,7 +127,7 @@
           (when account-index
             (list (cons "account_index" account-index)))
           (when subaddress-indices
-            (list (cons "subaddr_indices" subaddress-indices)))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when verbose
             (list (cons "verbose" t)))))
 
@@ -184,8 +184,8 @@
 
 (defjsonrpc set-tx-notes ("set_tx_notes" transaction-ids notes)
   "Set arbitrary string notes for transactions."
-  (list (cons "txids" transaction-ids)
-        (cons "notes" notes)))
+  (list (cons "txids" (coerce transaction-ids 'vector))
+        (cons "notes" (coerce notes 'vector))))
 
 (defjsonrpc sign ("sign" string)
   "Sign a string."
@@ -217,7 +217,7 @@ address."
           (when account-index
             (cons "account_index" account-index))
           (when subaddress-indices
-            (list (cons "subaddr_indices" subaddress-indices)))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when priority
             (list (cons "priority" priority)))
           (when ring-size
@@ -243,15 +243,15 @@ address."
 (defjsonrpc tag-accounts ("tag_accounts" tag accounts)
   "Apply a filtering tag to a list of accounts."
   (list (cons "tag" tag)
-        (cons "accounts" accounts)))
+        (cons "accounts" (coerce accounts 'vector))))
 
 (defjsonrpc transfer ("transfer" destinations &key account-index subaddress-indices priority ring-size unlock-time payment-id get-transaction-key do-not-relay get-transaction-hex get-transaction-metadata)
   "Send monero to a number of recipients."
-  (append (list (cons "destinations" destinations))
+  (append (list (cons "destinations" (coerce destinations 'vector)))
           (when account-index
             (cons "account_index" account-index))
           (when subaddress-indices
-            (list (cons "subaddr_indices" subaddress-indices)))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when priority
             (list (cons "priority" priority)))
           (when ring-size
@@ -271,11 +271,11 @@ address."
 
 (defjsonrpc transfer-split ("transfer_split" destinations &key account-index subaddress-indices priority ring-size unlock-time payment-id get-transaction-keys do-not-relay get-transaction-hex get-transaction-metadata)
   "Like transfer, but can split into several transactions if necessary."
-  (append (list (cons "destinations" destinations))
+  (append (list (cons "destinations" (coerce destinations 'vector)))
           (when account-index
             (cons "account_index" account-index))
           (when subaddress-indices
-            (list (cons "subaddr_indices" subaddress-indices)))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when priority
             (list (cons "priority" priority)))
           (when ring-size
@@ -295,7 +295,7 @@ address."
 
 (defjsonrpc untag-accounts ("untag_accounts" accounts)
   "Remove filtering tag from a list of accounts."
-  (list (cons "accounts" accounts)))
+  (list (cons "accounts" (coerce accounts 'vector))))
 
 (defjsonrpc verify ("verify" string address signature)
   "Verify a signature on a string."

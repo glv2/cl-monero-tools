@@ -228,7 +228,47 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - sync-info
 
 *** Other HTTP RPCs
+
+The following functions are thin wrappers for the HTTP RPCs of *monerod*.
+They use alists instead of JSON objects, where a key named =some_key= in a JSON
+object becomes =:some-key= in the alist. The specifications of these RPCs can be
+found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
+
+ - get-alt-blocks-hashes
+ - get-blocks.bin
+ - get-blocks-by-height.bin
+ - get-hashes.bin
+ - get-limit
+ - get-o-indexes.bin
+ - get-outs
+ - get-outs.bin
+ - get-peer-list
+ - get-random-outs.bin
+ - get-random-rctouts.bin
+ - get-transaction-pool
+ - get-transaction-pool-hashes.bin
+ - get-transaction-pool-stats
+ - get-transactions
+ - in-peers
+ - is-key-image-spent
+ - mining-status
+ - out-peers
+ - save-bc
+ - set-limit
+ - set-log-categories
+ - set-log-hashrate
+ - set-log-level
+ - start-mining-daemon
+ - stop-daemon
+ - stop-mining-daemon
+ - update
+
 *** ZeroMQ RPCs
+
+ - zmq-get-block
+ - zmq-get-info
+ - zmq-get-transactions
+
 ** Calling *monero-wallet-rpc*
 *** HTTP JSON RPCs
 

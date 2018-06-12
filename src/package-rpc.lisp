@@ -80,6 +80,24 @@
    #:get-transaction-pool
    #:get-transaction-pool-hashes.bin
    #:get-transaction-pool-stats
+   #:get-transactions
+   #:in-peers
+   #:is-key-image-spent
+   #:mining-status
+   #:out-peers
+   #:save-bc
+   #:set-limit
+   #:set-log-categories
+   #:set-log-hashrate
+   #:set-log-level
+   #:start-mining-daemon
+   #:stop-daemon
+   #:stop-mining-daemon
+   #:update
+
+   #:zmq-get-block
+   #:zmq-get-info
+   #:zmq-get-transactions
 
    ;; history
    #:transaction-history

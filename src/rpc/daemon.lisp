@@ -15,7 +15,7 @@
 (defjsonrpc flush-txpool ("flush_txpool" &key transaction-ids)
   "Flush transaction ids from transaction pool."
   (when transaction-ids
-    (list (cons "txids" transaction-ids))))
+    (list (cons "txids" (coerce transaction-ids 'vector)))))
 
 (defjsonrpc get-alternate-chains ("get_alternate_chains")
   "Get alternative chains seen by the node.")
@@ -77,7 +77,7 @@ at START-HEIGHT."
 
 (defjsonrpc get-output-distribution ("get_output_distribution" amounts &key cumulative start-height end-height)
   "Get output distribution."
-  (append (list (cons "amounts" amounts))
+  (append (list (cons "amounts" (coerce amounts 'vector)))
           (when cumulative
             (list (cons "cumulative" t)))
           (when start-height
@@ -87,7 +87,7 @@ at START-HEIGHT."
 
 (defjsonrpc get-output-histogram ("get_output_histogram" amounts &key min-count max-count unlocked recent-cutoff)
   "Get a histogram of output amounts."
-  (append (list (cons "amounts" amounts))
+  (append (list (cons "amounts" (coerce amounts 'vector)))
           (when min-count
             (list (cons "min_count" min-count)))
           (when max-count
@@ -108,15 +108,15 @@ at START-HEIGHT."
 
 (defjsonrpc relay-tx ("relay_tx" transaction-ids)
   "Relay a list of transaction IDs."
-  (list (cons "txids" transaction-ids)))
+  (list (cons "txids" (coerce transaction-ids 'vector))))
 
 (defjsonrpc set-bans ("set_bans" bans)
   "Ban some nodes."
-  (list (cons "bans" bans)))
+  (list (cons "bans" (coerce bans 'vector))))
 
 (defjsonrpc submit-block ("submit_block" block-data)
   "Submit a mined block to the network."
-  (list block-data))
+  (vector block-data))
 
 (defjsonrpc sync-info ("sync_info")
   "Get synchronisation information.")
@@ -188,11 +188,11 @@ at START-HEIGHT."
 
 (defrpc get-outs ("get_outs" outputs)
   "Get outputs."
-  (list (cons "outputs" outputs)))
+  (list (cons "outputs" (coerce outputs 'vector))))
 
 (defbinrpc get-outs.bin ("get_outs.bin" outputs)
   "Get outputs."
-  (list (cons "outputs" outputs))
+  (list (cons "outputs" (coerce outputs 'vector)))
   (lambda (result)
     (let ((outs (geta result :outs)))
       (dotimes (i (length outs))
@@ -207,7 +207,7 @@ at START-HEIGHT."
 
 (defbinrpc get-random-outs.bin ("get_random_outs.bin" amounts output-count)
   "Get a list of random outputs for a specific list of amounts."
-  (list (cons "amounts" amounts)
+  (list (cons "amounts" (coerce amounts 'vector))
         (cons "outs_count" output-count))
   (lambda (result)
     (let ((outs (geta result :outs)))
@@ -234,7 +234,8 @@ at START-HEIGHT."
       (setf (geta result :outs) y))
     result))
 
-;; TODO: (let ((json:*use-strict-json-rules* nil)) ...) ?
+;; TODO: deal with not standard json in "tx_blob"
+;;   (let ((json:*use-strict-json-rules* nil)) ...) ?
 (defrpc get-transaction-pool ("get_transaction_pool")
   "Show information about valid transactions seen by the node but not yet mined
   into a block, as well as spent key image information for the txpool in the
@@ -246,6 +247,8 @@ at START-HEIGHT."
         (setf (geta transaction :tx-blob) (string->bytes (geta transaction :tx-blob)))))
     result))
 
+;; TODO: deal with not standard json in "tx_hashes"
+;;   (let ((json:*use-strict-json-rules* nil)) ...) ?
 (defrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")
   "Get hashes from transaction pool."
   nil
@@ -264,118 +267,129 @@ at START-HEIGHT."
       (setf (geta stats :histo) (string->bytes (geta stats :histo))))
     result))
 
-#|
-    /get_transactions
-    /in_peers
-    /is_key_image_spent
-    /mining_status
-    /out_peers
-    /save_bc
-    /send_raw_transaction
-    /set_limit
-    /set_log_categories
-    /set_log_hash_rate
-    /set_log_level
-    /start_mining
-    /start_save_graph
-    /stop_daemon
-    /stop_mining
-    /stop_save_graph
-    /update
-|#
+(defrpc get-transactions ("get_transactions" transaction-ids &key decode-as-json prune)
+  "Look up one or more transactions by hash."
+  (append (list (cons "txs_hashes" (coerce transaction-ids 'vector)))
+          (when decode-as-json
+            (list (cons "decode_as_json" t)))
+          (when prune
+            (list (cons "prune" t)))))
+
+(defrpc in-peers ("in_peers" limit)
+  "Limit the number of incoming connections from peers."
+  (list (cons "in_peers" limit)))
+
+(defrpc is-key-image-spent ("is_key_image_spent" key-images)
+  "Check if outputs have been spent using the key image associated with the output."
+  (list (cons "key_images" (coerce key-images 'vector))))
+
+(defrpc mining-status ("mining_status")
+  "Get the mining status of the daemon.")
+
+(defrpc out-peers ("out_peers" limit)
+  "Limit the number of outgoing connections to peers."
+  (list (cons "out_peers" limit)))
+
+(defrpc save-bc ("save_bc")
+  "Save the blockchain.")
+
+(defrpc send-raw-transaction ("send_raw_transaction" transaction &key do-not-relay)
+  "Broadcast a raw transaction to the network."
+  (append (list (cons "tx_as_hex" transaction))
+          (when do-not-relay
+            (list (cons "do_not_relay" t)))))
+
+(defrpc set-limit ("set_limit" download-limit upload-limit)
+  "Set daemon bandwidth limits (kB/s)."
+  (list (cons "limit_down" download-limit)
+        (cons "limit_up" upload-limit)))
+
+(defrpc set-log-categories ("set_log_categories" &key categories)
+  "Set the daemon log categories."
+  (when categories
+    (list (cons "categories" categories))))
+
+(defrpc set-log-hash-rate ("set_log_hash_rate" visible)
+  "Set the log hash rate display mode."
+  (when visible
+    (list (cons "visible" visible))
+    (list (cons "visible" visible)
+          ;; workaround to prevent (("visible" . nil)) from being encoded
+          ;; as [["visible"]] instead of {"visible":false}
+          (cons "unused" 0))))
+
+(defrpc set-log-level ("set_log_level" level)
+  "Set the daemon log level."
+  (list (cons "level" level)))
+
+(defrpc start-mining-daemon ("start_mining" miner-address thread-count background-mining ignore-battery)
+  "Start mining in the daemon."
+  (list (cons "miner_address" miner-address)
+        (cons "threads_count" thread-count)
+        (cons "do_background_mining" background-mining)
+        (cons "ignore_battery" ignore-battery)))
+
+(defrpc stop-daemon ("stop_daemon")
+  "Send a command to the daemon to safely disconnect and shut down.")
+
+(defrpc stop-mining-daemon ("stop_mining")
+  "Stop mining in the daemon.")
+
+(defrpc update ("update" command &key path)
+  "Update the daemon."
+  (append (list (cons "command" command))
+          (when path
+            (list (cons "path" path)))))
 
 
-(defun get-transactions-from-daemon (transaction-ids &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((parameters (list (cons "txs_hashes" (coerce transaction-ids 'vector))
-                           (cons "decode_as_json" t)))
-         (answer (rpc "gettransactions"
-                      :parameters parameters
-                      :rpc-host rpc-host
-                      :rpc-port rpc-port
-                      :rpc-user rpc-user
-                      :rpc-password rpc-password))
-         (transactions (map 'list #'decode-json-from-string (geta answer :txs-as-json))))
-    (map 'list (lambda (tx) (remove :rctsig-prunable tx :key #'car)) transactions)))
+;;; Custom HTTP RPCs
 
-(defun get-transaction-data-from-daemon (transaction-ids &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((parameters (list (cons "txs_hashes" (map 'vector #'bytes->hex-string transaction-ids))))
-         (answer (rpc "gettransactions"
-                      :parameters parameters
-                      :rpc-host rpc-host
-                      :rpc-port rpc-port
-                      :rpc-user rpc-user
-                      :rpc-password rpc-password)))
-    (map 'list
-         (lambda (tx)
-           (let ((data (geta tx :as-hex)))
-             (when data
-               (hex-string->bytes data))))
-         (geta answer :txs))))
+;; (defun get-block-data-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+;;   (let* ((parameters (list (cons (etypecase block-id
+;;                                    (integer "height")
+;;                                    (string "hash"))
+;;                                  block-id)))
+;;          (answer (json-rpc "getblock"
+;;                            :parameters parameters
+;;                            :rpc-host rpc-host
+;;                            :rpc-port rpc-port
+;;                            :rpc-user rpc-user
+;;                            :rpc-password rpc-password))
+;;          (data (geta answer :blob)))
+;;     (when data
+;;       (hex-string->bytes data))))
 
-(defun get-block-data-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((parameters (list (cons (etypecase block-id
-                                   (integer "height")
-                                   (string "hash"))
-                                 block-id)))
-         (answer (json-rpc "getblock"
-                           :parameters parameters
-                           :rpc-host rpc-host
-                           :rpc-port rpc-port
-                           :rpc-user rpc-user
-                           :rpc-password rpc-password))
-         (data (geta answer :blob)))
-    (when data
-      (hex-string->bytes data))))
-
-(defun get-block-transaction-hashes-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((answer (get-block block-id
-                            :rpc-host rpc-host
-                            :rpc-port rpc-port
-                            :rpc-user rpc-user
-                            :rpc-password rpc-password))
-         (block-data (hex-string->bytes (geta answer :blob)))
-         (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
-         (regular-transaction-hashes (geta answer :tx-hashes)))
-    (cons (bytes->hex-string miner-transaction-hash) regular-transaction-hashes)))
-
-(defun send-raw-transaction-to-daemon (transaction-data &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let ((parameters (list (cons "tx_as_hex" (bytes->hex-string transaction-data)))))
-    (rpc "sendrawtransaction"
-         :parameters parameters
-         :rpc-host rpc-host
-         :rpc-port rpc-port
-         :rpc-user rpc-user
-         :rpc-password rpc-password)))
+;; (defun get-block-transaction-hashes-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+;;   (let* ((answer (get-block block-id
+;;                             :rpc-host rpc-host
+;;                             :rpc-port rpc-port
+;;                             :rpc-user rpc-user
+;;                             :rpc-password rpc-password))
+;;          (block-data (hex-string->bytes (geta answer :blob)))
+;;          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
+;;          (regular-transaction-hashes (geta answer :tx-hashes)))
+;;     (cons (bytes->hex-string miner-transaction-hash) regular-transaction-hashes)))
 
 
 ;;; ZeroMQ RPCs
 
-(defun zmq-get-info-from-daemon (&key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+(defun zmq-get-info (&key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   (zmq-json-rpc "get_info"
                 :rpc-host rpc-host
                 :rpc-port rpc-port
                 :rpc-user rpc-user
                 :rpc-password rpc-password))
 
-(defun zmq-get-block-count-from-daemon (&key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let ((answer (zmq-json-rpc "get_height"
-                              :rpc-host rpc-host
-                              :rpc-port rpc-port
-                              :rpc-user rpc-user
-                              :rpc-password rpc-password)))
-    (geta answer :height)))
+(defun zmq-get-transactions (transaction-ids &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+  (let ((parameters (list (cons "tx_hashes" (coerce transaction-ids 'vector)))))
+    (zmq-json-rpc "get_transactions"
+                  :parameters parameters
+                  :rpc-host rpc-host
+                  :rpc-port rpc-port
+                  :rpc-user rpc-user
+                  :rpc-password rpc-password)))
 
-(defun zmq-get-transactions-from-daemon (transaction-ids &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((parameters (list (cons "tx_hashes" (coerce transaction-ids 'vector))))
-         (answer (zmq-json-rpc "get_transactions"
-                               :parameters parameters
-                               :rpc-host rpc-host
-                               :rpc-port rpc-port
-                               :rpc-user rpc-user
-                               :rpc-password rpc-password)))
-    answer))
-
-(defun zmq-get-block-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+(defun zmq-get-block (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   (let* ((get-by-height (integerp block-id))
          (parameters (list (cons (if get-by-height "height" "hash")
                                  block-id))))
@@ -386,7 +400,7 @@ at START-HEIGHT."
                   :rpc-user rpc-user
                   :rpc-password rpc-password)))
 
-(defun zmq-get-blocks-from-daemon (block-ids start-height prune &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+(defun zmq-get-blocks (block-ids start-height prune &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   (let* ((block-ids block-ids)
          (parameters (list (cons "block_ids" block-ids)
                            (cons "prune" prune)
@@ -398,4 +412,4 @@ at START-HEIGHT."
                   :rpc-user rpc-user
                   :rpc-password rpc-password)))
 
-;; (zmq-get-blocks-from-daemon (list "5a1125384b088dbeaaa6f61c39db0318e53732ffc927978a52e3b16553203138" "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b") 0 t) ; testnet
+;; (zmq-get-blocks (list "5a1125384b088dbeaaa6f61c39db0318e53732ffc927978a52e3b16553203138" "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b") 0 t) ; testnet

@@ -26,7 +26,13 @@
              (transactions (map 'vector
                                 (lambda (data)
                                   (deserialize-transaction data 0))
-                                (get-transaction-data-from-daemon transaction-ids))))
+                                (let ((txs (get-transactions (map 'vector #'bytes->hex-string transaction-ids))))
+                                  (map 'vector
+                                       (lambda (tx)
+                                         (let ((data (geta tx :as-hex)))
+                                           (when data
+                                             (hex-string->bytes data))))
+                                       (geta txs :txs))))))
         (incf start (length block-heights))
         (dotimes (j (length transactions))
           (let* ((transaction (aref transactions j))
