@@ -123,65 +123,48 @@ PARAMETERS."
         (error (geta err :message))
         (geta answer :result))))
 
-(defmacro defrpc (name (method &rest args) &body docstring-param-postprocess)
+(defmacro defhttprpc (type name (method &rest args) &body body)
+  (assert (<= (length body) 3))
   (let* ((key-args-p (member '&key args))
-         (docstring (when (stringp (car docstring-param-postprocess))
-                      (pop docstring-param-postprocess)))
-         (parameters-form (pop docstring-param-postprocess))
-         (postprocess-function (car docstring-param-postprocess)))
+         (docstring (when (stringp (car body))
+                      (pop body)))
+         (parameters (when body
+                       (pop body)))
+         (postprocess (car body)))
     `(defun ,name (,@args ,@(unless key-args-p (list '&key))
                    (rpc-host *rpc-host*) (rpc-port *rpc-port*)
                    (rpc-user *rpc-user*) (rpc-password *rpc-password*))
        ,@(list docstring)
-       (let* ((parameters ,parameters-form)
-              (result (rpc ,method
-                           :parameters parameters
-                           :rpc-host rpc-host
-                           :rpc-port rpc-port
-                           :rpc-user rpc-user
-                           :rpc-password rpc-password)))
-         ,(if postprocess-function
-              `(funcall ,postprocess-function result)
+       (let* ((parameters ,parameters)
+              (result (,(case type
+                           ((:json) 'json-rpc)
+                           (t 'rpc))
+                       ,method
+                       ,@(when (eql type :bin)
+                           (list :binary t))
+                       :parameters parameters
+                       :rpc-host rpc-host
+                       :rpc-port rpc-port
+                       :rpc-user rpc-user
+                       :rpc-password rpc-password)))
+         ,(if postprocess
+              `(funcall ,postprocess result)
               `result)))))
 
-(defmacro defbinrpc (name (method &rest args) &body docstring-param-postprocess)
-  (let* ((key-args-p (member '&key args))
-         (docstring (when (stringp (car docstring-param-postprocess))
-                      (pop docstring-param-postprocess)))
-         (parameters-form (pop docstring-param-postprocess))
-         (postprocess-function (car docstring-param-postprocess)))
-    `(defun ,name (,@args ,@(unless key-args-p (list '&key))
-                   (rpc-host *rpc-host*) (rpc-port *rpc-port*)
-                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-       ,@(list docstring)
-       (let* ((parameters ,parameters-form)
-              (result (rpc ,method
-                           :binary t
-                           :parameters parameters
-                           :rpc-host rpc-host
-                           :rpc-port rpc-port
-                           :rpc-user rpc-user
-                           :rpc-password rpc-password)))
-         ,(if postprocess-function
-              `(funcall ,postprocess-function result)
-              `result)))))
+;; def*rpc macros usage:
+;;
+;; (def*rpc my-rpc ("my_method" arg1 arg2 arg3 &key optarg1 optarg2)
+;;   "my docstring" ; optional
+;;   (make-parameters-form arg1 arg2 arg3 optarg1 optarg2) ; optional unless postprocess
+;;   (lambda (result) (process result))) ; optional postprocess
+;;
+;; (my-rpc arg1 arg2 arg3 :optarg2 123)
 
-(defmacro defjsonrpc (name (method &rest args) &body docstring-param)
-  (let* ((key-args-p (member '&key args))
-         (docstring (when (stringp (car docstring-param))
-                      (car docstring-param)))
-         (parameters-form (if docstring
-                              (cdr docstring-param)
-                              docstring-param)))
-    (assert (<= 0 (length parameters-form) 1))
-    `(defun ,name (,@args ,@(unless key-args-p (list '&key))
-                   (rpc-host *rpc-host*) (rpc-port *rpc-port*)
-                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-       ,@(list docstring)
-       (let ((parameters ,@parameters-form))
-         (json-rpc ,method
-                   :parameters parameters
-                   :rpc-host rpc-host
-                   :rpc-port rpc-port
-                   :rpc-user rpc-user
-                   :rpc-password rpc-password)))))
+(defmacro defrpc (name (method &rest args) &body body)
+  `(defhttprpc :rpc ,name (,method ,@args) ,@body))
+
+(defmacro defbinrpc (name (method &rest args) &body body)
+  `(defhttprpc :bin ,name (,method ,@args) ,@body))
+
+(defmacro defjsonrpc (name (method &rest args) &body body)
+  `(defhttprpc :json ,name (,method ,@args) ,@body))
