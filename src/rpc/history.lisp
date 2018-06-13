@@ -7,15 +7,19 @@
 (in-package :monero-tools-rpc)
 
 
-(defun transaction-history (address secret-view-key &key secret-spend-key key-images (start 0) end)
+(defun transaction-history (address secret-view-key &key secret-spend-key key-images (start-height 0) end-height verbose)
   (let* ((address-info (decode-address address))
          (public-spend-key (geta address-info :public-spend-key))
          (subaddress-p (geta address-info :subaddress))
+         (secret-view-key (hex-string->bytes secret-view-key))
+         (secret-spend-key (when secret-spend-key (hex-string->bytes secret-spend-key)))
          (key-images (or key-images (make-hash-table :test #'equalp)))
-         (end (or end (geta (get-block-count) :count)))
+         (end-height (or end-height (geta (get-block-count) :count)))
          (history '()))
-    (loop while (<= start end) do
-      (let* ((block-heights (loop for i from start to (min (+ start 99) end)
+    (loop while (<= start-height end-height) do
+      (when verbose
+        (format t "Block ~d~%" start-height))
+      (let* ((block-heights (loop for i from start-height to (min (+ start-height 99) end-height)
                                   collect i))
              (transaction-ids (apply #'concatenate
                                      'vector
@@ -33,7 +37,7 @@
                                            (when data
                                              (hex-string->bytes data))))
                                        (geta txs :txs))))))
-        (incf start (length block-heights))
+        (incf start-height (length block-heights))
         (dotimes (j (length transactions))
           (let* ((transaction (aref transactions j))
                  (prefix (geta transaction :prefix))
@@ -83,6 +87,8 @@
                         (setf (gethash key-image key-images) amount)))
                     (incf received amount)))))
             (when (plusp received)
+              (when verbose
+                (format t "Transaction ~a~%" (bytes->hex-string (elt transaction-ids j))))
               (push (list (elt transaction-ids j) received) history))
             (dolist (key-image (spent-key-images transaction))
               (let ((amount (gethash key-image key-images)))
