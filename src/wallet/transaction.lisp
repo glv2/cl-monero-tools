@@ -51,6 +51,12 @@ SECRET-VIEW-KEY, return NIL and NIL."
                                                                    output-index
                                                                    output-key))
          (indexes (gethash public-spend-key subaddress-indexes-table)))
+    (when (and use-additional-key (null indexes))
+      (setf derivation (derive-key transaction-public-key secret-view-key))
+      (setf public-spend-key (output-public-key->public-spend-subkey derivation
+                                                                     output-index
+                                                                     output-key))
+      (setf indexes (gethash public-spend-key subaddress-indexes-table)))
     (if indexes
         (let* ((subaddress-p (notevery #'zerop indexes))
                (public-view-key (if subaddress-p

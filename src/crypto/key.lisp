@@ -163,13 +163,11 @@ the indexes associated to the public-spend-subkeys."
   (check-type max-major-index (integer 0 *))
   (check-type max-minor-index (integer 0 *))
   (let ((table (make-hash-table :test #'equalp)))
+    (setf (gethash public-spend-key table) '(0 0))
     (dotimes (i (1+ max-major-index))
       (dotimes (j (1+ max-minor-index))
-        (let ((public-spend-subkey (if (= i j 0)
-                                       public-spend-key
-                                       (derive-public-spend-subkey secret-view-key
-                                                                   public-spend-key
-                                                                   i
-                                                                   j))))
+        (let ((public-spend-subkey (derive-public-spend-subkey secret-view-key
+                                                               public-spend-key
+                                                               i j)))
           (setf (gethash public-spend-subkey table) (list i j)))))
     table))
