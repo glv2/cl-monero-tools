@@ -43,11 +43,11 @@
                  (transaction-public-key (monero-tools::find-extra-field extra :transaction-public-key))
                  (additional-public-keys (monero-tools::find-extra-field extra :additional-public-keys))
                  (rct-signature (geta transaction :rct-signature))
-                 (use-additional-key (= (length additional-public-keys) (length outputs)))
                  (received 0))
             (dotimes (k (length outputs))
               (let* ((output (aref outputs k))
                      (output-public-key (geta (geta output :target) :key))
+                     (use-additional-key (= (length additional-public-keys) (length outputs)))
                      (derivation (derive-key (if use-additional-key
                                                  (elt additional-public-keys k)
                                                  transaction-public-key)
@@ -56,6 +56,13 @@
                                                                                k
                                                                                output-public-key))
                      (indexes (gethash public-spend-key subaddress-indexes-table)))
+                (when (and use-additional-key (null indexes))
+                  (setf use-additional-key nil)
+                  (setf derivation (derive-key transaction-public-key secret-view-key))
+                  (setf public-spend-key (output-public-key->public-spend-subkey derivation
+                                                                                 k
+                                                                                 output-public-key))
+                  (setf indexes (gethash public-spend-key subaddress-indexes-table)))
                 (when indexes
                   ;; (multiple-value-bind (address indexes)
                   ;;     (monero-tools:output-destination-address output-public-key
