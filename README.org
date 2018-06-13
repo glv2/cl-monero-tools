@@ -77,7 +77,7 @@ are in the *:monero-tools* package.
  - chacha8
  - chacha20
  - compute-key-image
- - compute-subkey-index-table
+ - compute-subaddress-indexes-table
  - derive-key
  - derive-output-public-key
  - derive-output-secret-key
@@ -165,6 +165,7 @@ are in the *:monero-tools* package.
  - make-integrated-address
  - make-qr-code
  - make-uri
+ - output-destination-address
  - output-for-address-p
  - prove-inbound-transaction
  - prove-outbound-transaction

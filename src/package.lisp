@@ -57,7 +57,7 @@
    #:derive-secret-spend-subkey #:derive-public-spend-subkey
    #:output-public-key->public-spend-subkey
    #:public-spend-subkey->public-view-subkey
-   #:compute-subkey-index-table
+   #:compute-subaddress-indexes-table
    #:generate-signature #:valid-signature-p
    #:generate-ring-signature #:valid-ring-signature-p
    #:compute-key-image
@@ -99,7 +99,7 @@
    #:public-keys->address #:secret-spend-key->address
    #:public-keys->subaddress #:secret-spend-key->subaddress
    #:encrypt-payment-id #:decrypt-payment-id
-   #:output-for-address-p
+   #:output-for-address-p #:output-destination-address
    #:decrypt-amount #:received-amount
    #:spent-key-images
    #:prove-payment #:valid-payment-proof-p

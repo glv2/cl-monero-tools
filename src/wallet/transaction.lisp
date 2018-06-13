@@ -38,6 +38,32 @@ a TRANSACTION-PUBLIC-KEY and a SECRET-VIEW-KEY."
          (key (derive-output-public-key derivation output-index public-spend-key)))
     (equalp key output-key)))
 
+(defun output-destination-address (output-key output-index transaction-public-key additional-public-keys subaddress-indexes-table secret-view-key &key (chain :mainnet))
+  "Return the (sub)address an output is for and a list containing the
+subaddress' major index and minor index. If the output is not related to the
+SECRET-VIEW-KEY, return NIL and NIL."
+  (let* ((use-additional-key (> (length additional-public-keys) output-index))
+         (derivation (derive-key (if use-additional-key
+                                     (elt additional-public-keys output-index)
+                                     transaction-public-key)
+                                 secret-view-key))
+         (public-spend-key (output-public-key->public-spend-subkey derivation
+                                                                   output-index
+                                                                   output-key))
+         (indexes (gethash public-spend-key subaddress-indexes-table)))
+    (if indexes
+        (let* ((subaddress-p (notevery #'zerop indexes))
+               (public-view-key (if subaddress-p
+                                    (public-spend-subkey->public-view-subkey secret-view-key
+                                                                             public-spend-key)
+                                    (secret-key->public-key secret-view-key)))
+               (address (encode-address public-spend-key
+                                        public-view-key
+                                        :subaddress subaddress-p
+                                        :chain chain)))
+          (values address indexes))
+        (values nil nil))))
+
 (defun decrypt-amount (encrypted-amount output-index transaction-public-key secret-view-key)
   "Decrypt a transaction output's ENCRYPTED-AMOUNT."
   (let* ((amount (bytes->integer encrypted-amount))

@@ -155,7 +155,7 @@ the PUBLIC-SPEND-SUBKEY."
          (c (point* d a)))
     (point->bytes c)))
 
-(defun compute-subkey-index-table (secret-view-key public-spend-key max-major-index max-minor-index)
+(defun compute-subaddress-indexes-table (secret-view-key public-spend-key max-major-index max-minor-index)
   "Compute a hash table in which keys are public-spend-subkeys and values are
 the indexes associated to the public-spend-subkeys."
   (check-type secret-view-key (octet-vector #.+key-length+))
