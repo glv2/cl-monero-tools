@@ -53,7 +53,9 @@
    #:recover-keys
    #:derive-key
    #:derive-output-public-key #:derive-output-secret-key
+   #:derive-subkey-secret #:derive-output-secret-subkey
    #:derive-secret-spend-subkey #:derive-public-spend-subkey
+   #:output-public-key->public-spend-subkey
    #:public-spend-subkey->public-view-subkey
    #:compute-subkey-index-table
    #:generate-signature #:valid-signature-p

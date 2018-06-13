@@ -134,6 +134,17 @@ PUBLIC-SPEND-KEY."
          (d (point+ b (point* +g+ h))))
     (point->bytes d)))
 
+(defun output-public-key->public-spend-subkey (derivation output-index output-public-key)
+  "Derive the public spend key of a subaddress from the DERIVATION, OUTPUT-INDEX
+and OUTPUT-PUBLIC-KEY of a transaction output for that subaddress."
+  (check-type derivation (octet-vector #.+key-length+))
+  (check-type output-index (integer 0 *))
+  (check-type output-public-key (octet-vector #.+key-length+))
+  (let* ((x (bytes->integer (derivation->scalar derivation output-index)))
+         (p (bytes->point output-public-key))
+         (d (point- p (point* +g+ x))))
+    (point->bytes d)))
+
 (defun public-spend-subkey->public-view-subkey (secret-view-key public-spend-subkey)
   "Compute the public view key of a subaddress from the main SECRET-VIEW-KEY and
 the PUBLIC-SPEND-SUBKEY."
@@ -154,6 +165,11 @@ the indexes associated to the public-spend-subkeys."
   (let ((table (make-hash-table :test #'equalp)))
     (dotimes (i (1+ max-major-index))
       (dotimes (j (1+ max-minor-index))
-        (let ((public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key i j)))
+        (let ((public-spend-subkey (if (= i j 0)
+                                       public-spend-key
+                                       (derive-public-spend-subkey secret-view-key
+                                                                   public-spend-key
+                                                                   i
+                                                                   j))))
           (setf (gethash public-spend-subkey table) (list i j)))))
     table))

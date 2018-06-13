@@ -81,14 +81,17 @@ are in the *:monero-tools* package.
  - derive-key
  - derive-output-public-key
  - derive-output-secret-key
+ - derive-output-secret-subkey
  - derive-public-spend-subkey
  - derive-secret-spend-subkey
+ - derive-subkey-secret
  - fast-hash
  - generate-chacha-key
  - generate-keys
  - generate-secret-key
  - generate-ring-signature
  - generate-signature
+ - output-public-key->public-spend-subkey
  - public-spend-subkey->public-view-subkey
  - recover-keys
  - secret-key->public-key
