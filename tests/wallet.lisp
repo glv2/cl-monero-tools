@@ -355,6 +355,113 @@ testnet: no
                                    address
                                    (hex-string->bytes secret-view-key)))))
 
+(test output-destination-address
+  (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+         (address-info (decode-address address))
+         (public-spend-key (geta address-info :public-spend-key))
+         (chain (geta address-info :chain))
+         (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+         (indexes-table (compute-subaddress-indexes-table (hex-string->bytes secret-view-key)
+                                                          public-spend-key
+                                                          5
+                                                          10))
+         (output-key "49b37a01ae9f4864776fef678bdbdbde0d07825f70e9e0c45e02d38fc1e615d7")
+         (output-index 0)
+         (transaction-public-key "cebcf16a2a1e44a3204f502a6a979ba0d77b1be39859cab283df052c8f99da99"))
+    (multiple-value-bind (addr indexes)
+        (output-destination-address (hex-string->bytes output-key)
+                                    output-index
+                                    (hex-string->bytes transaction-public-key)
+                                    nil
+                                    indexes-table
+                                    (hex-string->bytes secret-view-key)
+                                    :chain chain)
+      (is (string= address addr))
+      (is (equalp '(0 0) indexes))))
+  (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+         (address-info (decode-address address))
+         (public-spend-key (geta address-info :public-spend-key))
+         (chain (geta address-info :chain))
+         (subaddress "Bcni4ZAM42o4QcYG7fCFwX8GijijG43d5YnafUhSp7D8iXZ5K4Qxbr4SEKZiHqfFFnDbn6Eq5MDY6iMPhtDJb6sSEqxHNSV")
+         (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+         (indexes-table (compute-subaddress-indexes-table (hex-string->bytes secret-view-key)
+                                                          public-spend-key
+                                                          5
+                                                          10))
+         (output-key-0 "b859088a9a09c0ff760b399282510b20a9c53069efc725627b6bc1ba9648d7ad")
+         (output-key-1 "563ddb372ed3863a841f9300f025b77ea6dc35dc3b677951d36b0bbc4e90bab1")
+         (transaction-public-key "70f715b5d256790f9625676a1319d4a2030f3294f34d5306277b12f4d83072ec"))
+    (multiple-value-bind (addr indexes)
+        (output-destination-address (hex-string->bytes output-key-0)
+                                    0
+                                    (hex-string->bytes transaction-public-key)
+                                    nil
+                                    indexes-table
+                                    (hex-string->bytes secret-view-key)
+                                    :chain chain)
+      (is (string= subaddress addr))
+      (is (equalp '(1 0) indexes)))
+    (multiple-value-bind (addr indexes)
+        (output-destination-address (hex-string->bytes output-key-1)
+                                    1
+                                    (hex-string->bytes transaction-public-key)
+                                    nil
+                                    indexes-table
+                                    (hex-string->bytes secret-view-key)
+                                    :chain chain)
+      (is (string= address addr))
+      (is (equalp '(0 0) indexes))))
+  (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
+         (address-info (decode-address address))
+         (public-spend-key (geta address-info :public-spend-key))
+         (chain (geta address-info :chain))
+         (subaddress-1 "Bcni4ZAM42o4QcYG7fCFwX8GijijG43d5YnafUhSp7D8iXZ5K4Qxbr4SEKZiHqfFFnDbn6Eq5MDY6iMPhtDJb6sSEqxHNSV")
+         (subaddress-2 "BfZQpPkqnQkTJCmge6mpLjdQ4DRsjd2MiTAnXEywr8XRR1NbDoKgKqsFsUDZrABqJv6TZrQKnMwfTJApGMoHREXLRJJsLHT")
+         (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+         (indexes-table (compute-subaddress-indexes-table (hex-string->bytes secret-view-key)
+                                                          public-spend-key
+                                                          5
+                                                          10))
+         (output-key-0 "18ce6685a1d0c85ca59bbe4053f0693ecd9c2b8fd0de4b33d0056b6d65962fb0")
+         (output-key-1 "a95289fcab4c8f962154dab54f14806f3e0d4097884ea71eb5ee1e1bb03bc7cb")
+         (output-key-2 "c28e0c02e533d7d4b7605900d51f7824d186ec870f794eb0fdcd89daf3af5ca4")
+         (transaction-public-key "4bc8b6926a1676c657e0ddc97910676ec5aa456fddda2b20b3f6e9a728dc7914")
+         (additional-public-keys (map 'vector
+                                      #'hex-string->bytes
+                                      #("274d8feba5237579c6e39294aed39ed00ffc46b34e4f9a9b50056123f10f4b0a"
+                                        "fcfc267e421edaa27f85a811fa08232b1fd6fbd683938857467cdaefb756327d"
+                                        "3c300a6a9852f2ac7d0b6264076e57f7df9825c34fcea52e6346cba9a9c2405a"))))
+    (multiple-value-bind (addr indexes)
+        (output-destination-address (hex-string->bytes output-key-0)
+                                    0
+                                    (hex-string->bytes transaction-public-key)
+                                    additional-public-keys
+                                    indexes-table
+                                    (hex-string->bytes secret-view-key)
+                                    :chain chain)
+      (is (string= subaddress-1 addr))
+      (is (equalp '(1 0) indexes)))
+    (multiple-value-bind (addr indexes)
+        (output-destination-address (hex-string->bytes output-key-1)
+                                    1
+                                    (hex-string->bytes transaction-public-key)
+                                    additional-public-keys
+                                    indexes-table
+                                    (hex-string->bytes secret-view-key)
+                                    :chain chain)
+      (is (string= subaddress-2 addr))
+      (is (equalp '(1 1) indexes)))
+    (multiple-value-bind (addr indexes)
+        (output-destination-address (hex-string->bytes output-key-2)
+                                    2
+                                    (hex-string->bytes transaction-public-key)
+                                    additional-public-keys
+                                    indexes-table
+                                    (hex-string->bytes secret-view-key)
+                                    :chain chain)
+      (is (string= address addr))
+      (is (equalp '(0 0) indexes)))))
+
 (test decrypt-amount
   (let ((encrypted-amount "3d09a2bf7867c9b90be6789f2a694b854fb8f014a4cb347ab7996389516c4d00")
         (output-index 0)
