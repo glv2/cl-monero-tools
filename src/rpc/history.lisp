@@ -7,11 +7,8 @@
 (in-package :monero-tools-rpc)
 
 
-(defun transaction-history (address secret-view-key &key secret-spend-key key-images (start-height 0) end-height verbose)
-  (let* ((address-info (decode-address address))
-         (public-spend-key (geta address-info :public-spend-key))
-         (subaddress-p (geta address-info :subaddress))
-         (secret-view-key (hex-string->bytes secret-view-key))
+(defun transaction-history (subaddress-indexes-table secret-view-key &key secret-spend-key key-images (start-height 0) end-height verbose)
+  (let* ((secret-view-key (hex-string->bytes secret-view-key))
          (secret-spend-key (when secret-spend-key (hex-string->bytes secret-spend-key)))
          (key-images (or key-images (make-hash-table :test #'equalp)))
          (end-height (or end-height (geta (get-block-count) :count)))
@@ -23,10 +20,10 @@
                                   collect i))
              (transaction-ids (apply #'concatenate
                                      'vector
-                                      (map 'list
-                                           (lambda (block)
-                                             (monero-tools::transaction-hashes (deserialize-block (geta block :block) 0)))
-                                           (geta (get-blocks-by-height.bin block-heights) :blocks))))
+                                     (map 'list
+                                          (lambda (block)
+                                            (monero-tools::transaction-hashes (deserialize-block (geta block :block) 0)))
+                                          (geta (get-blocks-by-height.bin block-heights) :blocks))))
              (transactions (map 'vector
                                 (lambda (data)
                                   (deserialize-transaction data 0))
@@ -46,45 +43,57 @@
                  (transaction-public-key (monero-tools::find-extra-field extra :transaction-public-key))
                  (additional-public-keys (monero-tools::find-extra-field extra :additional-public-keys))
                  (rct-signature (geta transaction :rct-signature))
-                 (use-additional-key (and subaddress-p
-                                          (= (length additional-public-keys) (length outputs))))
+                 (use-additional-key (= (length additional-public-keys) (length outputs)))
                  (received 0))
             (dotimes (k (length outputs))
               (let* ((output (aref outputs k))
-                     (key (geta (geta output :target) :key))
+                     (output-public-key (geta (geta output :target) :key))
                      (derivation (derive-key (if use-additional-key
                                                  (elt additional-public-keys k)
                                                  transaction-public-key)
                                              secret-view-key))
-                     (output-public-key (derive-output-public-key derivation k public-spend-key))
-                     (output-secret-key (when secret-spend-key
-                                          ;; TODO: add support for subaddresses
-                                          ;; (if subaddress-p
-                                          ;;     (derive-output-secret-subkey derivation
-                                          ;;                                  k
-                                          ;;                                  secret-view-key
-                                          ;;                                  secret-spend-key
-                                          ;;                                  major-index
-                                          ;;                                  minor-index)
-                                          ;;     (derive-output-secret-key derivation
-                                          ;;                               k
-                                          ;;                               secret-spend-key)))))
-                                          (derive-output-secret-key derivation k secret-spend-key))))
-                (when (equalp key output-public-key)
-                  (let ((amount (if (or (null rct-signature)
-                                        (eql (geta rct-signature :type) monero-tools::+rct-type-null+))
-                                    (geta output :amount)
-                                    (let* ((ecdh-info (aref (geta rct-signature :ecdh-info) k))
-                                           (encrypted-amount (geta ecdh-info :amount)))
-                                      (decrypt-amount encrypted-amount
-                                                      k
-                                                      (if use-additional-key
-                                                          (elt additional-public-keys k)
-                                                          transaction-public-key)
-                                                      secret-view-key)))))
-                    (when output-secret-key
-                      (let ((key-image (compute-key-image output-secret-key output-public-key)))
-                        (setf (gethash key-image key-images) amount)))
+                     (public-spend-key (output-public-key->public-spend-subkey derivation
+                                                                               k
+                                                                               output-public-key))
+                     (indexes (gethash public-spend-key subaddress-indexes-table)))
+                (when indexes
+                  ;; (multiple-value-bind (address indexes)
+                  ;;     (monero-tools:output-destination-address output-public-key
+                  ;;                                              k
+                  ;;                                              transaction-public-key
+                  ;;                                              additional-public-keys
+                  ;;                                              subaddress-indexes-table
+                  ;;                                              secret-view-key
+                  ;;                                              :chain :stagenet)
+                  ;;   (format t "Address ~a ~d/~d~%" address (first indexes) (second indexes)))
+                  (let* ((major-index (first indexes))
+                         (minor-index (second indexes))
+                         (amount (if (or (null rct-signature)
+                                         (eql (geta rct-signature :type) monero-tools::+rct-type-null+))
+                                     (geta output :amount)
+                                     (let* ((ecdh-info (aref (geta rct-signature :ecdh-info) k))
+                                            (encrypted-amount (geta ecdh-info :amount)))
+                                       (decrypt-amount encrypted-amount
+                                                       k
+                                                       (if use-additional-key
+                                                           (elt additional-public-keys k)
+                                                           transaction-public-key)
+                                                       secret-view-key))))
+                         (output-secret-key (when secret-spend-key
+                                              (if (= major-index minor-index 0)
+                                                  (derive-output-secret-key derivation
+                                                                            k
+                                                                            secret-spend-key)
+                                                  (derive-output-secret-subkey derivation
+                                                                               k
+                                                                               secret-view-key
+                                                                               secret-spend-key
+                                                                               major-index
+                                                                               minor-index))))
+                         (key-image (when output-secret-key
+                                      (compute-key-image output-secret-key output-public-key))))
+                    (when key-image
+                      (setf (gethash key-image key-images) amount))
                     (incf received amount)))))
             (when (plusp received)
               (when verbose

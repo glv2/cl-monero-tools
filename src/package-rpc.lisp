@@ -26,6 +26,7 @@
                 #:derive-key
                 #:derive-output-public-key
                 #:derive-output-secret-key
+                #:derive-output-secret-subkey
                 #:deserialize-block
                 #:deserialize-from-binary-storage
                 #:deserialize-transaction
@@ -33,6 +34,7 @@
                 #:geta
                 #:hex-string->bytes
                 #:miner
+                #:output-public-key->public-spend-subkey
                 #:serialize-to-binary-storage
                 #:spent-key-images
                 #:string->bytes
