@@ -55,6 +55,7 @@
    #:derive-output-public-key #:derive-output-secret-key
    #:derive-secret-spend-subkey #:derive-public-spend-subkey
    #:public-spend-subkey->public-view-subkey
+   #:compute-subkey-index-table
    #:generate-signature #:valid-signature-p
    #:generate-ring-signature #:valid-ring-signature-p
    #:compute-key-image

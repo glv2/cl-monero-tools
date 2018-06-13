@@ -135,9 +135,25 @@ PUBLIC-SPEND-KEY."
     (point->bytes d)))
 
 (defun public-spend-subkey->public-view-subkey (secret-view-key public-spend-subkey)
+  "Compute the public view key of a subaddress from the main SECRET-VIEW-KEY and
+the PUBLIC-SPEND-SUBKEY."
   (check-type secret-view-key (octet-vector #.+key-length+))
   (check-type public-spend-subkey (octet-vector #.+key-length+))
   (let* ((a (bytes->integer secret-view-key))
          (d (bytes->point public-spend-subkey))
          (c (point* d a)))
     (point->bytes c)))
+
+(defun compute-subkey-index-table (secret-view-key public-spend-key max-major-index max-minor-index)
+  "Compute a hash table in which keys are public-spend-subkeys and values are
+the indexes associated to the public-spend-subkeys."
+  (check-type secret-view-key (octet-vector #.+key-length+))
+  (check-type public-spend-key (octet-vector #.+key-length+))
+  (check-type max-major-index (integer 0 *))
+  (check-type max-minor-index (integer 0 *))
+  (let ((table (make-hash-table :test #'equalp)))
+    (dotimes (i (1+ max-major-index))
+      (dotimes (j (1+ max-minor-index))
+        (let ((public-spend-subkey (derive-public-spend-subkey secret-view-key public-spend-key i j)))
+          (setf (gethash public-spend-subkey table) (list i j)))))
+    table))
