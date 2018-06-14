@@ -34,6 +34,7 @@
 
 (defun bytes->point (bytes)
   "Convert a sequence of BYTES to an Ed25519 point."
+  (check-type bytes (octet-vector #.+key-length+))
   (ironclad::ed25519-decode-point bytes))
 
 (defun point+ (p1 p2)
