@@ -106,12 +106,14 @@
            (loop with pow = 2
                  while (< pow count)
                  do (setf pow (ash pow 1))
-                 finally (return (ash pow -1)))))
+                 finally (return (ash pow -1))))
+         (fast-hash (data start end)
+           (ironclad:digest-sequence :keccak/256 data :start start :end end)))
     (cond
       ((= count 1)
        (subseq data 0 +hash-length+))
       ((= count 2)
-       (fast-hash (subseq data 0 (* 2 +hash-length+))))
+       (fast-hash data 0 (* 2 +hash-length+)))
       (t
        (let* ((cnt (tree-hash-count count))
               (tmp (make-array (* cnt +hash-length+)
@@ -121,16 +123,16 @@
          (loop for i from (- (* 2 cnt) count) by 2
                for j from (- (* 2 cnt) count)
                while (< j cnt)
-               do (setf (subseq tmp (* j +hash-length+) (* (1+ j) +hash-length+))
-                        (fast-hash (subseq data (* i +hash-length+) (* (+ i 2) +hash-length+)))))
+               do (replace tmp (fast-hash data (* i +hash-length+) (* (+ i 2) +hash-length+))
+                           :start1 (* j +hash-length+) :end1 (* (1+ j) +hash-length+)))
          (loop while (> cnt 2) do
            (setf cnt (ash cnt -1))
            (loop for i from 0 by 2
                  for j from 0
                  while (< j cnt)
-                 do (setf (subseq tmp (* j +hash-length+) (* (1+ j) +hash-length+))
-                          (fast-hash (subseq tmp (* i +hash-length+) (* (+ i 2) +hash-length+))))))
-         (fast-hash (subseq tmp 0 (* 2 +hash-length+))))))))
+                 do (replace tmp (fast-hash tmp (* i +hash-length+) (* (+ i 2) +hash-length+))
+                             :start1 (* j +hash-length+) :end1 (* (1+ j) +hash-length+))))
+         (fast-hash tmp 0 (* 2 +hash-length+)))))))
 
 (defun hash-to-scalar (data)
   "Make a scalar usable with the ED25519 curve from DATA and return it
