@@ -65,8 +65,8 @@
       (ironclad::dotimes-unrolled (i 5)
         (setf t1 (logxor (aref bc (mod (+ i 4) 5))
                          (ironclad::rol64 (aref bc (mod (+ i 1) 5)) 1)))
-        (loop for j from 0 below 25 by 5 do
-          (setf (aref state (+ i j)) (logxor (aref state (+ i j)) t1))))
+        (ironclad::dotimes-unrolled (j 5)
+          (setf (aref state (+ i (* j 5))) (logxor (aref state (+ i (* j 5))) t1))))
 
       ;; Rho Pi
       (setf t1 (aref state 1))
@@ -77,13 +77,13 @@
         (setf t1 (aref bc 0)))
 
       ;; Chi
-      (loop for j from 0 below 25 by 5 do
+      (ironclad::dotimes-unrolled (j 5)
         (ironclad::dotimes-unrolled (i 5)
-          (setf (aref bc i) (aref state (+ i j))))
+          (setf (aref bc i) (aref state (+ i (* j 5)))))
         (ironclad::dotimes-unrolled (i 5)
-          (setf (aref state (+ i j)) (logxor (aref state (+ i j))
-                                             (logand (ironclad::mod64lognot (aref bc (mod (+ i 1) 5)))
-                                                     (aref bc (mod (+ i 2) 5)))))))
+          (setf (aref state (+ i (* j 5))) (logxor (aref state (+ i (* j 5)))
+                                                   (logand (ironclad::mod64lognot (aref bc (mod (+ i 1) 5)))
+                                                           (aref bc (mod (+ i 2) 5)))))))
 
       ;; Iota
       (setf (aref state 0) (logxor (aref state 0) (aref rndc round))))))
