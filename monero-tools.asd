@@ -35,7 +35,7 @@
                               :depends-on ("package" "utils")
                               :components ((:file "blake")
                                            (:file "crypto" :depends-on ("cryptonight" "keccak"))
-                                           (:file "cryptonight" :depends-on ("blake" "pseudo-aes"))
+                                           (:file "cryptonight" :depends-on ("blake" "keccak" "pseudo-aes"))
                                            (:file "keccak")
                                            (:file "key" :depends-on ("crypto"))
                                            (:file "proof" :depends-on ("crypto" "key"))
