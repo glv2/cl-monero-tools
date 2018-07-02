@@ -103,10 +103,7 @@
   (check-type data octet-vector)
   (check-type count (integer 1))
   (flet ((tree-hash-count (count)
-           (loop with pow = 2
-                 while (< pow count)
-                 do (setf pow (ash pow 1))
-                 finally (return (ash pow -1))))
+           (ash 1 (1- (integer-length (1- count)))))
          (fast-hash (data start end)
            (ironclad:digest-sequence :keccak/256 data :start start :end end)))
     (cond
