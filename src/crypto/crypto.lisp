@@ -79,7 +79,7 @@
 
 (defun random-scalar ()
   "Return a random number modulo +L+."
-  (reduce-scalar (ironclad:random-data +key-length+)))
+  (integer->bytes (ironclad:strong-random +l+) :size +key-length+))
 
 
 ;;; Hash functions
