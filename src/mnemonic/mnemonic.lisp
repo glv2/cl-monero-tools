@@ -129,9 +129,10 @@ key made of bytes."
               (seed->bytes seed word-list prefix-length))))))
 
 (defun encrypt-mnemonic-seed (mnemonic-seed password &optional language)
-  "Encrypt a MNEMONIC-SEED with a PASSWORD and return the result as an
-encrypted mnemonic seed which looks just like a not encrypted mnemonic
-seed."
+  "Encrypt a MNEMONIC-SEED with a PASSWORD and return the result as an encrypted
+mnemonic seed which looks just like a not encrypted mnemonic seed. This
+encryption is similar to a one-time pad, therefore the same password should not
+be used for different mnemonic seeds."
   (let* ((language (or language
                        (let ((words (split-sequence #\space mnemonic-seed :remove-empty-subseqs t)))
                          (find-seed-language (apply #'vector words)))))
