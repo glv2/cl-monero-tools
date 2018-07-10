@@ -215,7 +215,7 @@ address."
   "Send all unlocked balance to an address."
   (append (list (cons "address" address))
           (when account-index
-            (cons "account_index" account-index))
+            (list (cons "account_index" account-index)))
           (when subaddress-indices
             (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when priority
@@ -249,7 +249,7 @@ address."
   "Send monero to a number of recipients."
   (append (list (cons "destinations" (coerce destinations 'vector)))
           (when account-index
-            (cons "account_index" account-index))
+            (list (cons "account_index" account-index)))
           (when subaddress-indices
             (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when priority
@@ -273,7 +273,7 @@ address."
   "Like transfer, but can split into several transactions if necessary."
   (append (list (cons "destinations" (coerce destinations 'vector)))
           (when account-index
-            (cons "account_index" account-index))
+            (list (cons "account_index" account-index)))
           (when subaddress-indices
             (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
           (when priority
