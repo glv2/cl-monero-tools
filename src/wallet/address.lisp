@@ -88,6 +88,23 @@ returned. CHAIN can be :MAINNET, :STAGENET or :TESTNET."
             (when subaddress
               (list (cons :subaddress subaddress))))))
 
+(defun valid-address-p (address)
+  "Check if a Monero ADDRESS is valid. The first returned value is T if ADDRESS
+is a valid Monero address, and NIL otherwise. If the ADDRESS is invalid, the
+second returned value is a string indicating what is wrong with it."
+  (handler-case
+      (let* ((address-info (decode-address address))
+             (public-spend-key (geta address-info :public-spend-key))
+             (public-view-key (geta address-info :public-view-key))
+             (a (bytes->point public-view-key))
+             (b (bytes->point public-spend-key)))
+        (unless (and (point= (point* a +l+) +one+)
+                     (point= (point* b +l+) +one+))
+          (error "Point not in the group of the base point."))
+        (values t nil))
+    (t (e)
+      (values nil (format nil "~a" e)))))
+
 (defun public-keys->address (public-spend-key public-view-key &key subaddress (chain :mainnet))
   "Get the Monero address matching the PUBLIC-SPEND-KEY and
 PUBLIC-VIEW-KEY. If SUBADDRESS is T, a subaddress is returned. CHAIN

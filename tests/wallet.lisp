@@ -134,6 +134,13 @@ testnet: no
     (is (string-equal "d302c0849107819a5301b91e08928617bdadcf303b05122dca9adc24d80238e3"
                       (bytes->hex-string (geta keys :public-view-key))))))
 
+(test valid-address-p
+      (is-true (valid-address-p "43HyW9SFLTmFzDLRgYmeLZ4m4SW7w3G8XfGxfjW79oh6DJdDdwybRJJJKGS3SWsoH5NVMBaXyzty5bv3QNRarqDw5iPfNJJ"))
+      (is-true (valid-address-p "43oErH6q2FfVkVBXrkQt3yfYmmZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7"))
+      (is-false (valid-address-p "43oErH6q2FfVkVBXrkQt3yfYm8ZN3iseWfwet7TyeXmRPPGFcVFffzpSp92tKSUGKF4yKNh5LRLLh8fEaor4Zx3ySdMJNm7"))
+      (is-false (valid-address-p "4BJLvWCVPaHedc26qdvwKWiS638QyHggYgSgX9kKagYR1oGSEH9e46ch4dwe25wDbii7st4VMp2m5ENrtqe1f83E44K8zwK"))
+      (is-false (valid-address-p "4AeYLx84FNuWTMyA9ssqUWRW9FDQjTp65KLguGrwNLk9P2SmuWh8cx73BkvwKFpCFXhFeCEvRti8R2fAL1jZDFEnV5VgDzA")))
+
 (test pubic-keys->address
   (flet ((public-keys->address/hex (public-spend-key public-view-key)
            (public-keys->address (hex-string->bytes public-spend-key)

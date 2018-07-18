@@ -98,6 +98,7 @@
    #:decode-address #:make-integrated-address
    #:public-keys->address #:secret-spend-key->address
    #:public-keys->subaddress #:secret-spend-key->subaddress
+   #:valid-address-p
    #:encrypt-payment-id #:decrypt-payment-id
    #:output-for-address-p #:output-destination-address
    #:decrypt-amount #:received-amount

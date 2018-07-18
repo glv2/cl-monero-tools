@@ -178,6 +178,7 @@ are in the *:monero-tools* package.
  - sign-file
  - sign-message
  - spent-key-images
+ - valid-address-p
  - valid-file-signature-p
  - valid-inbound-transaction-proof-p
  - valid-message-signature-p

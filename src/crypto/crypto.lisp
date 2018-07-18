@@ -12,6 +12,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +key-length+ 32))
 
+(define-constant +one+ (vector 0 1 1 0) :test #'equalp)
 (define-constant +g+ ironclad::+ed25519-b+ :test #'equalp)
 (let ((h (hex-string->bytes "8b655970153799af2aeadc9ff1add0ea6c7251d54154cfa92c173a0dd39c1f94")))
   (define-constant +h+ (ironclad::ed25519-decode-point h) :test #'equalp))
