@@ -247,6 +247,9 @@ at START-HEIGHT."
         (setf (geta transaction :tx-blob) (string->bytes (geta transaction :tx-blob)))))
     result))
 
+(defrpc get-transaction-pool-hashes ("get_transaction_pool_hashes")
+  "Get hashes from transaction pool.")
+
 ;; TODO: deal with not standard json in "tx_hashes"
 ;;   (let ((json:*use-strict-json-rules* nil)) ...) ?
 (defrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")

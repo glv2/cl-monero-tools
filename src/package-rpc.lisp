@@ -80,6 +80,7 @@
    #:get-random-outs.bin
    #:get-random-rctouts.bin
    #:get-transaction-pool
+   #:get-transaction-pool-hashes
    #:get-transaction-pool-hashes.bin
    #:get-transaction-pool-stats
    #:get-transactions
