@@ -234,41 +234,50 @@ at START-HEIGHT."
       (setf (geta result :outs) y))
     result))
 
-;; TODO: deal with not standard json in "tx_blob"
-;;   (let ((json:*use-strict-json-rules* nil)) ...) ?
-(defrpc get-transaction-pool ("get_transaction_pool")
+(defrawrpc get-transaction-pool ("get_transaction_pool")
   "Show information about valid transactions seen by the node but not yet mined
   into a block, as well as spent key image information for the txpool in the
   node's memory."
   nil
   (lambda (result)
-    (let ((transactions (geta result :transactions)))
+    (let* ((result (let ((json:*use-strict-json-rules* nil))
+                     (decode-json-from-string (bytes->string result))))
+           (transactions (geta result :transactions)))
       (dolist (transaction transactions)
-        (setf (geta transaction :tx-blob) (string->bytes (geta transaction :tx-blob)))))
-    result))
+        (setf (geta transaction :tx-blob) (string->bytes (geta transaction :tx-blob))))
+      result)))
 
 (defrpc get-transaction-pool-hashes ("get_transaction_pool_hashes")
   "Get hashes from transaction pool.")
 
-;; TODO: deal with not standard json in "tx_hashes"
-;;   (let ((json:*use-strict-json-rules* nil)) ...) ?
-(defrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")
+(defrawrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")
   "Get hashes from transaction pool."
   nil
   (lambda (result)
-    (let* ((data-string (string->bytes (geta result :tx-hashes)))
-           (transaction-hashes (loop for i from 0 below (length data-string) by 32
-                                     collect (subseq data-string i (+ i 32)))))
-      (setf (geta result :tx-hashes) transaction-hashes))
-    result))
+    (let* ((result (let ((json:*use-strict-json-rules* nil))
+                     (decode-json-from-string (bytes->string result))))
+           (data (geta result :tx-hashes))
+           (data-string (when data
+                          (string->bytes data)))
+           (transaction-hashes (when data-string
+                                 (loop for i from 0 below (length data-string) by 32
+                                       collect (subseq data-string i (+ i 32))))))
+      (when transaction-hashes
+        (setf (geta result :tx-hashes) transaction-hashes))
+      result)))
 
-(defrpc get-transaction-pool-stats ("get_transaction_pool_stats")
+(defrawrpc get-transaction-pool-stats ("get_transaction_pool_stats")
   "Get the transaction pool statistics."
   nil
   (lambda (result)
-    (let ((stats (geta result :pool-stats)))
-      (setf (geta stats :histo) (string->bytes (geta stats :histo))))
-    result))
+    (let* ((result (let ((json:*use-strict-json-rules* nil))
+                     (decode-json-from-string (bytes->string result))))
+           (stats (geta result :pool-stats))
+           (histo (when stats
+                    (geta stats :histo))))
+      (when histo
+        (setf (geta stats :histo) (string->bytes histo)))
+      result)))
 
 (defrpc get-transactions ("get_transactions" transaction-ids &key decode-as-json prune)
   "Look up one or more transactions by hash."

@@ -60,7 +60,7 @@
                    ", response=\"" response "\""
                    ", algorithm=\"" algorithm "\""))))
 
-(defun rpc (method &key binary parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+(defun rpc (method &key binary raw parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   "Send a METHOD RPC request to the server at RPC-HOST:RPC-PORT with optional
 PARAMETERS."
   (let* ((page (format nil "/~(~a~)" method))
@@ -99,11 +99,13 @@ PARAMETERS."
                                (list (cons "content-type" (if binary
                                                               "application/octet-stream"
                                                               "application/json"))))
-                  :content parameters)
+                  :content parameters
+                  :force-binary raw)
       (declare (ignore status response-headers uri stream))
-      (if binary
-          (deserialize-from-binary-storage body 0)
-          (decode-json-from-string body)))))
+      (cond
+        (raw body)
+        (binary (deserialize-from-binary-storage body 0))
+        (t (decode-json-from-string body))))))
 
 (defun json-rpc (method &key parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   "Send a METHOD JSON RPC request to RPC-HOST:RPC-PORT with optional
@@ -140,8 +142,9 @@ PARAMETERS."
                            ((:json) 'json-rpc)
                            (t 'rpc))
                        ,method
-                       ,@(when (eql type :bin)
-                           (list :binary t))
+                       ,@(cond
+                           ((eql type :bin) (list :binary t))
+                           ((eql type :raw) (list :raw t)))
                        :parameters parameters
                        :rpc-host rpc-host
                        :rpc-port rpc-port
@@ -165,6 +168,9 @@ PARAMETERS."
 
 (defmacro defbinrpc (name (method &rest args) &body body)
   `(defhttprpc :bin ,name (,method ,@args) ,@body))
+
+(defmacro defrawrpc (name (method &rest args) &body body)
+  `(defhttprpc :raw ,name (,method ,@args) ,@body))
 
 (defmacro defjsonrpc (name (method &rest args) &body body)
   `(defhttprpc :json ,name (,method ,@args) ,@body))
