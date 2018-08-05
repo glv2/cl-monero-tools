@@ -78,6 +78,7 @@
                              (:module "wallet"
                               :depends-on ("crypto" "package" "serialization" "utils")
                               :components ((:file "address")
+                                           (:file "multisig")
                                            (:file "qr" :depends-on ("uri"))
                                            (:file "signature" :depends-on ("address"))
                                            (:file "transaction" :depends-on ("address"))

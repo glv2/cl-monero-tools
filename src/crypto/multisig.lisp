@@ -7,6 +7,18 @@
 (in-package :monero-tools)
 
 
+(define-constant +multisig-salt+ (map 'octet-vector #'char-code '(#\M #\u #\l #\t #\i #\s #\i #\g
+                                                                  #\nul #\nul #\nul #\nul #\nul
+                                                                  #\nul #\nul #\nul #\nul #\nul
+                                                                  #\nul #\nul #\nul #\nul #\nul
+                                                                  #\nul #\nul #\nul #\nul #\nul
+                                                                  #\nul #\nul #\nul #\nul))
+  :test #'equalp)
+
+(defun compute-multisig-blinded-secret (secret-key)
+  (check-type secret-key (octet-vector #.+key-length+))
+  (hash-to-scalar (concatenate 'octet-vector secret-key +multisig-salt+)))
+
 (defun compute-multisig-secret-view-key (secret-view-keys)
   "Compute the secret view key of a multi-signature wallet from the
 SECRET-VIEW-KEYS of the owners of the wallet."
