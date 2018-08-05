@@ -38,6 +38,7 @@
                                            (:file "cryptonight" :depends-on ("blake" "keccak" "pseudo-aes"))
                                            (:file "keccak")
                                            (:file "key" :depends-on ("crypto"))
+                                           (:file "multisig" :depends-on ("crypto"))
                                            (:file "proof" :depends-on ("crypto" "key"))
                                            (:file "pseudo-aes")
                                            (:file "signature" :depends-on ("crypto" "key"))))
