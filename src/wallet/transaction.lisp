@@ -182,9 +182,9 @@ otherwise."
 (defun valid-inbound-transaction-proof-p (transaction-hash address message transaction-public-key proof &optional transaction-secret-key)
   "Return T if a PROOF of inbound transaction for an ADDRESS is valid,
 and NIL otherwise."
-  (let* ((header-length (length +inbound-transaction-proof-header+))
-         (encoded-key-length (base58-encoded-length +key-length+))
-         (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+  (let ((header-length (length +inbound-transaction-proof-header+))
+        (encoded-key-length (base58-encoded-length +key-length+))
+        (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
     (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
                (string= proof +inbound-transaction-proof-header+ :end1 header-length))
       (let* ((address-info (decode-address address))
@@ -228,9 +228,9 @@ and NIL otherwise."
 (defun valid-outbound-transaction-proof-p (transaction-hash address message transaction-public-key proof &optional secret-view-key)
   "Return T if a PROOF of outbound transaction for an ADDRESS is
 valid, and NIL otherwise."
-  (let* ((header-length (length +outbound-transaction-proof-header+))
-         (encoded-key-length (base58-encoded-length +key-length+))
-         (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
+  (let ((header-length (length +outbound-transaction-proof-header+))
+        (encoded-key-length (base58-encoded-length +key-length+))
+        (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
     (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
                (string= proof +outbound-transaction-proof-header+ :end1 header-length))
       (let* ((address-info (decode-address address))
