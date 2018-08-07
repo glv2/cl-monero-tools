@@ -103,6 +103,7 @@
                              (:file "crypto" :depends-on ("tests"))
                              (:file "mine" :depends-on ("tests"))
                              (:file "mnemonic" :depends-on ("tests"))
+                             (:file "multisig-wallet" :depends-on ("tests" "wallet"))
                              (:file "openalias" :depends-on ("tests"))
                              (:file "tests")
                              (:file "serialization" :depends-on ("tests"))

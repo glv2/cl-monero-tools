@@ -6,6 +6,8 @@ The *monero-tools* system contains basic tools that can be use offline. The
 *monero-tools-rpc* system contains tools requiring a running *monerod* or/and
 *monero-wallet-rpc* daemon to connect to.
 
+This library is in alpha quality stage, so the API might change.
+
 * Installation
 
 To load the *monero-tools* library, put it in a directory where your
@@ -77,6 +79,13 @@ are in the *:monero-tools* package.
  - chacha8
  - chacha20
  - compute-key-image
+ - compute-multisig-blinded-secret
+ - compute-multisig-keys-m/n
+ - compute-multisig-keys-n/n
+ - compute-multisig-public-keys
+ - compute-multisig-public-spend-key
+ - compute-multisig-secret-spend-key
+ - compute-multisig-secret-view-key
  - compute-subaddress-indexes-table
  - derive-key
  - derive-output-public-key
@@ -156,6 +165,9 @@ are in the *:monero-tools* package.
  - =+monero-unit+=
  - bruteforce-wallet-keys
  - decode-address
+ - decode-multisig-extra-info
+ - decode-multisig-info
+ - decode-multisig-seed
  - decode-qr-code
  - decode-uri
  - decrypt-amount
@@ -163,6 +175,9 @@ are in the *:monero-tools* package.
  - encrypt-payment-id
  - get-wallet-keys
  - make-integrated-address
+ - make-multisig-extra-info
+ - make-multisig-info
+ - make-multisig-seed
  - make-qr-code
  - make-uri
  - output-destination-address

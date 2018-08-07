@@ -61,6 +61,13 @@
    #:generate-signature #:valid-signature-p
    #:generate-ring-signature #:valid-ring-signature-p
    #:compute-key-image
+   #:compute-multisig-blinded-secret
+   #:compute-multisig-secret-view-key
+   #:compute-multisig-keys-n/n
+   #:compute-multisig-keys-m/n
+   #:compute-multisig-secret-spend-key
+   #:compute-multisig-public-keys
+   #:compute-multisig-public-spend-key
 
    ;; mine
    #:miner
@@ -110,7 +117,10 @@
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p
    #:make-uri #:decode-uri
-   #:make-qr-code #:decode-qr-code))
+   #:make-qr-code #:decode-qr-code
+   #:make-multisig-info #:decode-multisig-info
+   #:make-multisig-extra-info #:decode-multisig-extra-info
+   #:make-multisig-seed #:decode-multisig-seed))
 
 (in-package :monero-tools)
 
