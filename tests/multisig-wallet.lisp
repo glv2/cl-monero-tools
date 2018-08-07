@@ -163,9 +163,155 @@ multisig public view key: 2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08
                 (map 'vector #'bytes->hex-string (geta multisig-extra-info :multisig-public-keys))))))
 
 (test make-multisig-seed
-  ;; TODO
-  )
+  (let ((threshold 2)
+        (total 3)
+        (secret-spend-key (hex-string->bytes "a0e1217efc88057244e140eeea8d3279582bd540e9d895417e23d47869e29f09"))
+        (public-spend-key (hex-string->bytes "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"))
+        (secret-view-key (hex-string->bytes "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"))
+        (public-view-key (hex-string->bytes "2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61"))
+        (multisig-keys (map 'vector
+                            #'hex-string->bytes
+                            #("ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302"
+                              "f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07")))
+        (signers (map 'vector
+                      #'hex-string->bytes
+                      #("3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"
+                        "eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974"
+                        "d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"))))
+    (is (string-equal "0200000003000000a0e1217efc88057244e140eeea8d3279582bd540e9d895417e23d47869e29f09aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c073beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"
+                      (bytes->hex-string (make-multisig-seed threshold
+                                                             total
+                                                             secret-spend-key
+                                                             public-spend-key
+                                                             secret-view-key
+                                                             public-view-key
+                                                             multisig-keys
+                                                             signers)))))
+  (let ((threshold 2)
+        (total 3)
+        (secret-spend-key (hex-string->bytes "627716ec18a622171e639cdc8349be9e85c24a124f0ab301c763838b0db4400b"))
+        (public-spend-key (hex-string->bytes "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"))
+        (secret-view-key (hex-string->bytes "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"))
+        (public-view-key (hex-string->bytes "2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61"))
+        (multisig-keys (map 'vector
+                            #'hex-string->bytes
+                            #("ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302"
+                              "b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08")))
+        (signers (map 'vector
+                      #'hex-string->bytes
+                      #("d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"
+                        "eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974"
+                        "3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"))))
+    (is (string-equal "0200000003000000627716ec18a622171e639cdc8349be9e85c24a124f0ab301c763838b0db4400baeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb49743beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"
+                      (bytes->hex-string (make-multisig-seed threshold
+                                                             total
+                                                             secret-spend-key
+                                                             public-spend-key
+                                                             secret-view-key
+                                                             public-view-key
+                                                             multisig-keys
+                                                             signers)))))
+  (let ((threshold 2)
+        (total 3)
+        (secret-spend-key (hex-string->bytes "a80d07f8df835312b683fc491b5042a42db171e26e4453ba0ad8b2142453ba0f"))
+        (public-spend-key (hex-string->bytes "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"))
+        (secret-view-key (hex-string->bytes "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"))
+        (public-view-key (hex-string->bytes "2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61"))
+        (multisig-keys (map 'vector
+                            #'hex-string->bytes
+                            #("f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07"
+                              "b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08")))
+        (signers (map 'vector
+                      #'hex-string->bytes
+                      #("eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974"
+                        "d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"
+                        "3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"))))
+    (is (string-equal "0200000003000000a80d07f8df835312b683fc491b5042a42db171e26e4453ba0ad8b2142453ba0faeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a43beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"
+                      (bytes->hex-string (make-multisig-seed threshold
+                                                             total
+                                                             secret-spend-key
+                                                             public-spend-key
+                                                             secret-view-key
+                                                             public-view-key
+                                                             multisig-keys
+                                                             signers))))))
 
 (test decode-multisig-seed
-  ;; TODO
-  )
+  (let* ((info (decode-multisig-seed "0200000003000000a0e1217efc88057244e140eeea8d3279582bd540e9d895417e23d47869e29f09aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c073beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"))
+         (threshold (geta info :threshold))
+         (total (geta info :total))
+         (secret-spend-key (bytes->hex-string (geta info :secret-spend-key)))
+         (public-spend-key (bytes->hex-string (geta info :public-spend-key)))
+         (secret-view-key (bytes->hex-string (geta info :secret-view-key)))
+         (public-view-key (bytes->hex-string (geta info :public-view-key)))
+         (multisig-keys (map 'vector #'bytes->hex-string (geta info :multisig-keys)))
+         (signers (map 'vector #'bytes->hex-string (geta info :signers))))
+    (is (= 2 threshold))
+    (is (= 3 total))
+    (is (string-equal "a0e1217efc88057244e140eeea8d3279582bd540e9d895417e23d47869e29f09"
+                      secret-spend-key))
+    (is (string-equal "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"
+                      public-spend-key))
+    (is (string-equal "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"
+                      secret-view-key))
+    (is (string-equal "2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61"
+                      public-view-key))
+    (is (equalp #("ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302"
+                  "f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07")
+                multisig-keys))
+    (is (equalp #("3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"
+                  "eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974"
+                  "d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4")
+                signers)))
+  (let* ((info (decode-multisig-seed "0200000003000000627716ec18a622171e639cdc8349be9e85c24a124f0ab301c763838b0db4400baeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb49743beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"))
+         (threshold (geta info :threshold))
+         (total (geta info :total))
+         (secret-spend-key (bytes->hex-string (geta info :secret-spend-key)))
+         (public-spend-key (bytes->hex-string (geta info :public-spend-key)))
+         (secret-view-key (bytes->hex-string (geta info :secret-view-key)))
+         (public-view-key (bytes->hex-string (geta info :public-view-key)))
+         (multisig-keys (map 'vector #'bytes->hex-string (geta info :multisig-keys)))
+         (signers (map 'vector #'bytes->hex-string (geta info :signers))))
+    (is (= 2 threshold))
+    (is (= 3 total))
+    (is (string-equal "627716ec18a622171e639cdc8349be9e85c24a124f0ab301c763838b0db4400b"
+                      secret-spend-key))
+    (is (string-equal "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"
+                      public-spend-key))
+    (is (string-equal "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"
+                      secret-view-key))
+    (is (string-equal "2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61"
+                      public-view-key))
+    (is (equalp #("ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302"
+                  "b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08")
+                multisig-keys))
+    (is (equalp #("d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"
+                  "eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974"
+                  "3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47")
+                signers)))
+  (let* ((info (decode-multisig-seed "0200000003000000a80d07f8df835312b683fc491b5042a42db171e26e4453ba0ad8b2142453ba0faeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a43beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47"))
+         (threshold (geta info :threshold))
+         (total (geta info :total))
+         (secret-spend-key (bytes->hex-string (geta info :secret-spend-key)))
+         (public-spend-key (bytes->hex-string (geta info :public-spend-key)))
+         (secret-view-key (bytes->hex-string (geta info :secret-view-key)))
+         (public-view-key (bytes->hex-string (geta info :public-view-key)))
+         (multisig-keys (map 'vector #'bytes->hex-string (geta info :multisig-keys)))
+         (signers (map 'vector #'bytes->hex-string (geta info :signers))))
+    (is (= 2 threshold))
+    (is (= 3 total))
+    (is (string-equal "a80d07f8df835312b683fc491b5042a42db171e26e4453ba0ad8b2142453ba0f"
+                      secret-spend-key))
+    (is (string-equal "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"
+                      public-spend-key))
+    (is (string-equal "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"
+                      secret-view-key))
+    (is (string-equal "2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61"
+                      public-view-key))
+    (is (equalp #("f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07"
+                  "b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08")
+                multisig-keys))
+    (is (equalp #("eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974"
+                  "d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4"
+                  "3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47")
+                signers))))
