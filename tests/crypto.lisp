@@ -638,6 +638,18 @@
                       (bytes->hex-string (compute-multisig-blinded-secret secret-key)))))
   (let ((secret-key (hex-string->bytes "02dea042ab01454d9ca369a454cb0613c6f2c35d9009c3daf959b3d839570b02")))
     (is (string-equal "aede2ddc27f47417d81832ae44f917c9d33ad3ae5f4cadb2a9b8e8c55e7c9502"
+                      (bytes->hex-string (compute-multisig-blinded-secret secret-key)))))
+  (let ((secret-key (hex-string->bytes "5e41a1e789066174019f1c82fab08cb7b7ca96965d972849c06258b79224b704")))
+    (is (string-equal "f78e43b21da28affdaabcd00189c7f6a19458b2a695fe90b670ba8197c628b08"
+                      (bytes->hex-string (compute-multisig-blinded-secret secret-key)))))
+  (let ((secret-key (hex-string->bytes "16f065708dc3f9bf6095ade6867dbd68da2968a668e67d05f14b9dcd2986f90b")))
+    (is (string-equal "367c0246bc866ac8e559cecd9f7890a9d96ec790b336347c5f56f99c00796900"
+                      (bytes->hex-string (compute-multisig-blinded-secret secret-key)))))
+  (let ((secret-key (hex-string->bytes "0724632717bc4d9195c7d0b8c19565adaa88b8e8d62df899559eeef1d74d3e0c")))
+    (is (string-equal "b3e6f3b9b75b5fc2097f076c54cbd66d0d8a2b4c01723dd3e48bf85c1b38e409"
+                      (bytes->hex-string (compute-multisig-blinded-secret secret-key)))))
+  (let ((secret-key (hex-string->bytes "6919108e1aa3f4402c670aa762e4554400fc3db0c26c12cc31f9e89b1b93a506")))
+    (is (string-equal "5b84e7b1469852fe1bf19f6057cfd72f22a84381d259f522d7f573112517750c"
                       (bytes->hex-string (compute-multisig-blinded-secret secret-key))))))
 
 (test compute-multisig-secret-view-key
@@ -647,7 +659,25 @@
                                  "a8d18e7ce2e4de4c6213b9e883280ab0d6ee0c4640942151270125ffa71b500f"
                                  "8b9bc92fc3849735654c8e6be3fea89db96b8724b90cec21d0fea2485b062506"))))
     (is (string-equal "7da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b"
+                      (bytes->hex-string (compute-multisig-secret-view-key secret-view-keys)))))
+  (let ((secret-view-keys (map 'vector
+                               #'hex-string->bytes
+                               #("f78e43b21da28affdaabcd00189c7f6a19458b2a695fe90b670ba8197c628b08"
+                                 "b3e6f3b9b75b5fc2097f076c54cbd66d0d8a2b4c01723dd3e48bf85c1b38e409"))))
+    (is (string-equal "bda1410fbb9ad7690e8eddc98d6d77c326cfb6766ad126df4b97a076979a6f02"
                       (bytes->hex-string (compute-multisig-secret-view-key secret-view-keys))))))
+
+(test compute-multisig-keys-n/n
+  (let ((secret-spend-key (hex-string->bytes "16f065708dc3f9bf6095ade6867dbd68da2968a668e67d05f14b9dcd2986f90b")))
+    (is (equalp #("367c0246bc866ac8e559cecd9f7890a9d96ec790b336347c5f56f99c00796900")
+                (map 'vector
+                     #'bytes->hex-string
+                     (compute-multisig-keys-n/n secret-spend-key)))))
+  (let ((secret-spend-key (hex-string->bytes "6919108e1aa3f4402c670aa762e4554400fc3db0c26c12cc31f9e89b1b93a506")))
+    (is (equalp #("5b84e7b1469852fe1bf19f6057cfd72f22a84381d259f522d7f573112517750c")
+                (map 'vector
+                     #'bytes->hex-string
+                     (compute-multisig-keys-n/n secret-spend-key))))))
 
 (test compute-multisig-keys-m/n
   (let ((public-spend-keys (map 'vector
@@ -699,6 +729,16 @@
                             #("f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c07"
                               "b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08"))))
     (is (string-equal "a80d07f8df835312b683fc491b5042a42db171e26e4453ba0ad8b2142453ba0f"
+                      (bytes->hex-string (compute-multisig-secret-spend-key multisig-keys)))))
+  (let ((multisig-keys (map 'vector
+                            #'hex-string->bytes
+                            #("367c0246bc866ac8e559cecd9f7890a9d96ec790b336347c5f56f99c00796900"))))
+    (is (string-equal "367c0246bc866ac8e559cecd9f7890a9d96ec790b336347c5f56f99c00796900"
+                      (bytes->hex-string (compute-multisig-secret-spend-key multisig-keys)))))
+  (let ((multisig-keys (map 'vector
+                            #'hex-string->bytes
+                            #("5b84e7b1469852fe1bf19f6057cfd72f22a84381d259f522d7f573112517750c"))))
+    (is (string-equal "5b84e7b1469852fe1bf19f6057cfd72f22a84381d259f522d7f573112517750c"
                       (bytes->hex-string (compute-multisig-secret-spend-key multisig-keys))))))
 
 (test compute-multisig-public-keys
@@ -731,4 +771,10 @@
                                      "f66d79e30d769593145edae7e2aa0ac8ebbe951a827ddab8ed4c9b9a593d185a"
                                      "04d8a58ac5eb2f33cbaac5faf350523d3a3acb77fa05092e2e02bef831993c7b"))))
     (is (string-equal "aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb9373"
+                      (bytes->hex-string (compute-multisig-public-spend-key multisig-public-keys)))))
+  (let ((multisig-public-keys (map 'vector
+                                   #'hex-string->bytes
+                                   #("ce57400743c11f83b09b94ac3be9b23f5b9b756a3472d0fdf129f12475a8ebb8"
+                                     "156d6f3561c4ff39deda45d6ef841246a8ef9a4836e4fd103d7fa4bb7feb7ced"))))
+    (is (string-equal "2297d23c0c69d8cf76464277ceb31e6b0777750308ecfbc49667fd2ebea67bf0"
                       (bytes->hex-string (compute-multisig-public-spend-key multisig-public-keys))))))
