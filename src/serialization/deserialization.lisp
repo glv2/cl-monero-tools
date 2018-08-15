@@ -162,15 +162,21 @@
 
 ;;; Signatures (before ring confidential transaction signatures)
 
-(defun deserialize-signature (data offset ring-size inputs-size)
-  (deserialize-custom-vector data offset inputs-size
-                             #'deserialize-custom-vector ring-size
-                             #'deserialize-bytes (* 2 +key-length+)))
+(defun deserialize-signature (data offset ring-sizes inputs-size)
+  (let ((result (make-array inputs-size))
+        (total-size 0))
+    (dotimes (i inputs-size)
+      (multiple-value-bind (e s)
+          (deserialize-custom-vector data (+ offset total-size) (aref ring-sizes i)
+                                     #'deserialize-bytes (* 2 +key-length+))
+        (setf (aref result i) e)
+        (incf total-size s)))
+    (values result total-size)))
 
 
 ;;; Ring confidential transaction signatures
 
-(defun deserialize-rct-range-proof (data offset ring-size inputs-size outputs-size type)
+(defun deserialize-rct-range-proof (data offset ring-sizes inputs-size outputs-size type)
   (labels ((deserialize-key64 (data offset)
              (deserialize-custom-vector data offset 64 #'deserialize-key))
 
@@ -185,56 +191,76 @@
                ((boromean-signature #'deserialize-boromean-signature)
                 (pedersen-commitments #'deserialize-key64))))
 
-           (deserialize-multilayered-group-signature (data offset)
+           (deserialize-multilayered-group-signature (data offset ring-size)
              (deserialize data offset
                ((ss #'deserialize-custom-vector ring-size
                     #'deserialize-custom-vector
                     (+ 1 (if (= type +rct-type-simple+) 1 inputs-size))
                     #'deserialize-key)
-                (cc #'deserialize-key)))))
+                (cc #'deserialize-key))))
+
+           (deserialize-multilayered-group-signatures (data offset)
+             (let* ((size (if (= type +rct-type-simple+) inputs-size 1))
+                    (result (make-array size))
+                    (total-size 0))
+               (dotimes (i size)
+                 (multiple-value-bind (e s)
+                     (deserialize-multilayered-group-signature data (+ offset total-size)
+                                                               (aref ring-sizes i))
+                   (setf (aref result i) e)
+                   (incf total-size s)))
+               (values result total-size))))
     (deserialize data offset
       ((range-proofs #'deserialize-custom-vector outputs-size
                      #'deserialize-range-proof)
-       (multilayered-group-signatures #'deserialize-custom-vector
-                                      (if (= type +rct-type-simple+) inputs-size 1)
-                                      #'deserialize-multilayered-group-signature)))))
+       (multilayered-group-signatures #'deserialize-multilayered-group-signatures)))))
 
-(defun deserialize-rct-bulletproof (data offset ring-size inputs-size outputs-size type)
-  (flet ((deserialize-bulletproof (data offset)
-           (deserialize data offset
-             ((a1 #'deserialize-key)
-              (s #'deserialize-key)
-              (t1 #'deserialize-key)
-              (t2 #'deserialize-key)
-              (taux #'deserialize-key)
-              (mu #'deserialize-key)
-              (l #'deserialize-vector #'deserialize-key)
-              (r #'deserialize-vector #'deserialize-key)
-              (a2 #'deserialize-key)
-              (b #'deserialize-key)
-              (t #'deserialize-key))))
+(defun deserialize-rct-bulletproof (data offset ring-sizes inputs-size outputs-size type)
+  (labels ((deserialize-bulletproof (data offset)
+             (deserialize data offset
+               ((a1 #'deserialize-key)
+                (s #'deserialize-key)
+                (t1 #'deserialize-key)
+                (t2 #'deserialize-key)
+                (taux #'deserialize-key)
+                (mu #'deserialize-key)
+                (l #'deserialize-vector #'deserialize-key)
+                (r #'deserialize-vector #'deserialize-key)
+                (a2 #'deserialize-key)
+                (b #'deserialize-key)
+                (t #'deserialize-key))))
 
-         (deserialize-multilayered-group-signature (data offset)
-           (deserialize data offset
-             ((ss #'deserialize-custom-vector ring-size
-                  #'deserialize-custom-vector
-                  (+ 1 (if (= type +rct-type-simple-bulletproof+) 1 inputs-size))
-                  #'deserialize-key)
-              (cc #'deserialize-key))))
+           (deserialize-multilayered-group-signature (data offset ring-size)
+             (deserialize data offset
+               ((ss #'deserialize-custom-vector ring-size
+                    #'deserialize-custom-vector
+                    (+ 1 (if (= type +rct-type-simple-bulletproof+) 1 inputs-size))
+                    #'deserialize-key)
+                (cc #'deserialize-key))))
 
-         (deserialize-pseudo-outputs (data offset type inputs-size)
-           (if (= type +rct-type-simple-bulletproof+)
-               (deserialize-custom-vector data offset inputs-size #'deserialize-key)
-               (values nil 0))))
+           (deserialize-multilayered-group-signatures (data offset)
+             (let* ((size (if (= type +rct-type-simple-bulletproof+) inputs-size 1))
+                    (result (make-array size))
+                    (total-size 0))
+               (dotimes (i size)
+                 (multiple-value-bind (e s)
+                     (deserialize-multilayered-group-signature data (+ offset total-size)
+                                                               (aref ring-sizes i))
+                   (setf (aref result i) e)
+                   (incf total-size s)))
+               (values result total-size)))
+
+           (deserialize-pseudo-outputs (data offset type inputs-size)
+             (if (= type +rct-type-simple-bulletproof+)
+                 (deserialize-custom-vector data offset inputs-size #'deserialize-key)
+                 (values nil 0))))
     (deserialize data offset
       ((bulletproofs #'deserialize-custom-vector outputs-size
                      #'deserialize-bulletproof)
-       (multilayered-group-signatures #'deserialize-custom-vector
-                                      (if (= type +rct-type-simple-bulletproof+) inputs-size 1)
-                                      #'deserialize-multilayered-group-signature)
+       (multilayered-group-signatures #'deserialize-multilayered-group-signatures)
        (pseudo-outputs #'deserialize-pseudo-outputs type inputs-size)))))
 
-(defun deserialize-rct-signature (data offset ring-size inputs-size outputs-size)
+(defun deserialize-rct-signature (data offset ring-sizes inputs-size outputs-size)
   (flet ((deserialize-pseudo-outputs (data offset type inputs-size)
            (if (= type +rct-type-simple+)
                (deserialize-custom-vector data offset inputs-size #'deserialize-key)
@@ -259,7 +285,7 @@
                 (output-public-keys #'deserialize-custom-vector outputs-size
                                     #'deserialize-key)
                 (rct-signature-prunable #'deserialize-rct-range-proof
-                                        ring-size inputs-size outputs-size type)))
+                                        ring-sizes inputs-size outputs-size type)))
            (values (acons :type type signature)
                    (+ 1 size))))
 
@@ -272,7 +298,7 @@
                 (output-public-keys #'deserialize-custom-vector outputs-size
                                     #'deserialize-key)
                 (rct-signature-prunable #'deserialize-rct-bulletproof
-                                        ring-size inputs-size outputs-size type)))
+                                        ring-sizes inputs-size outputs-size type)))
            (values (acons :type type signature)
                    (+ 1 size))))))))
 
@@ -353,17 +379,18 @@ The second returned value is the size of the serialized transaction."
            (version (geta transaction-prefix :version))
            (inputs (geta transaction-prefix :inputs))
            (inputs-size (length inputs))
-           (ring-size (if (plusp (length inputs))
-                          (length (geta (geta (aref inputs 0) :key) :key-offsets))
-                          0))
+           (ring-sizes (map 'vector
+                            (lambda (input)
+                              (length (geta (geta input :key) :key-offsets)))
+                            inputs))
            (outputs-size (length (geta transaction-prefix :outputs))))
       (multiple-value-bind (signature signature-size)
           (case version
             ((1) (deserialize data (+ offset prefix-size)
-                   ((signature #'deserialize-signature ring-size inputs-size))))
+                   ((signature #'deserialize-signature ring-sizes inputs-size))))
             ((2) (deserialize data (+ offset prefix-size)
                    ((rct-signature #'deserialize-rct-signature
-                                   ring-size inputs-size outputs-size))))
+                                   ring-sizes inputs-size outputs-size))))
             (t (error "Transaction version ~d not supported." version)))
         (values (append prefix signature) (+ prefix-size signature-size))))))
 
