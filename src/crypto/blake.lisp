@@ -55,6 +55,10 @@
 ;;; Blake256 rounds
 ;;;
 
+#+sbcl
+(eval-when (:compile-toplevel)
+  (setf sb-ext:*inline-expansion-limit* (max sb-ext:*inline-expansion-limit* 1000)))
+
 (declaim (ftype (function ((simple-array (unsigned-byte 32) (8))
                            (simple-array (unsigned-byte 32) (4))
                            (simple-array (unsigned-byte 32) (2))
