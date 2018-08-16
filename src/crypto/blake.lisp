@@ -287,12 +287,8 @@
       (dotimes (i 8)
         (dotimes (j 4)
           (setf (aref output (+ (* i 4) j)) (ldb (byte 8 (- 24 (* j 8))) (aref blake256-state-h i)))))
-      (etypecase digest
-        ((simple-array (unsigned-byte 8) (*))
-         (replace digest output :start1 digest-start :end2 digest-length)
-         digest)
-        (null
-         output)))))
+      (replace digest output :start1 digest-start :end2 digest-length)
+      digest)))
 
 (define-digest-updater blake256
   (blake256-update state sequence start end))
