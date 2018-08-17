@@ -215,10 +215,13 @@ as a byte vector."
     (ironclad:encrypt cipher data ciphertext)
     ciphertext))
 
-(defun generate-chacha-key (password)
+(defun generate-chacha-key (password &optional (rounds 1))
   "Generate the encryption/decryption key matching a PASSWORD."
   (check-type password string)
-  (subseq (slow-hash (utf-8-string->bytes password)) 0 +chacha-key-length+))
+  (check-type rounds (integer 1 *))
+  (do ((i (1- rounds) (1- i))
+       (hash (slow-hash (utf-8-string->bytes password)) (slow-hash hash)))
+      ((zerop i) (subseq hash 0 +chacha-key-length+))))
 
 (defun generate-chacha-key-from-secret-keys (secret-view-key secret-spend-key)
   "Generate the encryption/decryption key matching a wallet's secret
