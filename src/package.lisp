@@ -84,7 +84,7 @@
 
    ;; openalias
    #:*dns-server*
-   #:*dnssec-trust-anchor*
+   #:*dnssec-trust-anchors*
    #:get-openalias-info
 
    ;; serialization

@@ -126,7 +126,7 @@ are in the *:monero-tools* package.
 ** OpenAlias
 
  - =*dns-server*=
- - =*dnssec-trust-anchor*=
+ - =*dnssec-trust-anchors*=
  - get-openalias-info
 
 ** Serialization

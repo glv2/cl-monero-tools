@@ -11,11 +11,10 @@
   (substitute #\. #\@ address))
 
 (defun get-openalias-info (address)
-  "Return an alist containing the openalias information of an ADDRESS.
-The second returned value is T is the validity of the information has
-been verified by DNSSEC, and NIL otherwise. The trust anchor used for
-DNSSEC validation is specified in the *DNSSEC-TRUST-ANCHOR*
-parameter."
+  "Return an alist containing the openalias information of an ADDRESS. The
+second returned value is T is the validity of the information has been verified
+by DNSSEC, and NIL otherwise. The trust anchors used for DNSSEC validation are
+specified in the *DNSSEC-TRUST-ANCHORS* parameter."
   (multiple-value-bind (text validated)
       (get-monero-txt-record (normalize-openalias-address address))
     (flet ((get-field (name)

@@ -36,17 +36,18 @@
   "Server to forward DNS queries to. If NIL, use what the operating
 system uses")
 
-(defparameter *dnssec-trust-anchor* ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5"
-  "Trust anchor used for DNSSEC validation. The format is a string,
-similar to the zone-file format, [domainname] [type] [rdata contents].
-Both DS and DNSKEY records are accepted.")
+(defparameter *dnssec-trust-anchors*
+  (list ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5"
+        ". IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D")
+  "Trust anchors used for DNSSEC validation. The format is a list of strings,
+similar to the zone-file format, [domainname] [type] [rdata contents]. Both DS
+and DNSKEY records are accepted.")
 
 (defun get-monero-txt-record (name)
-  "Make a DNS query for NAME and return the Monero TXT record. The
-second returned value is T if the DNS answer was validated by DNSSEC,
-and NIL otherwise. The DNS query is forwarded to *DNS-SERVER*. The
-trust anchor used for DNSSEC validation is specified in the
-*DNSSEC-TRUST-ANCHOR* parameter."
+  "Make a DNS query for NAME and return the Monero TXT record. The second
+returned value is T if the DNS answer was validated by DNSSEC, and NIL
+otherwise. The DNS query is forwarded to *DNS-SERVER*. The trust anchors used
+for DNSSEC validation are specified in the *DNSSEC-TRUST-ANCHORS* parameter."
   (if (foreign-library-loaded-p 'unbound)
       (let* ((context (foreign-funcall "ub_ctx_create" :pointer))
              (text nil)
@@ -76,10 +77,10 @@ trust anchor used for DNSSEC validation is specified in the
                                    :pointer context
                                    :pointer (null-pointer)
                                    :int)))
-            (when *dnssec-trust-anchor*
+            (dolist (trust-anchor *dnssec-trust-anchors*)
               (foreign-funcall "ub_ctx_add_ta"
                                :pointer context
-                               :string *dnssec-trust-anchor*
+                               :string trust-anchor
                                :int))
             (foreign-funcall "ub_resolve"
                              :pointer context
