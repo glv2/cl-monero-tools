@@ -101,7 +101,7 @@
              (dynamic-extent state tmp))
     (loop until (< data-length 136) do
       (ironclad::dotimes-unrolled (i 17)
-        (setf (aref state i) (logxor (aref state i) (ironclad:ub64ref/le data start)))
+        (setf (aref state i) (logxor (aref state i) (ub64ref/le data start)))
         (incf start 8))
       (decf data-length 136)
       (keccakf state))
@@ -113,10 +113,10 @@
     (setf (aref tmp 135) (logior (aref tmp 135) #x80))
 
     (ironclad::dotimes-unrolled (i 17)
-      (setf (aref state i) (logxor (aref state i) (ironclad:ub64ref/le tmp (* i 8)))))
+      (setf (aref state i) (logxor (aref state i) (ub64ref/le tmp (* i 8)))))
     (keccakf state)
 
     (let ((result (make-array 200 :element-type '(unsigned-byte 8))))
       (ironclad::dotimes-unrolled (i 25)
-        (setf (ironclad:ub64ref/le result (* i 8)) (aref state i)))
+        (setf (ub64ref/le result (* i 8)) (aref state i)))
       result)))

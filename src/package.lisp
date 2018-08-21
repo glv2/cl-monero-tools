@@ -30,6 +30,10 @@
                 #:use-foreign-library
                 #:with-foreign-object
                 #:with-foreign-slots)
+  (:import-from :ironclad
+                #:ub32ref/be
+                #:ub32ref/le
+                #:ub64ref/le)
   (:import-from :octet-streams
                 #:get-output-stream-octets
                 #:make-octet-output-stream
