@@ -305,39 +305,56 @@
 
 ;;; Transaction extra data
 
-(defun deserialize-transaction-extra-nonce (data offset)
+(defun deserialize-transaction-extra-nonce (data offset max-size)
   (multiple-value-bind (nonce-size s0)
       (deserialize-integer data offset)
-    (let ((type (aref data (+ offset s0))))
-      (multiple-value-bind (nonce s1)
-          (cond ((and (= type +transaction-extra-nonce-payment-id-tag+)
-                      (= nonce-size 33))
-                 (incf s0)
-                 (deserialize data (+ offset s0)
-                   ((payment-id #'deserialize-bytes 32))))
-                ((and (= type +transaction-extra-nonce-encrypted-payment-id-tag+)
-                      (= nonce-size 9))
-                 (incf s0)
-                 (deserialize data (+ offset s0)
-                   ((encrypted-payment-id #'deserialize-bytes 8))))
-                (t
-                 (deserialize data (+ offset s0)
-                   ((data #'deserialize-bytes
-                          (min nonce-size +transaction-extra-nonce-max-size+))))))
-        (values nonce (+ s0 s1))))))
+    (if (< max-size (+ s0 nonce-size))
+        (values nil 0)
+        (let ((type (aref data (+ offset s0))))
+          (multiple-value-bind (nonce s1)
+              (cond ((and (= type +transaction-extra-nonce-payment-id-tag+)
+                          (= nonce-size 33))
+                     (incf s0)
+                     (deserialize data (+ offset s0)
+                       ((payment-id #'deserialize-bytes 32))))
+                    ((and (= type +transaction-extra-nonce-encrypted-payment-id-tag+)
+                          (= nonce-size 9))
+                     (incf s0)
+                     (deserialize data (+ offset s0)
+                       ((encrypted-payment-id #'deserialize-bytes 8))))
+                    (t
+                     (deserialize data (+ offset s0)
+                       ((data #'deserialize-bytes
+                              (min nonce-size +transaction-extra-nonce-max-size+))))))
+            (values nonce (+ s0 s1)))))))
+
+(defun deserialize-transaction-extra-public-key (data offset max-size)
+  (if (< max-size +key-length+)
+      (values nil 0)
+      (deserialize-key data offset)))
+
+(defun deserialize-transaction-extra-public-keys (data offset max-size)
+  (multiple-value-bind (vector-size s0)
+      (deserialize-integer data offset)
+    (if (< max-size (+ s0 (* vector-size +key-length+)))
+        (values nil 0)
+        (deserialize-vector data offset #'deserialize-key))))
 
 (defun deserialize-transaction-extra-data-field (data offset max-size)
   (multiple-value-bind (field size)
-      (deserialize-variant data offset
-        ((padding +transaction-extra-padding-tag+
-                  #'deserialize-bytes (min (- max-size 1) +transaction-extra-padding-max-size+))
-         (transaction-public-key +transaction-extra-public-key-tag+
-                                 #'deserialize-key)
-         (additional-public-keys +transaction-extra-additional-public-keys-tag+
-                                 #'deserialize-vector #'deserialize-key)
-         (nonce +transaction-extra-nonce-tag+
-                #'deserialize-transaction-extra-nonce)))
-    (if field
+      (handler-case
+          (deserialize-variant data offset
+            ((padding +transaction-extra-padding-tag+
+                      #'deserialize-bytes (min (- max-size 1) +transaction-extra-padding-max-size+))
+             (transaction-public-key +transaction-extra-public-key-tag+
+                                     #'deserialize-transaction-extra-public-key max-size)
+             (additional-public-keys +transaction-extra-additional-public-keys-tag+
+                                     #'deserialize-transaction-extra-public-keys max-size)
+             (nonce +transaction-extra-nonce-tag+
+                    #'deserialize-transaction-extra-nonce max-size)))
+        (t ()
+          (values nil 0)))
+    (if (> size 1)
         (values field size)
         (deserialize data offset
           ((data #'deserialize-bytes max-size))))))
