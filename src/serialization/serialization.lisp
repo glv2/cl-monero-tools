@@ -293,8 +293,8 @@
                    (nonce +transaction-extra-nonce-tag+
                           #'serialize-transaction-extra-nonce)))))
     (cond
-      ((null result) (serialize stream object
-                       ((data #'serialize-bytes))))
+      ((zerop (length result)) (serialize stream object
+                                 ((data #'serialize-bytes))))
       (stream (write-sequence result stream))
       (t result))))
 
