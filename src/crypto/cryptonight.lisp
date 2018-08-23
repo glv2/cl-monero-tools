@@ -40,8 +40,8 @@
                         :index offset
                         :disp (- (* n-word-bytes vector-data-offset)
                                  other-pointer-lowtag))))
-        (inst movdqa x0 (buffer-mem buffer2 start2))
-        (inst movdqa (buffer-mem buffer1 start1) x0)))))
+        (inst movdqu x0 (buffer-mem buffer2 start2))
+        (inst movdqu (buffer-mem buffer1 start1) x0)))))
 
 
 (in-package :monero-tools)
