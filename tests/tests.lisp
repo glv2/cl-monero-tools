@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2018 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -14,3 +14,9 @@
   :description "Unit tests for monero-tools.")
 
 (in-suite monero-tools-tests)
+
+(defun load-hex-data (filename)
+  (let ((path (asdf:system-relative-pathname "monero-tools/tests"
+                                             (concatenate 'string "tests/" filename))))
+    (with-open-file (in path)
+      (read-line in))))
