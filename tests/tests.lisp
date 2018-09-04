@@ -15,8 +15,10 @@
 
 (in-suite monero-tools-tests)
 
+(defun data-file-path (filename)
+  (asdf:system-relative-pathname "monero-tools/tests"
+                                 (concatenate 'string "tests/data/" filename)))
+
 (defun load-hex-data (filename)
-  (let ((path (asdf:system-relative-pathname "monero-tools/tests"
-                                             (concatenate 'string "tests/" filename))))
-    (with-open-file (in path)
-      (read-line in))))
+  (with-open-file (in (data-file-path filename))
+    (read-line in)))

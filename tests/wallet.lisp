@@ -16,7 +16,7 @@
 #|
 Info about wallet-1
 -------------------
-file: tests/wallet-1.keys
+file: wallet-1.keys
 password: 123456
 mnemonic seed language: english
 mnemonic seed: dedicated dubbed coexist having damp ember feline inquest september nobody alley binocular lopped moat agreed wayside gotten bays layout nail vixen imagine weird yahoo moat
@@ -30,7 +30,7 @@ testnet: no
 
 Info about wallet-2
 -------------------
-file: tests/wallet-2.keys
+file: wallet-2.keys
 password: bhunjivgy
 mnemonic seed language: french
 mnemonic seed: brave visuel version tango davantage baobab quinze essai peau tellement balcon brevet tasse ordinaire rhume lueur oreille version stock agonie salon scoop rouge seuil peau
@@ -44,7 +44,7 @@ testnet: no
 
 Info about 2/3 multisig wallets
 -------------------------------
-file: tests/multisig-wallet-1.keys
+file: multisig-wallet-1.keys
 password: 123456
 mnemonic seed language: english
 mnemonic seed: maze olympics madness digit antics heron daily mayor whole juggled bowling ulcers badge ecstatic needed noises zodiac going elite guys cement cider cistern cycling going
@@ -66,7 +66,7 @@ multisig secret signer key: a0e1217efc88057244e140eeea8d3279582bd540e9d895417e23
 multisig public signer key: 3beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47
 multisig seed: 0200000003000000a0e1217efc88057244e140eeea8d3279582bd540e9d895417e23d47869e29f09aeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302f33b09c561339b36ee80d02d414a5b3f000d7e8884091bfde0cb0101c0c00c073beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb4974d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4
 
-file: tests/multisig-wallet-2.keys
+file: multisig-wallet-2.keys
 password: 123456
 mnemonic seed language: english
 mnemonic seed: hounded touchy august zodiac python sapling females fibula shelter fountain corrode value comb stunning claim auburn voyage winter business awkward gasp hydrogen veteran violin voyage
@@ -88,7 +88,7 @@ multisig secret signer key: 627716ec18a622171e639cdc8349be9e85c24a124f0ab301c763
 multisig public signer key: d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4
 multisig seed: 0200000003000000627716ec18a622171e639cdc8349be9e85c24a124f0ab301c763838b0db4400baeb37cb931ec04d0fabae0164451f268dce585a98c5110b2dac5efe199eb93737da1c35f60753f381504789f6fc6d68d8482403595376d57a0a2355f02ae550b2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08208bd7af61ada518b99a556a3b566070c0a943d739581e57b864cf7a449d57d277a9219302b5d1fd327e50b8dbc7022c1cda05e7642da4f359ea3a38bd290cb1136492ad08d91f8b4ba3bed51cc60d67ba59611dba3b1067264432812aa85f60bc784b95a4eed245dba37aae0e561d5b0ecd5f11d4bc87ea454eb8aa0b75495dc2a5fb49743beb20d20b3dc70e4380324667fd63f0c73cf34ea1a1c6d03ab527e86aa8ab47
 
-file: tests/multisig-wallet-3.keys
+file: multisig-wallet-3.keys
 password: 123456
 mnemonic seed language: english
 mnemonic seed: shackles newt tadpoles gags pencil vowels revamp aided podcast niche foyer hitched cupcake damp mops taken agreed tumbling itinerary mops hospital excess elbow empty revamp
@@ -118,7 +118,7 @@ multisig public view key: 2d90d31aa9903d3e45b17fbc849b6c95e4d08c3694b721219f1a08
 
 Info about 2/2 multisig wallets
 -------------------------------
-file: tests/multisig-wallet-4.keys
+file: multisig-wallet-4.keys
 password: 123456
 mnemonic seed language: english
 mnemonic seed: space android leopard building goldfish because dwelt aloof victim tutor merger viking iris hotel also together relic roped loyal exquisite audio awakened asked blender merger
@@ -133,7 +133,7 @@ multisig public signer key: ce57400743c11f83b09b94ac3be9b23f5b9b756a3472d0fdf129
 multisig info: MultisigV1iQbqPBYtGQ6daPFHgoANND5EAfofFeaivJEfuRpabfDybWmLZJ5cKU6WYKLxzEaPwLGKhuDaB6qUQhLbJ8yTypx7FXx47Zc4uwgaouaxniTnbuaY7rv9mCAA9KVy7Q7UPiarSTn2exrQPti3TPSPmwQu89MTCfkpxGq7pR6bA4KwDZpe
 multisig seed: 0200000002000000367c0246bc866ac8e559cecd9f7890a9d96ec790b336347c5f56f99c007969002297d23c0c69d8cf76464277ceb31e6b0777750308ecfbc49667fd2ebea67bf0bda1410fbb9ad7690e8eddc98d6d77c326cfb6766ad126df4b97a076979a6f02deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388266451d1c9367c0246bc866ac8e559cecd9f7890a9d96ec790b336347c5f56f99c00796900156d6f3561c4ff39deda45d6ef841246a8ef9a4836e4fd103d7fa4bb7feb7cedce57400743c11f83b09b94ac3be9b23f5b9b756a3472d0fdf129f12475a8ebb8
 
-file: tests/multisig-wallet-5.keys
+file: multisig-wallet-5.keys
 password: 123456
 mnemonic seed language: english
 mnemonic seed: spout fierce thaw vials bowling hiding lion left bygones august renting woken foggy prying haystack daytime cogs warped biscuit knife austere altitude dubbed eldest altitude
@@ -155,7 +155,7 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
 |#
 
 (test get-wallet-keys
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
+  (let* ((file (data-file-path "wallet-1.keys"))
          (password "123456")
          (keys (get-wallet-keys file password :chacha8 t)))
     (is (string-equal "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
@@ -166,7 +166,7 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
                       (bytes->hex-string (geta keys :secret-view-key))))
     (is (string-equal "8f5e31dbf970db6784eb5062aded5c80790f5e85667948d0bd7dd269c6722629"
                       (bytes->hex-string (geta keys :public-view-key)))))
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-2.keys"))
+  (let* ((file (data-file-path "wallet-2.keys"))
          (password "bhunjivgy")
          (keys (get-wallet-keys file password)))
     (is (string-equal "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a"
@@ -180,7 +180,7 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
 
 #+sbcl
 (test bruteforce-wallet-keys
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
+  (let* ((file (data-file-path "wallet-1.keys"))
          (keys (bruteforce-wallet-keys file
                                        :threads 4
                                        :characters "0123456789"
@@ -193,7 +193,7 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
                  (geta keys :password)))
     (is (string-equal "f61b1df1b8bc17126ebd95587494fb128a39217dd468e6bea57f2263626c1306"
                       (bytes->hex-string (geta keys :secret-spend-key)))))
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
+  (let* ((file (data-file-path "wallet-1.keys"))
          (keys (bruteforce-wallet-keys file
                                        :threads 2
                                        :characters "abcdefgh"
@@ -203,11 +203,11 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
                                        :suffix "56"
                                        :chacha8 t)))
     (is (null keys)))
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-1.keys"))
-         (dictionary (asdf:system-relative-pathname "monero-tools/tests" "tests/dictionary.txt"))
+  (let* ((file (data-file-path "wallet-1.keys"))
+         (dictionary (data-file-path "dictionary.txt"))
          (keys (bruteforce-wallet-keys file :threads 4 :dictionary-file dictionary)))
     (is (null keys)))
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-2.keys"))
+  (let* ((file (data-file-path "wallet-2.keys"))
          (keys (bruteforce-wallet-keys file
                                        :minimum-length 9
                                        :maximum-length 9
@@ -216,8 +216,8 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
                  (geta keys :password)))
     (is (string-equal "b50710fdc751efdd2602635a0e271d0af6744a2bf58ca15a138dd6ca5ad78d0a"
                       (bytes->hex-string (geta keys :secret-spend-key)))))
-  (let* ((file (asdf:system-relative-pathname "monero-tools/tests" "tests/wallet-2.keys"))
-         (dictionary (asdf:system-relative-pathname "monero-tools/tests" "tests/dictionary.txt"))
+  (let* ((file (data-file-path "wallet-2.keys"))
+         (dictionary (data-file-path "dictionary.txt"))
          (keys (bruteforce-wallet-keys file :threads 4 :dictionary-file dictionary)))
     (is (string= "bhunjivgy"
                  (geta keys :password)))
@@ -372,16 +372,16 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
 
 (test valid-file-signature-p
   (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
-        (file-1 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-1.dat"))
-        (file-2 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-2.dat")))
+        (file-1 (data-file-path "message-1.dat"))
+        (file-2 (data-file-path "message-2.dat")))
     (is-true (valid-file-signature-p file-1 address "SigV1Nh4zdYvLpH4Q8Mgi9CAnf5FgK5ExjEmS1S8cQVAt4Qgs8Jx4GohCV9z8qSgfK1CzymMsCYuBELjjkLGUa6n6tBit"))
     (is-true (valid-file-signature-p file-2 address "SigV1bcxztfKHU3hRaYrEiWjh3s5KCzDwL7bWKDTWzger6dSUD8pSjtkn7G8SpWjK7obDyJMe7JEx7okYYe23JFXWDhm6"))))
 
 (test sign-file
   (let ((secret-spend-key (hex-string->bytes "d551999169b794459b4c8dc7da177067213a0eb2dd75cacf19e0fbc27dfc320e"))
         (address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
-        (file-1 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-1.dat"))
-        (file-2 (asdf:system-relative-pathname "monero-tools/tests" "tests/message-2.dat")))
+        (file-1 (data-file-path "message-1.dat"))
+        (file-2 (data-file-path "message-2.dat")))
     (is-true (valid-file-signature-p file-1 address (sign-file file-1 secret-spend-key)))
     (is-true (valid-file-signature-p file-2 address (sign-file file-2 secret-spend-key)))))
 
@@ -771,10 +771,10 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
         (payment-id "8a17098fde6a8fa13087089bcddf8d49d2a8522c15870ab0a07ce4b162d4a7d5")
         (recipient-name "Alice MONERO")
         (description "A payment to Alice")
-        (file1 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr1.png"))
-        (file2 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr2.png"))
-        (file3 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr3.png"))
-        (file4 (asdf:system-relative-pathname "monero-tools/tests" "tests/qr4.png")))
+        (file1 (data-file-path "qr1.png"))
+        (file2 (data-file-path "qr2.png"))
+        (file3 (data-file-path "qr3.png"))
+        (file4 (data-file-path "qr4.png")))
     (let ((amount 3)
           (result (decode-qr-code file1)))
       (is (string= address (geta result :address)))
@@ -794,7 +794,7 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
   (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
         (recipient-name "Alice MONERO")
         (description "A payment to Alice")
-        (file (asdf:system-relative-pathname "monero-tools/tests" "tests/qr0.png")))
+        (file (data-file-path "qr0.png")))
     (dotimes (i 3)
       (let ((amount (ironclad:strong-random 100))
             (payment-id (ironclad:random-data 32)))
