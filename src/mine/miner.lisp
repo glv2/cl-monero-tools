@@ -23,7 +23,7 @@ The returned value is the new block data containing the found nonces."
         with template = (copy-seq block-template-data)
         for hash = (compute-block-hash-from-data template t)
         until (or *mine-stop* (acceptable-hash-p hash difficulty))
-        do (let ((random-data (ironclad:random-data (+ 4 reserve-size))))
+        do (let ((random-data (random-data (+ 4 reserve-size))))
              (replace template random-data :start1 nonce-offset :end2 4)
              (replace template random-data :start1 reserve-offset :start2 4))
         finally (return (when (acceptable-hash-p hash difficulty)

@@ -43,11 +43,11 @@
              (string-downcase (bytes->hex-string bytes)))
            (digest (string)
              (let ((algo (intern (string-upcase algorithm) :keyword)))
-               (bytes->hex (ironclad:digest-sequence algo (utf-8-string->bytes string))))))
+               (bytes->hex (digest-sequence algo (utf-8-string->bytes string))))))
     (let* ((ha1 (digest (format nil "~a:~a:~a" user realm password)))
            (ha2 (digest (format nil "~a:~a" method uri)))
            (nc "00000001")
-           (cnonce (usb8-array-to-base64-string (ironclad:random-data 16)))
+           (cnonce (usb8-array-to-base64-string (random-data 16)))
            (response (digest (format nil "~a:~a:~a:~a:~a:~a" ha1 nonce nc cnonce qop ha2))))
       (concatenate 'string
                    "Digest username=\"" user "\""

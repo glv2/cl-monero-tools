@@ -56,33 +56,33 @@
              (dynamic-extent bc))
     (dotimes (round 24)
       ;; Theta
-      (ironclad::dotimes-unrolled (i 5)
+      (dotimes-unrolled (i 5)
         (setf (aref bc i) (logxor (aref state i)
                                   (aref state (+ i 5))
                                   (aref state (+ i 10))
                                   (aref state (+ i 15))
                                   (aref state (+ i 20)))))
-      (ironclad::dotimes-unrolled (i 5)
+      (dotimes-unrolled (i 5)
         (setf t1 (logxor (aref bc (mod (+ i 4) 5))
-                         (ironclad::rol64 (aref bc (mod (+ i 1) 5)) 1)))
-        (ironclad::dotimes-unrolled (j 5)
+                         (rol64 (aref bc (mod (+ i 1) 5)) 1)))
+        (dotimes-unrolled (j 5)
           (setf (aref state (+ i (* j 5))) (logxor (aref state (+ i (* j 5))) t1))))
 
       ;; Rho Pi
       (setf t1 (aref state 1))
-      (ironclad::dotimes-unrolled (i 24)
+      (dotimes-unrolled (i 24)
         (setf t2 (aref piln i))
         (setf (aref bc 0) (aref state t2))
-        (setf (aref state t2) (ironclad::rol64 t1 (aref rotc i)))
+        (setf (aref state t2) (rol64 t1 (aref rotc i)))
         (setf t1 (aref bc 0)))
 
       ;; Chi
-      (ironclad::dotimes-unrolled (j 5)
-        (ironclad::dotimes-unrolled (i 5)
+      (dotimes-unrolled (j 5)
+        (dotimes-unrolled (i 5)
           (setf (aref bc i) (aref state (+ i (* j 5)))))
-        (ironclad::dotimes-unrolled (i 5)
+        (dotimes-unrolled (i 5)
           (setf (aref state (+ i (* j 5))) (logxor (aref state (+ i (* j 5)))
-                                                   (logand (ironclad::mod64lognot (aref bc (mod (+ i 1) 5)))
+                                                   (logand (mod64lognot (aref bc (mod (+ i 1) 5)))
                                                            (aref bc (mod (+ i 2) 5)))))))
 
       ;; Iota
@@ -100,7 +100,7 @@
              (type (simple-array (unsigned-byte 8) (144)) tmp)
              (dynamic-extent state tmp))
     (loop until (< data-length 136) do
-      (ironclad::dotimes-unrolled (i 17)
+      (dotimes-unrolled (i 17)
         (setf (aref state i) (logxor (aref state i) (ub64ref/le data start)))
         (incf start 8))
       (decf data-length 136)
@@ -112,11 +112,11 @@
     (fill tmp 0 :start (+ data-length 1))
     (setf (aref tmp 135) (logior (aref tmp 135) #x80))
 
-    (ironclad::dotimes-unrolled (i 17)
+    (dotimes-unrolled (i 17)
       (setf (aref state i) (logxor (aref state i) (ub64ref/le tmp (* i 8)))))
     (keccakf state)
 
     (let ((result (make-array 200 :element-type '(unsigned-byte 8))))
-      (ironclad::dotimes-unrolled (i 25)
+      (dotimes-unrolled (i 25)
         (setf (ub64ref/le result (* i 8)) (aref state i)))
       result)))

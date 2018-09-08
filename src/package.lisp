@@ -31,9 +31,54 @@
                 #:with-foreign-object
                 #:with-foreign-slots)
   (:import-from :ironclad
+                #:digest-sequence
+                #:encrypt
+                #:expt-mod
+                #:integer-to-octets
+                #:make-cipher
+                #:make-digest
+                #:octets-to-integer
+                #:produce-digest
+                #:random-data
+                #:strong-random
                 #:ub32ref/be
                 #:ub32ref/le
-                #:ub64ref/le)
+                #:ub64ref/le
+                #:update-digest
+                ;; Internals
+                #:+ed25519-b+
+                #:+ed25519-i+
+                #:+ed25519-l+
+                #:+ed25519-q+
+                #:aes-round-keys
+                #:allocate-round-keys
+                #:copy-block
+                #:dotimes-unrolled
+                #:ed25519-decode-point
+                #:ed25519-edwards-add
+                #:ed25519-encode-point
+                #:ed25519-inv
+                #:ed25519-point
+                #:ed25519-point-equal
+                #:ed25519-scalar-mult
+                #:first-byte
+                #:fourth-byte
+                #:generate-round-keys-for-encryption
+                #:mod64+
+                #:mod64-
+                #:mod64*
+                #:mod64ash
+                #:mod64lognot
+                #:rol64
+                #:second-byte
+                #:store-words
+                #:Te0
+                #:Te1
+                #:Te2
+                #:Te3
+                #:third-byte
+                #:with-words
+                #:xor-block)
   (:import-from :octet-streams
                 #:get-output-stream-octets
                 #:make-octet-output-stream

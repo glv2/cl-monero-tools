@@ -81,12 +81,12 @@ key made of bytes."
   "Compute the checksum word of a mnemonic SEED."
   (if (/= (length seed) +seed-length+)
       (error "Bad seed length.")
-      (let* ((crc32 (ironclad:make-digest :crc32))
-             (checksum (dotimes (i +seed-length+ (ironclad:produce-digest crc32))
+      (let* ((crc32 (make-digest :crc32))
+             (checksum (dotimes (i +seed-length+ (produce-digest crc32))
                          (let* ((word (aref seed i))
                                 (end (min prefix-length (length word)))
                                 (bytes (utf-8-string->bytes (subseq word 0 end))))
-                           (ironclad:update-digest crc32 bytes))))
+                           (update-digest crc32 bytes))))
              (index (mod (bytes->integer checksum :big-endian t) +seed-length+)))
         (aref seed index))))
 

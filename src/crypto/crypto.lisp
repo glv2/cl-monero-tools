@@ -13,12 +13,12 @@
   (defconstant +key-length+ 32))
 
 (define-constant +one+ (vector 0 1 1 0) :test #'equalp)
-(define-constant +g+ ironclad::+ed25519-b+ :test #'equalp)
+(define-constant +g+ +ed25519-b+ :test #'equalp)
 (let ((h (hex-string->bytes "8b655970153799af2aeadc9ff1add0ea6c7251d54154cfa92c173a0dd39c1f94")))
-  (define-constant +h+ (ironclad::ed25519-decode-point h) :test #'equalp))
-(defconstant +q+ ironclad::+ed25519-q+)
-(defconstant +l+ ironclad::+ed25519-l+)
-(defconstant +i+ ironclad::+ed25519-i+)
+  (define-constant +h+ (ed25519-decode-point h) :test #'equalp))
+(defconstant +q+ +ed25519-q+)
+(defconstant +l+ +ed25519-l+)
+(defconstant +i+ +ed25519-i+)
 (defconstant +a+ 486662)
 (defconstant +fffb1+ 57192811444617977854858898469001663971726463542204390960804972474891788632558)
 (defconstant +fffb2+ 34838897745748397871374137087405348832069628406613012804793447631241588021984)
@@ -26,23 +26,23 @@
 (defconstant +fffb4+ 11880190023474909848668974726140447524736946358411580136929581950889876492678)
 
 (deftype point ()
-  'ironclad::ed25519-point)
+  'ed25519-point)
 
 (defun point->bytes (point)
   "Convert an Ed25519 POINT to a sequence of bytes."
   (check-type point point)
-  (ironclad::ed25519-encode-point point))
+  (ed25519-encode-point point))
 
 (defun bytes->point (bytes)
   "Convert a sequence of BYTES to an Ed25519 point."
   (check-type bytes (octet-vector #.+key-length+))
-  (ironclad::ed25519-decode-point bytes))
+  (ed25519-decode-point bytes))
 
 (defun point+ (p1 p2)
   "Point addition on Ed25519."
   (check-type p1 point)
   (check-type p2 point)
-  (ironclad::ed25519-edwards-add p1 p2))
+  (ed25519-edwards-add p1 p2))
 
 (defun point- (p1 p2)
   "Point subtraction on Ed25519."
@@ -58,13 +58,13 @@
   "Scalar multiplication on Ed25519."
   (check-type point point)
   (check-type n (integer 0))
-  (ironclad::ed25519-scalar-mult point n))
+  (ed25519-scalar-mult point n))
 
 (defun point= (p1 p2)
   "Point equality on Ed25519."
   (check-type p1 point)
   (check-type p2 point)
-  (ironclad::ed25519-point-equal p1 p2))
+  (ed25519-point-equal p1 p2))
 
 (defun point*8 (point)
   "Multiply a POINT by 8."
@@ -80,7 +80,7 @@
 
 (defun random-scalar ()
   "Return a random number modulo +L+."
-  (integer->bytes (ironclad:strong-random +l+) :size +key-length+))
+  (integer->bytes (strong-random +l+) :size +key-length+))
 
 
 ;;; Hash functions
@@ -106,7 +106,7 @@
   (flet ((tree-hash-count (count)
            (ash 1 (1- (integer-length (1- count)))))
          (fast-hash (data start end)
-           (ironclad:digest-sequence :keccak/256 data :start start :end end)))
+           (digest-sequence :keccak/256 data :start start :end end)))
     (cond
       ((= count 1)
        (subseq data 0 +hash-length+))
@@ -151,7 +151,7 @@ as a byte vector."
          (x3 (mod (* x x x) +q+))
          (wx3 (mod (* w x3) +q+))
          (wx7 (mod (* wx3 x3 x) +q+))
-         (res-x (mod (* wx3 (ironclad:expt-mod wx7 (/ (- +q+ 5) 8) +q+)) +q+))
+         (res-x (mod (* wx3 (expt-mod wx7 (/ (- +q+ 5) 8) +q+)) +q+))
          (y (mod (* res-x res-x) +q+))
          (x (mod (* y x) +q+))
          (y (mod (- w x) +q+))
@@ -162,7 +162,7 @@ as a byte vector."
              (let* ((pz (mod (+ z w) +q+))
                     (py (mod (- z w) +q+))
                     (px (mod (* x pz) +q+))
-                    (inv-pz (ironclad::ed25519-inv pz))
+                    (inv-pz (ed25519-inv pz))
                     (pw (mod (* px py inv-pz) +q+))
                     (point (vector px py pz pw)))
                (return-from hash-to-point (point->bytes (point*8 point))))))
@@ -196,11 +196,11 @@ as a byte vector."
   (check-type data octet-vector)
   (check-type key (octet-vector #.+chacha-key-length+))
   (check-type iv (octet-vector #.+chacha-iv-length+))
-  (let ((cipher (ironclad:make-cipher :chacha/8 :key key
-                                                :mode :stream
-                                                :initialization-vector iv))
+  (let ((cipher (make-cipher :chacha/8 :key key
+                                       :mode :stream
+                                       :initialization-vector iv))
         (ciphertext (make-array (length data) :element-type '(unsigned-byte 8))))
-    (ironclad:encrypt cipher data ciphertext)
+    (encrypt cipher data ciphertext)
     ciphertext))
 
 (defun chacha20 (data key iv)
@@ -208,11 +208,11 @@ as a byte vector."
   (check-type data octet-vector)
   (check-type key (octet-vector #.+chacha-key-length+))
   (check-type iv (octet-vector #.+chacha-iv-length+))
-  (let ((cipher (ironclad:make-cipher :chacha :key key
-                                              :mode :stream
-                                              :initialization-vector iv))
+  (let ((cipher (make-cipher :chacha :key key
+                                     :mode :stream
+                                     :initialization-vector iv))
         (ciphertext (make-array (length data) :element-type '(unsigned-byte 8))))
-    (ironclad:encrypt cipher data ciphertext)
+    (encrypt cipher data ciphertext)
     ciphertext))
 
 (defun generate-chacha-key (password &optional (rounds 1))

@@ -40,7 +40,7 @@
   (if varint
       (read-varint bytes :start start)
       (let ((end (or end (length bytes)))
-            (n (ironclad:octets-to-integer bytes :start start :end end :big-endian big-endian)))
+            (n (octets-to-integer bytes :start start :end end :big-endian big-endian)))
         (values n (- end start)))))
 
 (defun integer->bytes (n &key buffer (start 0) size big-endian varint)
@@ -49,8 +49,8 @@ supplied, put the bytes in it starting at index START."
   (let ((bytes (if varint
                    (write-varint n)
                    (if size
-                       (ironclad:integer-to-octets n :big-endian big-endian :n-bits (* 8 size))
-                       (ironclad:integer-to-octets n :big-endian big-endian)))))
+                       (integer-to-octets n :big-endian big-endian :n-bits (* 8 size))
+                       (integer-to-octets n :big-endian big-endian)))))
     (if buffer
         (replace buffer bytes :start1 start)
         bytes)))

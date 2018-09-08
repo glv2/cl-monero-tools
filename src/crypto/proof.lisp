@@ -16,7 +16,7 @@ made."
   (check-type transaction-secret-key (octet-vector #.+key-length+))
   (let* ((a (bytes->point recipient-public-view-key))
          (s (bytes->integer transaction-secret-key))
-         (k (1+ (ironclad:strong-random (1- +l+))))
+         (k (1+ (strong-random (1- +l+))))
          (x (point* +g+ k))
          (y (point* a k))
          (c-data (hash-to-scalar (concatenate 'octet-vector
@@ -65,7 +65,7 @@ signed along with the TRANSACTION-HASH."
          (b (bytes->point public-spend-key))
          (e (point* p a))
          (e-data (point->bytes e))
-         (k (1+ (ironclad:strong-random (1- +l+))))
+         (k (1+ (strong-random (1- +l+))))
          (l1 (point* b k))
          (l2 (point* p k))
          (c-data (hash-to-scalar (concatenate 'octet-vector
@@ -125,7 +125,7 @@ signed along with the TRANSACTION-HASH."
          (b (bytes->point public-spend-key))
          (e (point* a s))
          (e-data (point->bytes e)) ; TODO: check validity of shared secret using secret-view-key
-         (k (1+ (ironclad:strong-random (1- +l+))))
+         (k (1+ (strong-random (1- +l+))))
          (l1 (point* b k))
          (l2 (point* a k))
          (c-data (hash-to-scalar (concatenate 'octet-vector
