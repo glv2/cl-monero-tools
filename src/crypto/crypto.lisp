@@ -97,6 +97,9 @@
 (defun slow-hash (data &optional (variant *cryptonight-variant*))
   "Slow hash function (CryptoNight) for the Cryptonote protocol."
   (check-type data octet-vector)
+  (check-type variant fixnum)
+  (unless (<= 0 variant 2)
+    (error "Only Cryptonight variants 0, 1 and 2 are supported."))
   (cryptonight data variant))
 
 (defun tree-hash (data count)
