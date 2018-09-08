@@ -105,9 +105,17 @@
                   (multiple-value-bind (q r) (truncate dividend divisor)
                     (declare (type (unsigned-byte 64) q r))
                     (setf division-result (mod64+ (logand q #xffffffff) (mod64ash r 32))))
-                  (let ((sqrt-input (mod64+ (ub64ref/le c1 0) division-result)))
-                    (declare (type (unsigned-byte 64) sqrt-input))
-                    (setf sqrt-result (floor (- (* 2 (sqrt (+ sqrt-input 18446744073709551616.0d0)))
+                  (let* ((sqrt-input (mod64+ (ub64ref/le c1 0) division-result))
+                         (t0 (logand sqrt-input #xffffffff))
+                         (t1 (ash sqrt-input -32)))
+                    (declare (type (unsigned-byte 64) sqrt-input)
+                             (type (unsigned-byte 32) t0 t1))
+                    ;; On SBCL x86-64, converting sqrt-input to a double-float
+                    ;; conses a bignum, which slows down the loop a lot.
+                    ;; Separating it in two parts and making conversions of
+                    ;; smaller integers solves this problem.
+                    (setf sqrt-result (floor (- (* 2.0d0 (sqrt (+ t0 (* t1 4294967296.0d0)
+                                                                  18446744073709551616.0d0)))
                                                 8589934592.0d0)))
                     (let* ((s (ash sqrt-result -1))
                            (b (logand sqrt-result 1))
