@@ -33,14 +33,15 @@
                                            (:file "transaction")))
                              (:module "crypto"
                               :depends-on ("package" "utils")
-                              :components ((:file "blake")
+                              :components ((:file "asm-sbcl-x86-64")
+                                           (:file "blake")
                                            (:file "crypto" :depends-on ("cryptonight" "keccak"))
                                            (:file "cryptonight" :depends-on ("blake" "keccak" "pseudo-aes"))
                                            (:file "keccak")
                                            (:file "key" :depends-on ("crypto"))
                                            (:file "multisig" :depends-on ("crypto"))
                                            (:file "proof" :depends-on ("crypto" "key"))
-                                           (:file "pseudo-aes")
+                                           (:file "pseudo-aes" :depends-on ("asm-sbcl-x86-64"))
                                            (:file "signature" :depends-on ("crypto" "key"))))
                              (:module "mine"
                               :depends-on ("blockchain" "package")
