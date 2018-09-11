@@ -20,6 +20,9 @@
           (when description
             (list (cons "description" description)))))
 
+(defjsonrpc close-wallet ("close_wallet")
+  "Close the current wallet.")
+
 (defjsonrpc create-account ("create_account" &key label)
   "Create a new account."
   (when label
