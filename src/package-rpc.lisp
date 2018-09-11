@@ -13,6 +13,9 @@
                 #:with-lock-held)
   (:import-from :base64
                 #:usb8-array-to-base64-string)
+  (:import-from :ironclad
+                #:digest-sequence
+                #:random-data)
   (:import-from :monero-tools
                 #:*mine-lock*
                 #:bytes->hex-string
