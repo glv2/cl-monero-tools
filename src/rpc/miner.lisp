@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-rpc)
+(in-package :monero-tools-daemon-rpc)
 
 
 (defparameter *mine-refresh-delay* 10)

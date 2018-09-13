@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-rpc)
+(in-package :monero-tools-daemon-rpc)
 
 
 ;;; Specs in https://getmonero.org/resources/developer-guides/daemon-rpc.html

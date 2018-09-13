@@ -203,9 +203,11 @@ are in the *:monero-tools* package.
 * RPC tools
 
 After loading the *monero-tools-rpc* system, the following functions and
-variables are in the *:monero-tools-rpc* package.
+variables are available.
 
 ** Basic remote procedure call
+
+The basic RPC functions and variables are in the *:monero-tools-rpc* package.
 
  - =*rpc-host*=
  - =*rpc-password*=
@@ -216,6 +218,10 @@ variables are in the *:monero-tools-rpc* package.
  - zmq-json-rpc
 
 ** Calling *monerod*
+
+The functions and variables for daemon RPCs are in the
+*:monero-tools-daemon-rpc* package.
+
 *** HTTP JSON RPCs
 
 The following functions are thin wrappers for the HTTP JSON RPCs of *monerod*.
@@ -291,7 +297,20 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - zmq-get-info
  - zmq-get-transactions
 
+*** Custom RPCs
+**** Mining
+
+ - mine-block
+
+**** Wallet
+
+ - transaction-history
+
 ** Calling *monero-wallet-rpc*
+
+The functions and variables for wallet RPCs are in the
+*:monero-tools-wallet-rpc* package.
+
 *** HTTP JSON RPCs
 
 The following functions are thin wrappers for the HTTP JSON RPCs of
@@ -373,15 +392,6 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
  - transfer-split
  - untag-accounts
  - verify
-
-** Custom RPCs
-*** Mining
-
- - mine-block
-
-*** Wallet
-
- - transaction-history
 
 * Tests
 

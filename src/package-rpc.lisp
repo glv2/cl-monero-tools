@@ -6,16 +6,35 @@
 
 (defpackage :monero-tools-rpc
   (:use :cl)
-  (:import-from :bordeaux-threads
-                #:join-thread
-                #:make-lock
-                #:make-thread
-                #:with-lock-held)
   (:import-from :base64
                 #:usb8-array-to-base64-string)
   (:import-from :ironclad
                 #:digest-sequence
                 #:random-data)
+  (:import-from :monero-tools
+                #:bytes->hex-string
+                #:decode-json-from-string
+                #:deserialize-from-binary-storage
+                #:encode-json-to-string
+                #:geta
+                #:serialize-to-binary-storage
+                #:string->bytes
+                #:utf-8-string->bytes)
+  (:import-from :split-sequence
+                #:split-sequence)
+  (:export
+   #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
+   #:rpc #:json-rpc
+   #:defrpc #:defbinrpc #:defrawrpc #:defjsonrpc
+   #:zmq-json-rpc))
+
+(defpackage :monero-tools-daemon-rpc
+  (:use :cl :monero-tools-rpc)
+  (:import-from :bordeaux-threads
+                #:join-thread
+                #:make-lock
+                #:make-thread
+                #:with-lock-held)
   (:import-from :monero-tools
                 #:*mine-lock*
                 #:bytes->hex-string
@@ -23,7 +42,6 @@
                 #:bytes->string
                 #:compute-key-image
                 #:compute-miner-transaction-hash-from-data
-                #:decode-address
                 #:decode-json-from-string
                 #:decrypt-amount
                 #:derive-key
@@ -31,21 +49,14 @@
                 #:derive-output-secret-key
                 #:derive-output-secret-subkey
                 #:deserialize-block
-                #:deserialize-from-binary-storage
                 #:deserialize-transaction
-                #:encode-json-to-string
                 #:geta
                 #:hex-string->bytes
                 #:miner
                 #:output-public-key->public-spend-subkey
-                #:serialize-to-binary-storage
                 #:spent-key-images
-                #:string->bytes
-                #:utf-8-string->bytes)
-  (:import-from :split-sequence
-                #:split-sequence)
+                #:string->bytes)
   (:export
-   ;; daemon
    #:flush-txpool
    #:get-alternate-chain
    #:get-bans
@@ -109,14 +120,11 @@
    #:transaction-history
 
    ;; mine
-   #:mine-block
+   #:mine-block))
 
-   ;; rpc
-   #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
-   #:rpc #:json-rpc
-   #:zmq-json-rpc
-
-   ;; wallet
+(defpackage :monero-tools-wallet-rpc
+  (:use :cl :monero-tools-rpc)
+  (:export
    #:add-address-book
    #:change-wallet-password
    #:check-reserve-proof

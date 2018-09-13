@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-rpc)
+(in-package :monero-tools-daemon-rpc)
 
 
 (defun transaction-history (subaddress-indexes-table secret-view-key &key secret-spend-key key-images (start-height 0) end-height verbose)
