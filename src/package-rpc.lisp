@@ -118,44 +118,73 @@
 
    ;; wallet
    #:add-address-book
+   #:change-wallet-password
+   #:check-reserve-proof
+   #:check-spend-proof
+   #:check-tx-key
+   #:check-tx-proof
+   #:close-wallet
    #:create-account
    #:create-address
    #:create-wallet
    #:delete-address-book
    #:export-key-images
+   #:export-multisig-info
+   #:export-outputs
+   #:finalize-multisig
    #:get-account-tags
    #:get-accounts
    #:get-address
    #:get-address-book
+   #:get-address-index
+   #:get-attribute
    #:get-balance
    #:get-bulk-payments
    #:get-height
    #:get-languages
    #:get-payments
+   #:get-reserve-proof
+   #:get-spend-proof
    #:get-transfer-by-txid
    #:get-transfers
+   #:get-tx-key
    #:get-tx-notes
+   #:get-tx-proof
+   #:get-version
    #:import-key-images
+   #:import-multisig-info
+   #:import-outputs
    #:incoming_transfers
+   #:is-multisig
    #:label-account
    #:label-address
    #:make-integrated-address
+   #:make-multisig
    #:make-uri
    #:open-wallet
    #:parse-uri
+   #:prepare-multisig
    #:query-key
+   #:refresh
+   #:relay-tx
    #:rescan-blockchain
    #:rescan-spent
    #:set-account-tag-description
+   #:set-attribute
    #:set-tx-notes
    #:sign
+   #:sign-multisig
+   #:sign-transfer
    #:split-integrated-address
    #:start-mining
    #:stop-mining
    #:stop-wallet
    #:store
+   #:submit-multisig
+   #:submit-transfer
    #:sweep-all
    #:sweep-dust
+   #:sweep-single
    #:tag-accounts
    #:transfer
    #:transfer-split
