@@ -334,7 +334,7 @@ at START-HEIGHT."
   "Set the daemon log level."
   (list (cons "level" level)))
 
-(defrpc start-mining-daemon ("start_mining" miner-address thread-count background-mining ignore-battery)
+(defrpc start-mining ("start_mining" miner-address thread-count background-mining ignore-battery)
   "Start mining in the daemon."
   (list (cons "miner_address" miner-address)
         (cons "threads_count" thread-count)
@@ -344,7 +344,7 @@ at START-HEIGHT."
 (defrpc stop-daemon ("stop_daemon")
   "Send a command to the daemon to safely disconnect and shut down.")
 
-(defrpc stop-mining-daemon ("stop_mining")
+(defrpc stop-mining ("stop_mining")
   "Stop mining in the daemon.")
 
 (defrpc update ("update" command &key path)

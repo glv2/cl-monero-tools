@@ -286,9 +286,9 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - set-log-categories
  - set-log-hashrate
  - set-log-level
- - start-mining-daemon
+ - start-mining
  - stop-daemon
- - stop-mining-daemon
+ - stop-mining
  - update
 
 *** ZeroMQ RPCs

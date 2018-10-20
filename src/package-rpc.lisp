@@ -107,9 +107,9 @@
    #:set-log-categories
    #:set-log-hashrate
    #:set-log-level
-   #:start-mining-daemon
+   #:start-mining
    #:stop-daemon
-   #:stop-mining-daemon
+   #:stop-mining
    #:update
 
    #:zmq-get-block
