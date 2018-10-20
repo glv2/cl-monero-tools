@@ -629,22 +629,16 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
 
 (test received-amount
   (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
-         (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
-         (transaction-data (load-hex-data "txn-26b2912f6cd5891ca3913c2292bd3dd372e4508dd06f3799d5c20b1a589c8656.hex"))
-         (transaction (deserialize-transaction (hex-string->bytes transaction-data) 0)))
-    (is (= 494682358388110
-           (received-amount transaction address (hex-string->bytes secret-view-key)))))
-  (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
          (subaddress-1 "Bcni4ZAM42o4QcYG7fCFwX8GijijG43d5YnafUhSp7D8iXZ5K4Qxbr4SEKZiHqfFFnDbn6Eq5MDY6iMPhtDJb6sSEqxHNSV")
          (subaddress-2 "BfZQpPkqnQkTJCmge6mpLjdQ4DRsjd2MiTAnXEywr8XRR1NbDoKgKqsFsUDZrABqJv6TZrQKnMwfTJApGMoHREXLRJJsLHT")
          (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
-         (transaction-data (load-hex-data "txn-0af985492c858bfa95957c9079816f9fba01320d7f8d47b9a7fe8ca246a2f50b.hex"))
+         (transaction-data (load-hex-data "txn-55b0833a74d6b933d3c97a74bebd2b2d0926e8a091a51e170fa5e7ae26019a9b.hex"))
          (transaction (deserialize-transaction (hex-string->bytes transaction-data) 0)))
     (is (= 11000000000000
            (received-amount transaction subaddress-1 (hex-string->bytes secret-view-key))))
     (is (= 17000000000000
            (received-amount transaction subaddress-2 (hex-string->bytes secret-view-key))))
-    (is (= 338997666200000
+    (is (= 11603063785325
            (received-amount transaction address (hex-string->bytes secret-view-key))))))
 
 (test prove-payment
