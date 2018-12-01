@@ -7,6 +7,16 @@
 (in-package :monero-tools)
 
 
+(define-constant +mainnet-genesis-hash+
+    #.(hex-string->bytes "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3")
+  :test #'equalp)
+(define-constant +testnet-genesis-hash+
+    #.(hex-string->bytes "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b")
+  :test #'equalp)
+(define-constant +stagenet-genesis-hash+
+    #.(hex-string->bytes "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb")
+  :test #'equalp)
+
 (defun transaction-hashes (block)
   "Return the hashes of the transactions in a BLOCK (miner transaction
 included)."

@@ -58,6 +58,7 @@
 
 
 ;;; Portable storage
+
 (define-constant +portable-storage-signature-a+ #(1 17 1 1) :test #'equalp)
 (define-constant +portable-storage-signature-b+ #(1 1 2 1) :test #'equalp)
 (defconstant +portable-storage-format-version+ 1)
