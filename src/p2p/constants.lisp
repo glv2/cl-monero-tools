@@ -15,13 +15,13 @@
 (defconstant +levin-packet-response+ 2)
 (defconstant +levin-default-max-packet-size+ 100000000)
 (defconstant +levin-protocol-version-1+ 1)
-(defconstant +levin-error-connection+ -1)
-(defconstant +levin-error-connection-not-found+ -2)
-(defconstant +levin-error-connection-destroyed+ -3)
-(defconstant +levin-error-connection-timedout+ -4)
-(defconstant +levin-error-connection-no-duplex-protocol+ -5)
-(defconstant +levin-error-connection-handler-not-defined+ -6)
-(defconstant +levin-error-format+ -7)
+(defconstant +levin-error-connection+ (logand -1 #xffffffff))
+(defconstant +levin-error-connection-not-found+ (logand -2 #xffffffff))
+(defconstant +levin-error-connection-destroyed+ (logand -3 #xffffffff))
+(defconstant +levin-error-connection-timedout+ (logand -4 #xffffffff))
+(defconstant +levin-error-connection-no-duplex-protocol+ (logand -5 #xffffffff))
+(defconstant +levin-error-connection-handler-not-defined+ (logand -6 #xffffffff))
+(defconstant +levin-error-format+ (logand -7 #xffffffff))
 
 
 ;;; Peer-to-peer

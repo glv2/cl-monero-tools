@@ -9,9 +9,12 @@
   (:import-from :alexandria
                 #:define-constant)
   (:import-from :ironclad
-                #:random-data)
+                #:random-bits)
   (:import-from :monero-tools
                 #:+mainnet-genesis-hash+
+                #:bytes->integer
+                #:bytes->string
+                #:deserialize-from-binary-storage
                 #:integer->bytes
                 #:octet-vector
                 #:serialize-to-binary-storage))
