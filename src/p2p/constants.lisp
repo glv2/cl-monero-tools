@@ -10,11 +10,15 @@
 ;;; Levin protocol
 
 (defconstant +levin-ok+ 0)
-(defconstant +levin-signature+ #x0101010101012101)
+(define-constant +levin-signature+
+    (integer->bytes #x0101010101012101 :size 8)
+  :test #'equalp)
 (defconstant +levin-packet-request+ 1)
 (defconstant +levin-packet-response+ 2)
 (defconstant +levin-default-max-packet-size+ 100000000)
+(defconstant +levin-protocol-version-0+ 0)
 (defconstant +levin-protocol-version-1+ 1)
+(defconstant +levin-ok+ 0)
 (defconstant +levin-error-connection+ (logand -1 #xffffffff))
 (defconstant +levin-error-connection-not-found+ (logand -2 #xffffffff))
 (defconstant +levin-error-connection-destroyed+ (logand -3 #xffffffff))

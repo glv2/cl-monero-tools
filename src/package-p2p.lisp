@@ -12,9 +12,11 @@
                 #:random-bits)
   (:import-from :monero-tools
                 #:+mainnet-genesis-hash+
+                #:geta
                 #:bytes->integer
                 #:bytes->string
                 #:deserialize-from-binary-storage
                 #:integer->bytes
                 #:octet-vector
-                #:serialize-to-binary-storage))
+                #:serialize-to-binary-storage
+                #:string->bytes))
