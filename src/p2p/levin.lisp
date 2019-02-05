@@ -34,9 +34,9 @@
           (return-code (bytes->integer header :start 21 :end 25))
           (flags (bytes->integer header :start 25 :end 29))
           (protocol-version (bytes->integer header :start 29 :end 33)))
-      (unless (and (<= payload-length +levin-default-max-packet-size+)
+      (unless (and (<= payload-length +levin-max-packet-size+)
                    (= protocol-version +levin-protocol-version-1+))
-        (error "Bad packet header"))
+        (error "Bad packet"))
       (let ((payload (coerce (loop repeat payload-length
                                    for b = (read-byte stream nil nil)
                                    while b
