@@ -9,7 +9,7 @@
 
 (defun cryptonight (data variant height)
   (declare (type (simple-array (unsigned-byte 8) (*)) data)
-           (type fixnum variant)
+           (type fixnum variant height)
            (optimize (speed 3) (space 0) (safety 0) (debug 0)))
   (when (and (= variant 1) (< (length data) 43))
     (error "Cryptonight variant 1 requires at least 43 bytes of data."))
