@@ -2,7 +2,7 @@
 
 This is a Common Lisp toolbox to work with the Monero cryptocurrency.
 
-The *monero-tools* system contains basic tools that can be use offline. The
+The *monero-tools* system contains basic tools that can be used offline. The
 *monero-tools-rpc* system contains tools requiring a running *monerod* or/and
 *monero-wallet-rpc* daemon to connect to.
 
