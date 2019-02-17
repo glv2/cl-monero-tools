@@ -215,7 +215,7 @@
                      #'deserialize-range-proof)
        (multilayered-group-signatures #'deserialize-multilayered-group-signatures)))))
 
-(defun deserialize-rct-bulletproof (data offset ring-sizes inputs-size)
+(defun deserialize-rct-bulletproof (data offset ring-sizes inputs-size type)
   (labels ((deserialize-bulletproof (data offset)
              (deserialize data offset
                ((a1 #'deserialize-key)
@@ -247,8 +247,10 @@
                    (setf (aref result i) e)
                    (incf total-size s)))
                (values result total-size))))
-    (let* ((s0 4)
-           (bulletproofs-size (bytes->integer data :start offset :end (+ offset s0))))
+    (multiple-value-bind (bulletproofs-size s0)
+        (if (= type +rct-type-bulletproof-2+)
+            (deserialize-integer data offset)
+            (values (bytes->integer data :start offset :end (+ offset 4)) 4))
       (multiple-value-bind (rct-signature-prunable s1)
           (deserialize data (+ offset s0)
             ((bulletproofs #'deserialize-custom-vector bulletproofs-size
@@ -296,7 +298,20 @@
                 (output-public-keys #'deserialize-custom-vector outputs-size
                                     #'deserialize-key)
                 (rct-signature-prunable #'deserialize-rct-bulletproof
-                                        ring-sizes inputs-size)))
+                                        ring-sizes inputs-size type)))
+           (values (acons :type type signature)
+                   (+ 1 size))))
+
+        ((#.+rct-type-bulletproof-2+)
+         (multiple-value-bind (signature size)
+             (deserialize data (+ offset 1)
+               ((fee #'deserialize-integer)
+                (ecdh-info #'deserialize-custom-vector outputs-size
+                           #'deserialize-bytes 8)
+                (output-public-keys #'deserialize-custom-vector outputs-size
+                                    #'deserialize-key)
+                (rct-signature-prunable #'deserialize-rct-bulletproof
+                                        ring-sizes inputs-size type)))
            (values (acons :type type signature)
                    (+ 1 size))))))))
 

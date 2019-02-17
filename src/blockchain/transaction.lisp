@@ -28,8 +28,8 @@ alist format."
                                               ((#.+rct-type-full+ #.+rct-type-simple+)
                                                (serialize-rct-range-proof nil prunable))
 
-                                              ((#.+rct-type-bulletproof+)
-                                               (serialize-rct-bulletproof nil prunable))))
+                                              ((#.+rct-type-bulletproof+ #.+rct-type-bulletproof-2+)
+                                               (serialize-rct-bulletproof nil prunable rct-type))))
                                  (make-array +hash-length+
                                              :element-type '(unsigned-byte 8)
                                              :initial-element 0))))

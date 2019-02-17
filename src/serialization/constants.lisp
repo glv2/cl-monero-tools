@@ -32,6 +32,7 @@
 (defconstant +rct-type-full+ 1)
 (defconstant +rct-type-simple+ 2)
 (defconstant +rct-type-bulletproof+ 3)
+(defconstant +rct-type-bulletproof-2+ 4)
 (defconstant +rct-key-tag+ 144)
 (defconstant +rct-key64-tag+ 145)
 (defconstant +rct-key-vector-tag+ 146)

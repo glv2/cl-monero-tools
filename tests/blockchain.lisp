@@ -20,7 +20,8 @@
         (rct-full (load-hex-data "txn-140564273396a16135ba0867ded6b7981fdc28bda45c62f993dc51ff26cfb2e5.hex"))
         (rct-simple (load-hex-data "txn-467f1914b3f5f4eb52dda02bfd0b70b89722b88063f40889bfba46d3ec78de80.hex"))
         (rct-bulletproof-1 (load-hex-data "txn-dced075926833171dd9bd9684949aef89451a54dece9e29a84bd843bf86f09dd.hex"))
-        (rct-bulletproof-2 (load-hex-data "txn-cf43b200852e0691161e01448e1bcef9595d113b25a9e21342854a4cd7682676.hex")))
+        (rct-bulletproof-2 (load-hex-data "txn-cf43b200852e0691161e01448e1bcef9595d113b25a9e21342854a4cd7682676.hex"))
+        (rct-bulletproof-3 (load-hex-data "txn-3c24dc3ec70015789d965a8e516383bf7866e9a46e7665c962ff990e216f51b2.hex")))
     (flet ((compute-hash/hex (transaction)
              (let ((transaction-data (hex-string->bytes transaction)))
                (bytes->hex-string (compute-transaction-hash-from-data transaction-data)))))
@@ -37,7 +38,9 @@
       (is (string-equal "dced075926833171dd9bd9684949aef89451a54dece9e29a84bd843bf86f09dd"
                         (compute-hash/hex rct-bulletproof-1)))
       (is (string-equal "cf43b200852e0691161e01448e1bcef9595d113b25a9e21342854a4cd7682676"
-                        (compute-hash/hex rct-bulletproof-2))))))
+                        (compute-hash/hex rct-bulletproof-2)))
+      (is (string-equal "3c24dc3ec70015789d965a8e516383bf7866e9a46e7665c962ff990e216f51b2"
+                        (compute-hash/hex rct-bulletproof-3))))))
 
 (test compute-miner-transaction-hash-from-data
   (let ((block-400000 (load-hex-data "blk-400000.hex"))

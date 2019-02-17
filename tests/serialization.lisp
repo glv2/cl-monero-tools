@@ -23,7 +23,8 @@
         (rct-payment-id (load-hex-data "txn-0a989c65415dac7840cd890dd5c514b7bfaadf4041a9144e734aef30e3ffa5ec.hex"))
         (rct-encrypted-payment-id (load-hex-data "txn-dcf6d169682f243ab25a627d5540882c39fe376526184fa356ee086a68ae164e.hex"))
         (rct-bulletproof-1 (load-hex-data "txn-dced075926833171dd9bd9684949aef89451a54dece9e29a84bd843bf86f09dd.hex"))
-        (rct-bulletproof-2 (load-hex-data "txn-cf43b200852e0691161e01448e1bcef9595d113b25a9e21342854a4cd7682676.hex")))
+        (rct-bulletproof-2 (load-hex-data "txn-cf43b200852e0691161e01448e1bcef9595d113b25a9e21342854a4cd7682676.hex"))
+        (rct-bulletproof-3 (load-hex-data "txn-3c24dc3ec70015789d965a8e516383bf7866e9a46e7665c962ff990e216f51b2.hex")))
     (flet ((reserialize/hex (transaction)
              (let ((deserialized (deserialize-transaction (hex-string->bytes transaction) 0)))
                (bytes->hex-string (serialize-transaction nil deserialized)))))
@@ -36,7 +37,8 @@
       (is (string-equal rct-payment-id (reserialize/hex rct-payment-id)))
       (is (string-equal rct-encrypted-payment-id (reserialize/hex rct-encrypted-payment-id)))
       (is (string-equal rct-bulletproof-1 (reserialize/hex rct-bulletproof-1)))
-      (is (string-equal rct-bulletproof-2 (reserialize/hex rct-bulletproof-2))))))
+      (is (string-equal rct-bulletproof-2 (reserialize/hex rct-bulletproof-2)))
+      (is (string-equal rct-bulletproof-3 (reserialize/hex rct-bulletproof-3))))))
 
 (test block
   (let ((block-400000 (load-hex-data "blk-400000.hex"))

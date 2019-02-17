@@ -194,7 +194,7 @@
          (multilayered-group-signatures #'serialize-custom-vector
                                         #'serialize-multilayered-group-signature))))))
 
-(defun serialize-rct-bulletproof (stream object)
+(defun serialize-rct-bulletproof (stream object type)
   (flet ((serialize-bulletproof (stream object)
            (serialize stream object
              ((a1 #'serialize-key)
@@ -216,7 +216,9 @@
     (when object
       (let ((bulletproofs-size (length (geta object :bulletproofs)))
             (result (or stream (make-octet-output-stream))))
-        (write-sequence (integer->bytes bulletproofs-size :size 4) result)
+        (if (= type +rct-type-bulletproof-2+)
+            (serialize-integer result bulletproofs-size)
+            (write-sequence (integer->bytes bulletproofs-size :size 4) result))
         (serialize result object
           ((bulletproofs #'serialize-custom-vector #'serialize-bulletproof)
            (multilayered-group-signatures #'serialize-custom-vector
@@ -255,7 +257,14 @@
            ((fee #'serialize-integer)
             (ecdh-info #'serialize-custom-vector #'serialize-ecdh-tuple)
             (output-public-keys #'serialize-custom-vector #'serialize-key)
-            (rct-signature-prunable #'serialize-rct-bulletproof)))))
+            (rct-signature-prunable #'serialize-rct-bulletproof type))))
+
+        ((#.+rct-type-bulletproof-2+)
+         (serialize result object
+           ((fee #'serialize-integer)
+            (ecdh-info #'serialize-custom-vector #'serialize-bytes)
+            (output-public-keys #'serialize-custom-vector #'serialize-key)
+            (rct-signature-prunable #'serialize-rct-bulletproof type)))))
       (unless stream
         (prog1 (get-output-stream-octets result)
           (close result))))))
