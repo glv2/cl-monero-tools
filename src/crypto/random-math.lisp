@@ -72,6 +72,30 @@
         (#.+ret+ (return)))))
   (values))
 
+(defun compile-random-math (code)
+  (declare (type (simple-array instruction (*)) code)
+           (optimize (speed 3) (space 0) (safety 0) (debug 0)))
+  (let* ((forms (loop for op across code
+                      until (= (instruction-opcode op) #.+ret+)
+                      collect (let* ((opcode (instruction-opcode op))
+                                     (src-index (instruction-src-index op))
+                                     (dst-index (instruction-dst-index op))
+                                     (src `(aref r ,src-index))
+                                    (dst `(aref r ,dst-index)))
+                                (declare (type (unsigned-byte 8) opcode src-index dst-index))
+                                (case opcode
+                                  (#.+mul+ `(setf ,dst (mod32* ,dst ,src)))
+                                  (#.+add+ `(setf ,dst (mod32+ ,dst (mod32+ ,(instruction-c op) ,src))))
+                                  (#.+sub+ `(setf ,dst (mod32- ,dst ,src)))
+                                  (#.+ror+ `(setf ,dst (ror32 ,dst (logand ,src #x1f))))
+                                  (#.+rol+ `(setf ,dst (rol32 ,dst (logand ,src #x1f))))
+                                  (#.+xor+ `(setf ,dst (logxor ,dst ,src))))))))
+    (compile nil `(lambda (r)
+                    (declare (type (simple-array (unsigned-byte 32) (9)) r)
+                             (optimize (speed 3) (space 0) (safety 0) (debug 0)))
+                    ,@forms
+                    (values)))))
+
 (declaim (inline random-math-init))
 (defun random-math-init (code height)
   (declare (type (simple-array instruction (*)) code)
