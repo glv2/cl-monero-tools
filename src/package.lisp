@@ -64,12 +64,17 @@
                 #:first-byte
                 #:fourth-byte
                 #:generate-round-keys-for-encryption
+                #:mod32+
+                #:mod32-
+                #:mod32*
                 #:mod64+
                 #:mod64-
                 #:mod64*
                 #:mod64ash
                 #:mod64lognot
+                #:rol32
                 #:rol64
+                #:ror32
                 #:second-byte
                 #:store-words
                 #:Te0
@@ -94,7 +99,7 @@
    #:compute-transaction-tree-hash
 
    ;; crypto
-   #:*cryptonight-variant*
+   #:*cryptonight-variant* #:*cryptonight-height*
    #:fast-hash #:slow-hash #:tree-hash
    #:chacha8 #:chacha20 #:generate-chacha-key
    #:generate-keys #:generate-secret-key

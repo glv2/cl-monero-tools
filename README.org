@@ -75,6 +75,7 @@ are in the *:monero-tools* package.
 
 ** Cryptography
 
+ - =*cryptonight-height*=
  - =*cryptonight-variant*=
  - chacha8
  - chacha20
