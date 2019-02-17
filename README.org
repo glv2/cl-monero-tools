@@ -60,7 +60,7 @@ successfully but some functions will not work.
 * Basic tools
 
 After loading the *monero-tools* system, the following functions and variables
-are in the *:monero-tools* package.
+are in the *monero-tools* package.
 
 ** Blockchain
 
@@ -208,7 +208,7 @@ variables are available.
 
 ** Basic remote procedure call
 
-The basic RPC functions and variables are in the *:monero-tools-rpc* package.
+The basic RPC functions and variables are in the *monero-tools-rpc* package.
 
  - =*rpc-host*=
  - =*rpc-password*=
@@ -221,7 +221,7 @@ The basic RPC functions and variables are in the *:monero-tools-rpc* package.
 ** Calling *monerod*
 
 The functions and variables for daemon RPCs are in the
-*:monero-tools-daemon-rpc* package.
+*monero-tools-daemon-rpc* package.
 
 *** HTTP JSON RPCs
 
@@ -310,7 +310,7 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 ** Calling *monero-wallet-rpc*
 
 The functions and variables for wallet RPCs are in the
-*:monero-tools-wallet-rpc* package.
+*monero-tools-wallet-rpc* package.
 
 *** HTTP JSON RPCs
 
