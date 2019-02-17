@@ -75,26 +75,52 @@
 (defun compile-random-math (code)
   (declare (type (simple-array instruction (*)) code)
            (optimize (speed 3) (space 0) (safety 0) (debug 0)))
-  (let* ((forms (loop for op across code
-                      until (= (instruction-opcode op) #.+ret+)
-                      collect (let* ((opcode (instruction-opcode op))
-                                     (src-index (instruction-src-index op))
-                                     (dst-index (instruction-dst-index op))
-                                     (src `(aref r ,src-index))
-                                    (dst `(aref r ,dst-index)))
-                                (declare (type (unsigned-byte 8) opcode src-index dst-index))
-                                (case opcode
-                                  (#.+mul+ `(setf ,dst (mod32* ,dst ,src)))
-                                  (#.+add+ `(setf ,dst (mod32+ ,dst (mod32+ ,(instruction-c op) ,src))))
-                                  (#.+sub+ `(setf ,dst (mod32- ,dst ,src)))
-                                  (#.+ror+ `(setf ,dst (ror32 ,dst (logand ,src #x1f))))
-                                  (#.+rol+ `(setf ,dst (rol32 ,dst (logand ,src #x1f))))
-                                  (#.+xor+ `(setf ,dst (logxor ,dst ,src))))))))
-    (compile nil `(lambda (r)
-                    (declare (type (simple-array (unsigned-byte 32) (9)) r)
-                             (optimize (speed 3) (space 0) (safety 0) (debug 0)))
-                    ,@forms
-                    (values)))))
+  (flet ((choose-register (index)
+           (case index
+             (0 'r0)
+             (1 'r1)
+             (2 'r2)
+             (3 'r3)
+             (4 'r4)
+             (5 'r5)
+             (6 'r6)
+             (7 'r7)
+             (8 'r8))))
+    (let ((forms (loop for op across code
+                       until (= (instruction-opcode op) #.+ret+)
+                       collect (let ((src (choose-register (instruction-src-index op)))
+                                     (dst (choose-register (instruction-dst-index op))))
+                                 (case (instruction-opcode op)
+                                   (#.+mul+ `(setf ,dst (mod32* ,dst ,src)))
+                                   (#.+add+ `(setf ,dst (mod32+ ,dst (mod32+ ,(instruction-c op) ,src))))
+                                   (#.+sub+ `(setf ,dst (mod32- ,dst ,src)))
+                                   (#.+ror+ `(setf ,dst (ror32 ,dst (logand ,src #x1f))))
+                                   (#.+rol+ `(setf ,dst (rol32 ,dst (logand ,src #x1f))))
+                                   (#.+xor+ `(setf ,dst (logxor ,dst ,src))))))))
+      (compile nil `(lambda (r)
+                      (declare (type (simple-array (unsigned-byte 32) (9)) r)
+                               (optimize (speed 3) (space 0) (safety 0) (debug 0)))
+                      (let ((r0 (aref r 0))
+                            (r1 (aref r 1))
+                            (r2 (aref r 2))
+                            (r3 (aref r 3))
+                            (r4 (aref r 4))
+                            (r5 (aref r 5))
+                            (r6 (aref r 6))
+                            (r7 (aref r 7))
+                            (r8 (aref r 8)))
+                        (declare (type (unsigned-byte 32) r0 r1 r2 r3 r4 r5 r6 r7 r8))
+                        ,@forms
+                        (setf (aref r 0) r0
+                              (aref r 1) r1
+                              (aref r 2) r2
+                              (aref r 3) r3
+                              (aref r 4) r4
+                              (aref r 5) r5
+                              (aref r 6) r6
+                              (aref r 7) r7
+                              (aref r 8) r8))
+                      (values))))))
 
 (declaim (inline random-math-init))
 (defun random-math-init (code height)
