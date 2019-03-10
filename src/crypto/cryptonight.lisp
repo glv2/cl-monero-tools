@@ -50,18 +50,11 @@
               (division-result 0)
               (sqrt-result 0)
               (r (make-array 9 :element-type '(unsigned-byte 32)))
-              (code (make-array (1+ +num-instructions-max+)
-                                :element-type 'instruction
-                                :initial-element (make-instruction :opcode +ret+
-                                                                   :dst-index 0
-                                                                   :src-index 0
-                                                                   :c 0)))
               (random-math-function #'identity))
           (declare (type (simple-array (unsigned-byte 8) (16)) a a1 c1 c2 d)
                    (type (simple-array (unsigned-byte 8) (32)) b)
                    (type (simple-array (unsigned-byte 32) (9)) r)
-                   (type (simple-array instruction (*)) code)
-                   (dynamic-extent a b c1 c2 d r code)
+                   (dynamic-extent a b c1 c2 d r)
                    (type (unsigned-byte 64) tweak division-result sqrt-result)
                    (type function random-math-function))
           (macrolet ((v1-init ()
@@ -152,8 +145,7 @@
                        `(when (>= variant 4)
                           (dotimes (i 4)
                             (setf (aref r i) (ub32ref/le state (+ 96 (* i 4)))))
-                          (random-math-init code height)
-                          (setf random-math-function (compile-random-math code))))
+                          (setf random-math-function (generate-random-math-function height))))
                      (v4-random-math ()
                        `(when (>= variant 4)
                           (setf (ub64ref/le c2 0) (logxor (ub64ref/le c2 0)
@@ -164,7 +156,6 @@
                                 (aref r 6) (ub32ref/le b 0)
                                 (aref r 7) (ub32ref/le b 16)
                                 (aref r 8) (ub32ref/le b 24))
-                          ;; (random-math code r)
                           (funcall random-math-function r)
                           (setf (ub64ref/le a 0) (logxor (ub64ref/le a 0)
                                                          (logior (aref r 2)
