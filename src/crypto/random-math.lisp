@@ -272,27 +272,31 @@
 (defun generate-random-math-function (height)
   (declare (type fixnum height)
            (optimize (speed 3) (space 0) (safety 0) (debug 0)))
-  (compile nil `(lambda (r)
-                  (declare (type (simple-array (unsigned-byte 32) (9)) r)
-                           (optimize (speed 3) (space 0) (safety 0) (debug 0)))
-                  (let ((r0 (aref r 0))
-                        (r1 (aref r 1))
-                        (r2 (aref r 2))
-                        (r3 (aref r 3))
-                        (r4 (aref r 4))
-                        (r5 (aref r 5))
-                        (r6 (aref r 6))
-                        (r7 (aref r 7))
-                        (r8 (aref r 8)))
-                    (declare (type (unsigned-byte 32) r0 r1 r2 r3 r4 r5 r6 r7 r8))
-                    ,@(generate-random-math-forms height)
-                    (setf (aref r 0) r0
-                          (aref r 1) r1
-                          (aref r 2) r2
-                          (aref r 3) r3
-                          (aref r 4) r4
-                          (aref r 5) r5
-                          (aref r 6) r6
-                          (aref r 7) r7
-                          (aref r 8) r8))
-                  (values))))
+  (let ((forms (generate-random-math-forms height))
+        (*compile-print* nil)
+        (*compile-verbose* nil))
+    (compile nil
+             `(lambda (r)
+                (declare (type (simple-array (unsigned-byte 32) (9)) r)
+                         (optimize (speed 3) (space 0) (safety 0) (debug 0)))
+                (let ((r0 (aref r 0))
+                      (r1 (aref r 1))
+                      (r2 (aref r 2))
+                      (r3 (aref r 3))
+                      (r4 (aref r 4))
+                      (r5 (aref r 5))
+                      (r6 (aref r 6))
+                      (r7 (aref r 7))
+                      (r8 (aref r 8)))
+                  (declare (type (unsigned-byte 32) r0 r1 r2 r3 r4 r5 r6 r7 r8))
+                  ,@forms
+                  (setf (aref r 0) r0
+                        (aref r 1) r1
+                        (aref r 2) r2
+                        (aref r 3) r3
+                        (aref r 4) r4
+                        (aref r 5) r5
+                        (aref r 6) r6
+                        (aref r 7) r7
+                        (aref r 8) r8))
+                (values)))))
