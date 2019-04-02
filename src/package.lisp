@@ -167,6 +167,7 @@
    #:prove-payment #:valid-payment-proof-p
    #:prove-inbound-transaction #:valid-inbound-transaction-proof-p
    #:prove-outbound-transaction #:valid-outbound-transaction-proof-p
+   #:decrypt-wallet-keys
    #:get-wallet-keys #:bruteforce-wallet-keys
    #:sign-message #:valid-message-signature-p
    #:sign-file #:valid-file-signature-p

@@ -173,6 +173,7 @@ are in the *monero-tools* package.
  - decode-uri
  - decrypt-amount
  - decrypt-payment-id
+ - decrypt-wallet-keys
  - encrypt-payment-id
  - get-wallet-keys
  - make-integrated-address

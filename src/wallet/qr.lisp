@@ -108,7 +108,7 @@ a PNG-FILE."
                            :pointer image)
           (foreign-funcall "zbar_processor_destroy"
                            :pointer processor)
-          (map 'string #'code-char result)))
+          (bytes->string result)))
       (error "QR code decoding not supported because the zbar library was not found.")))
 
 (defun decode-qr-code (png-file)

@@ -7,44 +7,54 @@
 (in-package :monero-tools)
 
 
-(defun get-wallet-keys (keys-file password &key chacha8)
-  "Get the wallet view keys and spend keys from an encrypted
-KEYS-FILE. Set CHACHA8 to T if the wallet was encrypted with chacha8
-instead of chacha20."
+(defun decrypt-wallet-keys (keys-file password &key chacha8)
+  "Get the info from an encrypted KEYS-FILE. Set CHACHA8 to T if the wallet was
+encrypted with chacha8 instead of chacha20."
   (let* ((keys-file-data (read-file-into-byte-vector keys-file))
          (iv (subseq keys-file-data 0 +chacha-iv-length+)))
     (multiple-value-bind (encrypted-data-length varint-size)
         (deserialize-integer keys-file-data +chacha-iv-length+)
-      (let* ((encrypted-data (subseq keys-file-data
-                                     (+ +chacha-iv-length+ varint-size)
-                                     (+ +chacha-iv-length+ varint-size encrypted-data-length)))
+      (let* ((start (+ +chacha-iv-length+ varint-size))
+             (end (+ start encrypted-data-length))
+             (encrypted-data (subseq keys-file-data start end))
              (key (generate-chacha-key password))
-             (account-json-data (map 'string #'code-char (if chacha8
-                                                             (chacha8 encrypted-data key iv)
-                                                             (chacha20 encrypted-data key iv))))
-             (account-json (handler-case
-                               (let ((json:*json-identifier-name-to-lisp* (lambda (key)
-                                                                            (map 'string
-                                                                                 (lambda (c) (if (char= c #\_) #\- c))
-                                                                                 (string-upcase key)))))
-                                 (decode-json-from-string account-json-data))
-                             (t () nil)))
-             (key-data (geta account-json :key-data)))
-        (unless key-data
-          (error "Bad password."))
-        (flet ((find-key-field (data key)
-                 (let ((l (length key))
-                       (i (search key data)))
-                   (when i
-                     (map 'octet-vector #'char-code (subseq data (+ i 2 l) (+ i 2 l 32)))))))
-          (append (let ((v (find-key-field key-data "m_spend_public_key")))
-                    (when v (list (cons :public-spend-key v))))
-                  (let ((v (find-key-field key-data "m_view_public_key")))
-                    (when v (list (cons :public-view-key v))))
-                  (let ((v (find-key-field key-data "m_spend_secret_key")))
-                    (when v (list (cons :secret-spend-key v))))
-                  (let ((v (find-key-field key-data "m_view_secret_key")))
-                    (when v (list (cons :secret-view-key v))))))))))
+             (json-string (bytes->string (if chacha8
+                                             (chacha8 encrypted-data key iv)
+                                             (chacha20 encrypted-data key iv))))
+             (info (handler-case
+                       (decode-json-from-string json-string)
+                     (t ()
+                       (error "Bad password."))))
+             (key-data (string->bytes (geta info :key-data)))
+             (keys (deserialize-from-binary-storage key-data 0))
+             (m-keys (geta keys :m-keys))
+             (m-account-address (geta m-keys :m-account-address)))
+        (flet ((convert-value (assoc key)
+                 (let ((v (geta assoc key)))
+                   (when v
+                     (setf (geta assoc key) (string->bytes v))))))
+          (convert-value m-account-address :m-spend-public-key)
+          (convert-value m-account-address :m-view-public-key)
+          (convert-value m-keys :m-encryption-iv)
+          (convert-value m-keys :m-spend-secret-key)
+          (convert-value m-keys :m-view-secret-key))
+        (setf (geta info :key-data) keys)
+        info))))
+
+(defun get-wallet-keys (keys-file password &key chacha8)
+  "Get the wallet view keys and spend keys from an encrypted KEYS-FILE. Set
+CHACHA8 to T if the wallet was encrypted with chacha8 instead of chacha20."
+  (let* ((info (decrypt-wallet-keys keys-file password :chacha8 chacha8))
+         (keys (geta (geta info :key-data) :m-keys))
+         (account-address (geta keys :m-account-address)))
+    (flet ((get-value (keyword assoc key)
+             (let ((v (geta assoc key)))
+               (when v
+                 (list (cons keyword v))))))
+      (append (get-value :public-spend-key account-address :m-spend-public-key)
+              (get-value :public-view-key account-address :m-view-public-key)
+              (get-value :secret-spend-key keys :m-spend-secret-key)
+              (get-value :secret-view-key keys :m-view-secret-key)))))
 
 (defparameter *bruteforce-dictionary* nil)
 (defparameter *bruteforce-state* nil)
