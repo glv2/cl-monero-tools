@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2019 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -139,21 +139,25 @@ encrypted with chacha8 instead of chacha20."
     (setf *bruteforce-lock* nil)
     (setf *bruteforce-result* nil)))
 
-(defun decrypt-wallet-cache (cache-file password &optional keys-file chacha8)
+(defun decrypt-wallet-cache (cache-file password &key keys-file chacha8 old-scheme (rounds 1))
   (let* ((keys-file (or keys-file (concatenate 'string cache-file ".keys")))
-         (wallet-keys (get-wallet-keys keys-file password :chacha8 chacha8))
-         (secret-view-key (geta wallet-keys :secret-view-key))
-         (secret-spend-key (geta wallet-keys :secret-spend-key))
-         (key (generate-chacha-key-from-secret-keys secret-view-key secret-spend-key))
+         (key (if (or chacha8 old-scheme)
+                  (let* ((wallet-keys (get-wallet-keys keys-file password :chacha8 chacha8))
+                         (secret-view-key (geta wallet-keys :secret-view-key))
+                         (secret-spend-key (geta wallet-keys :secret-spend-key)))
+                    (generate-chacha-key-from-secret-keys secret-view-key secret-spend-key))
+                  (generate-cache-chacha-key password rounds)))
          (cache-file-data (read-file-into-byte-vector cache-file))
          (iv (subseq cache-file-data 0 +chacha-iv-length+)))
     (multiple-value-bind (encrypted-data-length varint-size)
         (deserialize-integer cache-file-data +chacha-iv-length+)
-      (let* ((encrypted-data (subseq cache-file-data
-                                     (+ +chacha-iv-length+ varint-size)
-                                     (+ +chacha-iv-length+ varint-size encrypted-data-length)))
+      (let* ((start (+ +chacha-iv-length+ varint-size))
+             (end (+ +chacha-iv-length+ varint-size encrypted-data-length))
+             (encrypted-data (subseq cache-file-data start end))
              (data (if chacha8
                        (chacha8 encrypted-data key iv)
                        (chacha20 encrypted-data key iv))))
         ;; TODO: deserialize data
-        data))))
+        (let* ((header (subseq data 0 24))
+               (data (subseq data 24)))
+          (subseq data 0 1024))))))

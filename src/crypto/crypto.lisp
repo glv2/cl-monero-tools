@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2019 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -195,6 +195,7 @@ as a byte vector."
   (defconstant +chacha-key-length+ 32)
   (defconstant +chacha-iv-length+ 8))
 (defconstant +chacha-key-tail+ 140)
+(defconstant +cache-key-tail+ 141)
 
 (defun chacha8 (data key iv)
   "Encrypt/decrypt DATA with the KEY and the initialization vector IV."
@@ -238,3 +239,12 @@ keys."
                            secret-spend-key
                            (vector +chacha-key-tail+))))
     (subseq (slow-hash data) 0 +chacha-key-length+)))
+
+(defun generate-cache-chacha-key (password &optional (rounds 1))
+  "Generate the wallet cache encryption/decryption key matching a PASSWORD."
+  (check-type password string)
+  (check-type rounds (integer 1 *))
+  (let ((data (concatenate 'octet-vector
+                           (generate-chacha-key password rounds)
+                           (vector +cache-key-tail+))))
+    (subseq (fast-hash data) 0 +chacha-key-length+)))
