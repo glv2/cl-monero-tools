@@ -350,8 +350,8 @@ address."
 (defjsonrpc start-mining ("start_mining" thread-count background-mining ignore-battery)
   "Start mining in the Monero daemon."
   (list (cons "threads_count" thread-count)
-        (cons "do_background_mining" background-mining)
-        (cons "ignore_battery" ignore-battery)))
+        (cons "do_background_mining" (when background-mining t))
+        (cons "ignore_battery" (when ignore-battery t))))
 
 (defjsonrpc stop-mining ("stop_mining")
   "Stop mining in the Monero daemon.")
@@ -387,26 +387,26 @@ process)."
           (when payment-id
             (list (cons "payment_id" payment-id)))
           (when get-transaction-keys
-            (list (cons "get_tx_keys" get-transaction-keys)))
+            (list (cons "get_tx_keys" t)))
           (when below-amount
             (list (cons "below_amount" below-amount)))
           (when do-not-relay
-            (list (cons "do_not_relay" do-not-relay)))
+            (list (cons "do_not_relay" t)))
           (when get-transaction-hex
-            (list (cons "get_tx_hex" get-transaction-hex)))
+            (list (cons "get_tx_hex" t)))
           (when get-transaction-metadata
-            (list (cons "get_tx_metadata" get-transaction-metadata)))))
+            (list (cons "get_tx_metadata" t)))))
 
 (defjsonrpc sweep-dust ("sweep_dust" &key get-transaction-keys do-not-relay get-transaction-hex get-transaction-metadata)
   "Send all dust outputs back to the wallet."
   (append (when get-transaction-keys
-            (list (cons "get_tx_keys" get-transaction-keys)))
+            (list (cons "get_tx_keys" t)))
           (when do-not-relay
-            (list (cons "do_not_relay" do-not-relay)))
+            (list (cons "do_not_relay" t)))
           (when get-transaction-hex
-            (list (cons "get_tx_hex" get-transaction-hex)))
-          (when get-transaction-keys
-            (list (cons "get_tx_metadata" get-transaction-metadata)))))
+            (list (cons "get_tx_hex" t)))
+          (when get-transaction-metadata
+            (list (cons "get_tx_metadata" t)))))
 
 (defjsonrpc sweep-single ("sweep_single" address &key priority ring-size unlock-time payment-id get-transaction-key key-image do-not-relay get-transaction-hex get-transaction-metadata)
   "Send all of a specific unlocked output to an address."
@@ -420,15 +420,15 @@ process)."
           (when payment-id
             (list (cons "payment_id" payment-id)))
           (when get-transaction-key
-            (list (cons "get_tx_key" get-transaction-key)))
+            (list (cons "get_tx_key" t)))
           (when key-image
             (list (cons "key_image" key-image)))
           (when do-not-relay
-            (list (cons "do_not_relay" do-not-relay)))
+            (list (cons "do_not_relay" t)))
           (when get-transaction-hex
-            (list (cons "get_tx_hex" get-transaction-hex)))
+            (list (cons "get_tx_hex" t)))
           (when get-transaction-metadata
-            (list (cons "get_tx_metadata" get-transaction-metadata)))))
+            (list (cons "get_tx_metadata" t)))))
 
 (defjsonrpc tag-accounts ("tag_accounts" tag accounts)
   "Apply a filtering tag to a list of accounts."
@@ -451,13 +451,13 @@ process)."
           (when payment-id
             (list (cons "payment_id" payment-id)))
           (when get-transaction-key
-            (list (cons "get_tx_key" get-transaction-key)))
+            (list (cons "get_tx_key" t)))
           (when do-not-relay
-            (list (cons "do_not_relay" do-not-relay)))
+            (list (cons "do_not_relay" t)))
           (when get-transaction-hex
-            (list (cons "get_tx_hex" get-transaction-hex)))
+            (list (cons "get_tx_hex" t)))
           (when get-transaction-metadata
-            (list (cons "get_tx_metadata" get-transaction-metadata)))))
+            (list (cons "get_tx_metadata" t)))))
 
 (defjsonrpc transfer-split ("transfer_split" destinations &key account-index subaddress-indices priority ring-size unlock-time payment-id get-transaction-keys do-not-relay get-transaction-hex get-transaction-metadata)
   "Like transfer, but can split into several transactions if necessary."
@@ -475,13 +475,13 @@ process)."
           (when payment-id
             (list (cons "payment_id" payment-id)))
           (when get-transaction-keys
-            (list (cons "get_tx_keys" get-transaction-keys)))
+            (list (cons "get_tx_keys" t)))
           (when do-not-relay
-            (list (cons "do_not_relay" do-not-relay)))
+            (list (cons "do_not_relay" t)))
           (when get-transaction-hex
-            (list (cons "get_tx_hex" get-transaction-hex)))
+            (list (cons "get_tx_hex" t)))
           (when get-transaction-metadata
-            (list (cons "get_tx_metadata" get-transaction-metadata)))))
+            (list (cons "get_tx_metadata" t)))))
 
 (defjsonrpc untag-accounts ("untag_accounts" accounts)
   "Remove filtering tag from a list of accounts."
