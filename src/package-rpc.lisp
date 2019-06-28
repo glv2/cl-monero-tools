@@ -185,6 +185,7 @@
    #:set-account-tag-description
    #:set-attribute
    #:set-daemon
+   #:set-log-categories
    #:set-log-level
    #:set-tx-notes
    #:sign

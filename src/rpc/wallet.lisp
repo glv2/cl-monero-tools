@@ -387,6 +387,10 @@
           (when ssl-allow-any-cert
             (list (cons "ssl_allow_any_cert" t)))))
 
+(defjsonrpc set-log-categories ("set_log_categories" categories)
+  "Set the log categories."
+  (list (cons "categories" categories)))
+
 (defjsonrpc set-log-level ("set_log_level" level)
   "Set the log level."
   (list (cons "level" level)))
