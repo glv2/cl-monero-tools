@@ -20,6 +20,13 @@
           (when description
             (list (cons "description" description)))))
 
+(defjsonrpc auto-refresh ("auto_refresh" &key (enable t) period)
+  "Configure wallet auto refresh."
+  (append (list (cons "enable" (when enable t)))
+          (when period
+            (list (cons "period" period)))
+          (list (cons "unused" 0))))
+
 (defjsonrpc change-wallet-password ("change_wallet_password" &key old-password new-password)
   "Change a wallet password."
   (append (when old-password

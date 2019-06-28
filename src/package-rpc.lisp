@@ -126,6 +126,7 @@
   (:use :cl :monero-tools-rpc)
   (:export
    #:add-address-book
+   #:auto-refresh
    #:change-wallet-password
    #:check-reserve-proof
    #:check-spend-proof
@@ -136,6 +137,7 @@
    #:create-address
    #:create-wallet
    #:delete-address-book
+   #:describe-transfer
    #:export-key-images
    #:export-multisig-info
    #:export-outputs
