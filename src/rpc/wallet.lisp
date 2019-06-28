@@ -175,7 +175,7 @@
           (when account-index
             (list (cons "account_index" account-index)))))
 
-(defjsonrpc get-transfers ("get_transfers" &key incoming outgoing pending failed pool filter-by-height min-height max-height account-index subaddress-indices)
+(defjsonrpc get-transfers ("get_transfers" &key incoming outgoing pending failed pool filter-by-height min-height max-height account-index subaddress-indices all-accounts)
   "Returns a list of transfers."
   (append (when incoming
             (list (cons "in" t)))
@@ -196,7 +196,9 @@
           (when account-index
             (list (cons "account_index" account-index)))
           (when subaddress-indices
-            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
+          (when all-accounts
+            (list (cons "all_accounts" t)))))
 
 (defjsonrpc get-tx-key ("get_tx_key" transaction-id)
   "Get transaction secret key from transaction id."
