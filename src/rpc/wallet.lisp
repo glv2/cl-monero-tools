@@ -93,8 +93,10 @@
 (defjsonrpc export-multisig-info ("export_multisig_info")
   "Export multisig info for other participants.")
 
-(defjsonrpc export-outputs ("export_outputs")
-  "Export all outputs in hex format.")
+(defjsonrpc export-outputs ("export_outputs" &key all)
+  "Export all outputs in hex format."
+  (when all
+    (list (cons "all" t))))
 
 (defjsonrpc finalize-multisig ("finalize_multisig" multisig-info password)
   "Turn this wallet into a multisig wallet, extra step for M/N wallets."
