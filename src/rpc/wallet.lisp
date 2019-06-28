@@ -340,6 +340,18 @@
 (defjsonrpc rescan-spent ("rescan_spent")
   "Rescan the blockchain for spent outputs.")
 
+(defjsonrpc restore-deterministic-wallet ("restore_deterministic_wallet" filename seed language password &key seed-offset restore-height (autosave-current t))
+  "Generate a wallet from its seed."
+  (append (list (cons "filename" filename)
+                (cons "seed" seed)
+                (cons "language" language)
+                (cons "password" password)
+                (cons "autosave_current" (when autosave-current t)))
+          (when seed-offset
+            (list (cons "seed_offset" seed-offset)))
+          (when restore-height
+            (list (cons "restore_height" restore-height)))))
+
 (defjsonrpc set-account-tag-description ("set_account_tag_description" tag description)
   "Set description for an account tag."
   (list (cons "tag" tag)

@@ -180,6 +180,7 @@
    #:relay-tx
    #:rescan-blockchain
    #:rescan-spent
+   #:restore-deterministic-wallet
    #:set-account-tag-description
    #:set-attribute
    #:set-tx-notes
