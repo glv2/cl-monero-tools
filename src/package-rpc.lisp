@@ -202,4 +202,5 @@
    #:transfer
    #:transfer-split
    #:untag-accounts
+   #:validate-address
    #:verify))

@@ -398,6 +398,7 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
  - transfer
  - transfer-split
  - untag-accounts
+ - validate-address
  - verify
 
 * Tests

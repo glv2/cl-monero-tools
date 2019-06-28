@@ -537,6 +537,14 @@ process)."
   "Remove filtering tag from a list of accounts."
   (list (cons "accounts" (coerce accounts 'vector))))
 
+(defjsonrpc validate-address ("validate_address" address &key any-net-type allow-openalias)
+  "Check if an address is valid."
+  (append (list (cons "address" address))
+          (when any-net-type
+            (list (cons "any_net_type" t)))
+          (when allow-openalias
+            (list (cons "allow_openalias" t)))))
+
 (defjsonrpc verify ("verify" string address signature)
   "Verify a signature on a string."
   (list (cons "data" string)
