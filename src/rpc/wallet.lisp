@@ -122,12 +122,14 @@
   "Get attribute value by name."
   (list (cons "key" key)))
 
-(defjsonrpc get-balance ("get_balance" &key account-index address-indices)
+(defjsonrpc get-balance ("get_balance" &key account-index address-indices all-accounts)
   "Return the wallet's balance."
   (append (when account-index
             (list (cons "account_index" account-index)))
           (when address-indices
-            (list (cons "address_indices" (coerce address-indices 'vector))))))
+            (list (cons "address_indices" (coerce address-indices 'vector))))
+          (when all-accounts
+            (list (cons "all_accounts" t)))))
 
 (defjsonrpc get-bulk-payments ("get_bulk_payments" payment-ids min-block-height)
   "Get a list of incoming payments."
