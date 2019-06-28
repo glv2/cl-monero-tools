@@ -80,6 +80,13 @@
   "Delete an entry from the address book."
   (list (cons "index" index)))
 
+(defjsonrpc describe-transfer ("describe_transfer" &key unsigned-transaction-set multisig-transaction-set)
+  "Describe the transfers encoded in a string in hex format."
+  (append (when unsigned-transaction-set
+            (list (cons "unsigned_txset" unsigned-transaction-set)))
+          (when multisig-transaction-set
+            (list (cons "multisig_txset" multisig-transaction-set)))))
+
 (defjsonrpc export-key-images ("export_key_images")
   "Export a signed set of key images.")
 
