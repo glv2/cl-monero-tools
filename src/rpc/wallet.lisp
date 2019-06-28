@@ -291,11 +291,13 @@
           (when description
             (list (cons "tx_description" description)))))
 
-(defjsonrpc open-wallet ("open_wallet" filename &key password)
+(defjsonrpc open-wallet ("open_wallet" filename &key password autosave-current)
   "Open a wallet."
   (append (list (cons "filename" filename))
           (when password
-            (list (cons "password" password)))))
+            (list (cons "password" password)))
+          (when autosave-current
+            (list (cons "autosave-current" t)))))
 
 (defjsonrpc parse-uri ("parse_uri" uri)
   "Parse a payment URI to get payment information."
