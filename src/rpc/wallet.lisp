@@ -114,6 +114,17 @@
   (list (cons "multisig_info" (coerce multisig-info 'vector))
         (cons "password" password)))
 
+(defjsonrpc generate-from-keys ("generate_from_keys" filename address secret-spend-key secret-view-key password &key restore-height (autosave-current t))
+  "Generate a wallet from its secret keys."
+  (append (list (cons "filename" filename)
+                (cons "address" address)
+                (cons "spendkey" secret-spend-key)
+                (cons "viewkey" secret-view-key)
+                (cons "password" password)
+                (cons "autosave_current" (when autosave-current t)))
+          (when restore-height
+            (list (cons "restore_height" restore-height)))))
+
 (defjsonrpc get-account-tags ("get_account_tags")
   "Get a list of user-defined account tags.")
 

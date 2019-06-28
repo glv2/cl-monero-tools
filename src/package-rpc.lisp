@@ -142,6 +142,7 @@
    #:export-multisig-info
    #:export-outputs
    #:finalize-multisig
+   #:generate-from-keys
    #:get-account-tags
    #:get-accounts
    #:get-address

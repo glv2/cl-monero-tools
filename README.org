@@ -338,6 +338,7 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
  - export-multisig-info
  - export-outputs
  - finalize-multisig
+ - generate-from-keys
  - get-account-tags
  - get-accounts
  - get-address
