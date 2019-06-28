@@ -96,6 +96,11 @@
           (when multisig-transaction-set
             (list (cons "multisig_txset" multisig-transaction-set)))))
 
+(defjsonrpc exchange-multisig-keys ("exchange_multisig_keys" multisig-info password)
+  "Exchange multisig keys."
+  (list (cons "multisig_info" multisig-info)
+        (cons "password" password)))
+
 (defjsonrpc export-key-images ("export_key_images" &key all)
   "Export a signed set of key images."
   (when all

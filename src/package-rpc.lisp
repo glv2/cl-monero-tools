@@ -138,6 +138,7 @@
    #:create-wallet
    #:delete-address-book
    #:describe-transfer
+   #:exchange-multisig-keys
    #:export-key-images
    #:export-multisig-info
    #:export-outputs
