@@ -371,7 +371,7 @@ address."
 process)."
   (list (cons "tx_data_hex" transaction-data-hex)))
 
-(defjsonrpc sweep-all ("sweep_all" address &key account-index subaddress-indices priority ring-size unlock-time payment-id get-transaction-keys below-amount do-not-relay get-transaction-hex get-transaction-metadata)
+(defjsonrpc sweep-all ("sweep_all" address &key account-index subaddress-indices priority ring-size outputs unlock-time payment-id get-transaction-keys below-amount do-not-relay get-transaction-hex get-transaction-metadata)
   "Send all unlocked balance to an address."
   (append (list (cons "address" address))
           (when account-index
@@ -382,6 +382,8 @@ process)."
             (list (cons "priority" priority)))
           (when ring-size
             (list (cons "ring_size" ring-size)))
+          (when outputs
+            (list (cons "outputs" outputs)))
           (when unlock-time
             (list (cons "unlock_time" unlock-time)))
           (when payment-id
@@ -408,13 +410,15 @@ process)."
           (when get-transaction-metadata
             (list (cons "get_tx_metadata" t)))))
 
-(defjsonrpc sweep-single ("sweep_single" address &key priority ring-size unlock-time payment-id get-transaction-key key-image do-not-relay get-transaction-hex get-transaction-metadata)
+(defjsonrpc sweep-single ("sweep_single" address &key priority ring-size outputs unlock-time payment-id get-transaction-key key-image do-not-relay get-transaction-hex get-transaction-metadata)
   "Send all of a specific unlocked output to an address."
   (append (list (cons "address" address))
           (when priority
             (list (cons "priority" priority)))
           (when ring-size
             (list (cons "ring_size" ring-size)))
+          (when outputs
+            (list (cons "outputs" outputs)))
           (when unlock-time
             (list (cons "unlock_time" unlock-time)))
           (when payment-id
