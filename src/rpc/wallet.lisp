@@ -223,9 +223,11 @@
   "Get RPC version, where the major version number is the first 16 bits and the
   minor version number is the last 16 bits.")
 
-(defjsonrpc import-key-images ("import_key_images" signed-key-images)
+(defjsonrpc import-key-images ("import_key_images" signed-key-images &key offset)
   "Import signed key images list and verify their spent status."
-  (list (cons "signed_key_images" (coerce signed-key-images 'vector))))
+  (append (list (cons "signed_key_images" (coerce signed-key-images 'vector)))
+          (when offset
+            (list (cons "offset" offset)))))
 
 (defjsonrpc import-multisig-info ("import_multisig_info" multisig-info)
   "Import multisig info from other participants."
