@@ -303,8 +303,10 @@
   "Relay a transaction previously created with DO-NOT-RELAY."
   (list (cons "hex" transaction-data-hex)))
 
-(defjsonrpc rescan-blockchain ("rescan_blockchain")
-  "Rescan blockchain from scratch.")
+(defjsonrpc rescan-blockchain ("rescan_blockchain" &key hard)
+  "Rescan blockchain from scratch."
+  (when hard
+    (list (cons "hard" t))))
 
 (defjsonrpc rescan-spent ("rescan_spent")
   "Rescan the blockchain for spent outputs.")
