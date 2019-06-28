@@ -87,8 +87,10 @@
           (when multisig-transaction-set
             (list (cons "multisig_txset" multisig-transaction-set)))))
 
-(defjsonrpc export-key-images ("export_key_images")
-  "Export a signed set of key images.")
+(defjsonrpc export-key-images ("export_key_images" &key all)
+  "Export a signed set of key images."
+  (when all
+    (list (cons "all" t))))
 
 (defjsonrpc export-multisig-info ("export_multisig_info")
   "Export multisig info for other participants.")
