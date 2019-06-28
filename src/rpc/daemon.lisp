@@ -324,8 +324,8 @@ at START-HEIGHT."
 (defrpc set-log-hash-rate ("set_log_hash_rate" visible)
   "Set the log hash rate display mode."
   (when visible
-    (list (cons "visible" visible))
-    (list (cons "visible" visible)
+    (list (cons "visible" (when visible t)))
+    (list (cons "visible" (when visible t))
           ;; workaround to prevent (("visible" . nil)) from being encoded
           ;; as [["visible"]] instead of {"visible":false}
           (cons "unused" 0))))
@@ -338,8 +338,8 @@ at START-HEIGHT."
   "Start mining in the daemon."
   (list (cons "miner_address" miner-address)
         (cons "threads_count" thread-count)
-        (cons "do_background_mining" background-mining)
-        (cons "ignore_battery" ignore-battery)))
+        (cons "do_background_mining" (when background-mining t))
+        (cons "ignore_battery" (when ignore-battery t))))
 
 (defrpc stop-daemon ("stop_daemon")
   "Send a command to the daemon to safely disconnect and shut down.")
@@ -415,7 +415,7 @@ at START-HEIGHT."
 (defun zmq-get-blocks (block-ids start-height prune &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   (let* ((block-ids block-ids)
          (parameters (list (cons "block_ids" block-ids)
-                           (cons "prune" prune)
+                           (cons "prune" (when prune t))
                            (cons "start_height" start-height))))
     (zmq-json-rpc "get_blocks_fast"
                   :parameters parameters
