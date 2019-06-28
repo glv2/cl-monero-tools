@@ -334,11 +334,13 @@
   "Sign a transaction in multisig."
   (list (cons "tx_data_hex" transaction-data-hex)))
 
-(defjsonrpc sign-transfer ("sign_transfer" unsigned-transaction-set &key export-raw)
+(defjsonrpc sign-transfer ("sign_transfer" unsigned-transaction-set &key export-raw get-transaction-keys)
   "Sign a transaction created on a read-only wallet (in cold-signing process)."
   (append (list (cons "unsigned_txset" unsigned-transaction-set))
           (when export-raw
-            (list (cons "export_raw" export-raw)))))
+            (list (cons "export_raw" t)))
+          (when get-transaction-keys
+            (list (cons "get_tx_keys" t)))))
 
 (defjsonrpc split-integrated-address ("split_integrated_address" integrated-address)
   "Retrieve the standard address and payment id corresponding to an integrated
