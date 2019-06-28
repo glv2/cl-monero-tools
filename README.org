@@ -380,6 +380,7 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
  - restore-deterministic-wallet
  - set-account-tag-description
  - set-attribute
+ - set-daemon
  - set-tx-notes
  - sign
  - sign-multisig

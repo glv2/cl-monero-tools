@@ -367,6 +367,26 @@
   (list (cons "key" key)
         (cons "value" value)))
 
+(defjsonrpc set-daemon ("set_daemon" address &key trusted (ssl-support :autodetect) ssl-private-key-path ssl-certificate-path ssl-ca-file ssl-allowed-fingerprints ssl-allow-any-cert)
+  "Set which daemon to connect to."
+  (append (list (cons "address" address)
+                (cons "ssl_support" (ecase ssl-support
+                                      ((:autodetect) "autodetect")
+                                      ((:enabled t) "enabled")
+                                      ((:disabled nil) "disabled"))))
+          (when trusted
+            (list (cons "trusted" t)))
+          (when ssl-private-key-path
+            (list (cons "ssl_private_key_path" ssl-private-key-path)))
+          (when ssl-certificate-path
+            (list (cons "ssl_certificate_path" ssl-certificate-path)))
+          (when ssl-ca-file
+            (list (cons "ssl_ca_file" ssl-ca-file)))
+          (when ssl-allowed-fingerprints
+            (list (cons "ssl_allowed_fingerprints" ssl-allowed-fingerprints)))
+          (when ssl-allow-any-cert
+            (list (cons "ssl_allow_any_cert" t)))))
+
 (defjsonrpc set-tx-notes ("set_tx_notes" transaction-ids notes)
  "Set arbitrary string notes for transactions."
   (list (cons "txids" (coerce transaction-ids 'vector))

@@ -184,6 +184,7 @@
    #:restore-deterministic-wallet
    #:set-account-tag-description
    #:set-attribute
+   #:set-daemon
    #:set-tx-notes
    #:sign
    #:sign-multisig
