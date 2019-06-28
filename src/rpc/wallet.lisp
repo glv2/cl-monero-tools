@@ -229,15 +229,13 @@
   "Import outputs in hex format."
   (list (cons "outputs_data_hex" outputs-data-hex)))
 
-(defjsonrpc incoming-transfers ("incoming_transfers" transfer-type &key account-index subaddress-indices verbose)
+(defjsonrpc incoming-transfers ("incoming_transfers" transfer-type &key account-index subaddress-indices)
   "Return a list of incoming transfers to the wallet."
   (append (list (cons "transfer_type" transfer-type))
           (when account-index
             (list (cons "account_index" account-index)))
           (when subaddress-indices
-            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))
-          (when verbose
-            (list (cons "verbose" t)))))
+            (list (cons "subaddr_indices" (coerce subaddress-indices 'vector))))))
 
 (defjsonrpc is-multisig ("is_multisig")
   "Check if a wallet is a multisig one.")
