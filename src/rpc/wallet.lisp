@@ -387,6 +387,10 @@
           (when ssl-allow-any-cert
             (list (cons "ssl_allow_any_cert" t)))))
 
+(defjsonrpc set-log-level ("set_log_level" level)
+  "Set the log level."
+  (list (cons "level" level)))
+
 (defjsonrpc set-tx-notes ("set_tx_notes" transaction-ids notes)
  "Set arbitrary string notes for transactions."
   (list (cons "txids" (coerce transaction-ids 'vector))

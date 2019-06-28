@@ -381,6 +381,7 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
  - set-account-tag-description
  - set-attribute
  - set-daemon
+ - set-log-level
  - set-tx-notes
  - sign
  - sign-multisig
