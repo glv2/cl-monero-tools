@@ -62,8 +62,10 @@
           (when message
             (list (cons "message" message)))))
 
-(defjsonrpc close-wallet ("close_wallet")
-  "Close the current wallet.")
+(defjsonrpc close-wallet ("close_wallet" &key (autosave-current t))
+  "Close the current wallet."
+  (list (cons "autosave_current" (when autosave-current t))
+        (cons "unused" 0)))
 
 (defjsonrpc create-account ("create_account" &key label)
   "Create a new account."
@@ -291,13 +293,12 @@
           (when description
             (list (cons "tx_description" description)))))
 
-(defjsonrpc open-wallet ("open_wallet" filename &key password autosave-current)
+(defjsonrpc open-wallet ("open_wallet" filename &key password (autosave-current t))
   "Open a wallet."
-  (append (list (cons "filename" filename))
+  (append (list (cons "filename" filename)
+                (cons "autosave_current" (when autosave-current t)))
           (when password
-            (list (cons "password" password)))
-          (when autosave-current
-            (list (cons "autosave-current" t)))))
+            (list (cons "password" password)))))
 
 (defjsonrpc parse-uri ("parse_uri" uri)
   "Parse a payment URI to get payment information."
