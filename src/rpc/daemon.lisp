@@ -340,6 +340,10 @@ at START-HEIGHT."
   "Limit the number of outgoing connections to peers."
   (list (cons "out_peers" limit)))
 
+(defrpc pop-blocks ("pop_blocks" block-count)
+  "Remove blocks from the top of the blockchain."
+  (list (cons "nblocks" block-count)))
+
 (defrpc save-bc ("save_bc")
   "Save the blockchain.")
 

@@ -105,6 +105,7 @@
    #:is-key-image-spent
    #:mining-status
    #:out-peers
+   #:pop-blocks
    #:save-bc
    #:set-limit
    #:set-log-categories
