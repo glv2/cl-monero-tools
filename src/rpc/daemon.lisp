@@ -123,8 +123,10 @@ at START-HEIGHT."
 (defjsonrpc get-version ("get_version")
   "Get the node current version.")
 
-(defjsonrpc hard-fork-info ("hard_fork_info")
-  "Look up information regarding hard fork voting and readiness.")
+(defjsonrpc hard-fork-info ("hard_fork_info" &key version)
+  "Look up information regarding hard fork voting and readiness."
+  (when version
+    (list (cons "version" version))))
 
 (defjsonrpc relay-tx ("relay_tx" transaction-ids)
   "Relay a list of transaction IDs."
