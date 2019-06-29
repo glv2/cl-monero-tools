@@ -58,6 +58,7 @@
                 #:string->bytes)
   (:export
    #:flush-txpool
+   #:generateblocks
    #:get-alternate-chain
    #:get-bans
    #:get-block

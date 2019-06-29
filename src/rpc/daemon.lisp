@@ -17,6 +17,14 @@
   (when transaction-ids
     (list (cons "txids" (coerce transaction-ids 'vector)))))
 
+(defjsonrpc generateblocks ("generateblocks" amount-of-blocks wallet-address previous-block &key starting-nonce)
+  "Generate blocs."
+  (append (list (cons "amount_of_blocks" amount-of-blocks)
+                (cons "wallet_address" wallet-address)
+                (cons "prev_block" previous-block))
+          (when starting-nonce
+            (list (cons "starting_nonce" starting-nonce)))))
+
 (defjsonrpc get-alternate-chains ("get_alternate_chains")
   "Get alternative chains seen by the node.")
 
@@ -50,10 +58,12 @@
   (list (cons "start_height" start-height)
         (cons "end_height" end-height)))
 
-(defjsonrpc get-block-template ("get_block_template" address reserve-size)
+(defjsonrpc get-block-template ("get_block_template" address reserve-size &key previous-block)
   "Get a block template on which mining can be done."
-  (list (cons "wallet_address" address)
-        (cons "reserve_size" reserve-size)))
+  (append (list (cons "wallet_address" address)
+                (cons "reserve_size" reserve-size))
+          (when previous-block
+            (list (cons "prev_block" previous-block)))))
 
 (defjsonrpc get-coinbase-tx-sum ("get_coinbase_tx_sum" start-height block-count)
   "Get the amount of money emitted and fees in the BLOCK-COUNT blocks starting
@@ -337,7 +347,6 @@ at START-HEIGHT."
 (defrpc set-log-hash-rate ("set_log_hash_rate" visible)
   "Set the log hash rate display mode."
   (when visible
-    (list (cons "visible" (when visible t)))
     (list (cons "visible" (when visible t))
           ;; workaround to prevent (("visible" . nil)) from being encoded
           ;; as [["visible"]] instead of {"visible":false}

@@ -232,6 +232,7 @@ object becomes =:some-key= in the alist. The specifications of these RPCs can be
 found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 
  - flush-txpool
+ - generateblocks
  - get-alternate-chain
  - get-bans
  - get-block
