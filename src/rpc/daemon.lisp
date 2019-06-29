@@ -31,12 +31,14 @@
 (defjsonrpc get-bans ("get_bans")
   "Get list of banned IPs.")
 
-(defjsonrpc get-block ("get_block" block-id)
+(defjsonrpc get-block ("get_block" block-id &key fill-pow-hash)
   "Get full block information. BLOCK-ID can be a block height or hash."
-  (list (cons (etypecase block-id
-                (integer "height")
-                (string "hash"))
-              block-id)))
+  (append (list (cons (etypecase block-id
+                        (integer "height")
+                        (string "hash"))
+                      block-id))
+          (when fill-pow-hash
+            (list (cons "fill_pow_hash" fill-pow-hash)))))
 
 (defjsonrpc get-block-count ("get_block_count")
   "Look up how many blocks are in the longest chain known to the node.")
