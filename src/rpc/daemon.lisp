@@ -179,6 +179,9 @@ at START-HEIGHT."
 
 ;; (get-hashes.bin (list "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148" "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"))
 
+(defrpc get-height ("get_height")
+  "Get blockchain height.")
+
 (defrpc get-limit ("get_limit")
   "Get daemon bandwidth limits.")
 
