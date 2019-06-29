@@ -59,10 +59,12 @@
           (when fill-pow-hash
             (list (cons "fill_pow_hash" fill-pow-hash)))))
 
-(defjsonrpc get-block-headers-range ("get_block_headers_range" start-height end-height)
+(defjsonrpc get-block-headers-range ("get_block_headers_range" start-height end-height &key fill-pow-hash)
   "Look up headers of a range of blocks."
-  (list (cons "start_height" start-height)
-        (cons "end_height" end-height)))
+  (append (list (cons "start_height" start-height)
+                (cons "end_height" end-height))
+          (when fill-pow-hash
+            (list (cons "fill_pow_hash" fill-pow-hash)))))
 
 (defjsonrpc get-block-template ("get_block_template" address reserve-size &key previous-block)
   "Get a block template on which mining can be done."
