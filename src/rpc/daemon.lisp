@@ -132,6 +132,11 @@ at START-HEIGHT."
   (when version
     (list (cons "version" version))))
 
+(defjsonrpc prune-blockchain ("prune_blockchain" &key check)
+  "Prune the blockchain."
+  (when check
+    (list (cons "check" t))))
+
 (defjsonrpc relay-tx ("relay_tx" transaction-ids)
   "Relay a list of transaction IDs."
   (list (cons "txids" (coerce transaction-ids 'vector))))

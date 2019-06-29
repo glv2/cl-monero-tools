@@ -78,6 +78,7 @@
    #:get-txpool-backlog
    #:get-version
    #:hard-fork-info
+   #:prune-blockchain
    #:relay-tx
    #:set-bans
    #:submit-block
