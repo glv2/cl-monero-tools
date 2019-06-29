@@ -284,13 +284,15 @@ at START-HEIGHT."
         (setf (geta stats :histo) (string->bytes histo)))
       result)))
 
-(defrpc get-transactions ("get_transactions" transaction-ids &key decode-as-json prune)
+(defrpc get-transactions ("get_transactions" transaction-ids &key decode-as-json prune split)
   "Look up one or more transactions by hash."
   (append (list (cons "txs_hashes" (coerce transaction-ids 'vector)))
           (when decode-as-json
             (list (cons "decode_as_json" t)))
           (when prune
-            (list (cons "prune" t)))))
+            (list (cons "prune" t)))
+          (when split
+            (list (cons "split" t)))))
 
 (defrpc in-peers ("in_peers" limit)
   "Limit the number of incoming connections from peers."
