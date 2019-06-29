@@ -269,6 +269,7 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - get-hashes.bin
  - get-height
  - get-limit
+ - get-net-stats
  - get-o-indexes.bin
  - get-outs
  - get-outs.bin

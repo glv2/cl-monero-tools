@@ -187,6 +187,9 @@ at START-HEIGHT."
 (defrpc get-limit ("get_limit")
   "Get daemon bandwidth limits.")
 
+(defrpc get-net-stats ("get_net_stats")
+  "Get network stastitics.")
+
 (defbinrpc get-o-indexes.bin ("get_o_indexes.bin" transaction-id)
   "Get global output indexes of a transaction."
   (list (cons "txid" (bytes->string (hex-string->bytes transaction-id)))))

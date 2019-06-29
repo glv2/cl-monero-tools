@@ -88,6 +88,7 @@
    #:get-hashes.bin
    #:get-height
    #:get-limit
+   #:get-net-stats
    #:get-o-indexes.bin
    #:get-outs
    #:get-outs.bin
