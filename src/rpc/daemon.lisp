@@ -95,7 +95,7 @@ at START-HEIGHT."
   (when fill-pow-hash
     (list (cons "fill_pow_hash" fill-pow-hash))))
 
-(defjsonrpc get-output-distribution ("get_output_distribution" amounts &key cumulative start-height end-height)
+(defjsonrpc get-output-distribution ("get_output_distribution" amounts &key cumulative start-height end-height binary compress)
   "Get output distribution."
   (append (list (cons "amounts" (coerce amounts 'vector)))
           (when cumulative
@@ -103,7 +103,11 @@ at START-HEIGHT."
           (when start-height
             (list (cons "from_height" start-height)))
           (when end-height
-            (list (cons "to_height" end-height)))))
+            (list (cons "to_height" end-height)))
+          (when binary
+            (list (cons "binary" t)))
+          (when compress
+            (list (cons "compress" t)))))
 
 (defjsonrpc get-output-histogram ("get_output_histogram" amounts &key min-count max-count unlocked recent-cutoff)
   "Get a histogram of output amounts."
