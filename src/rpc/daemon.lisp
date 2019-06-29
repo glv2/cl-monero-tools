@@ -51,9 +51,11 @@
           (when fill-pow-hash
             (list (cons "fill_pow_hash" fill-pow-hash)))))
 
-(defjsonrpc get-block-header-by-height ("get_block_header_by_height" block-height)
+(defjsonrpc get-block-header-by-height ("get_block_header_by_height" block-height &key fill-pow-hash)
   "Look up a block's header by its height."
-  (list (cons "height" block-height)))
+  (append (list (cons "height" block-height))
+          (when fill-pow-hash
+            (list (cons "fill_pow_hash" fill-pow-hash)))))
 
 (defjsonrpc get-block-headers-range ("get_block_headers_range" start-height end-height)
   "Look up headers of a range of blocks."
