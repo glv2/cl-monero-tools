@@ -292,8 +292,10 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - set-log-hashrate
  - set-log-level
  - start-mining
+ - start-save-graph
  - stop-daemon
  - stop-mining
+ - stop-save-graph
  - update
 
 *** ZeroMQ RPCs

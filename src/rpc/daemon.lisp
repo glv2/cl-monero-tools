@@ -373,11 +373,17 @@ at START-HEIGHT."
         (cons "do_background_mining" (when background-mining t))
         (cons "ignore_battery" (when ignore-battery t))))
 
+(defrpc start-save-graph ("start_save_graph")
+  "Start saving graph.")
+
 (defrpc stop-daemon ("stop_daemon")
   "Send a command to the daemon to safely disconnect and shut down.")
 
 (defrpc stop-mining ("stop_mining")
   "Stop mining in the daemon.")
+
+(defrpc stop-save-graph ("stop_save_graph")
+  "Stop saving graph.")
 
 (defrpc update ("update" command &key path)
   "Update the daemon."

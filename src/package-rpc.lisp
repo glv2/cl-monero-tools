@@ -111,8 +111,10 @@
    #:set-log-hashrate
    #:set-log-level
    #:start-mining
+   #:start-save-graph
    #:stop-daemon
    #:stop-mining
+   #:stop-save-graph
    #:update
 
    #:zmq-get-block
