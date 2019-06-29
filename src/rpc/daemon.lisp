@@ -314,11 +314,12 @@ at START-HEIGHT."
 (defrpc save-bc ("save_bc")
   "Save the blockchain.")
 
-(defrpc send-raw-transaction ("send_raw_transaction" transaction &key do-not-relay)
+(defrpc send-raw-transaction ("send_raw_transaction" transaction &key do-not-relay (do-sanity-checks t))
   "Broadcast a raw transaction to the network."
   (append (list (cons "tx_as_hex" transaction))
           (when do-not-relay
-            (list (cons "do_not_relay" t)))))
+            (list (cons "do_not_relay" t)))
+          (list (cons "do_sanity_checks" do-sanity-checks))))
 
 (defrpc set-limit ("set_limit" download-limit upload-limit)
   "Set daemon bandwidth limits (kB/s)."
