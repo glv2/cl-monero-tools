@@ -82,8 +82,10 @@ at START-HEIGHT."
 (defjsonrpc get-info ("get_info")
   "Retrieve general information about the state of your node and the network.")
 
-(defjsonrpc get-last-block-header ("get_last_block_header")
-  "Look up the block header of the most recent block.")
+(defjsonrpc get-last-block-header ("get_last_block_header" &key fill-pow-hash)
+  "Look up the block header of the most recent block."
+  (when fill-pow-hash
+    (list (cons "fill_pow_hash" fill-pow-hash))))
 
 (defjsonrpc get-output-distribution ("get_output_distribution" amounts &key cumulative start-height end-height)
   "Get output distribution."
