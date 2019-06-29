@@ -127,7 +127,7 @@ at START-HEIGHT."
 (defrpc get-alt-blocks-hashes ("get_alt_blocks_hashes")
   "Get the known blocks hashes which are not on the main chain.")
 
-(defbinrpc get-blocks.bin ("get_blocks.bin" block-ids &key start-height prune)
+(defbinrpc get-blocks.bin ("get_blocks.bin" block-ids &key start-height prune no-miner-transaction)
   "Get all blocks info."
   (let ((hex-block-ids (with-output-to-string (s)
                          (dolist (id (coerce block-ids 'list))
@@ -136,7 +136,9 @@ at START-HEIGHT."
             (when start-height
               (list (cons "start_height" start-height)))
             (when prune
-              (list (cons "prune" t)))))
+              (list (cons "prune" t)))
+            (when no-miner-transaction
+              (list (cons "no_miner_tx" t)))))
   (lambda (result)
     (let ((blocks (geta result :blocks)))
       (dotimes (i (length blocks))
