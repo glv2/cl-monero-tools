@@ -191,13 +191,15 @@ at START-HEIGHT."
   "Get global output indexes of a transaction."
   (list (cons "txid" (bytes->string (hex-string->bytes transaction-id)))))
 
-(defrpc get-outs ("get_outs" outputs)
+(defrpc get-outs ("get_outs" outputs &key (get-transaction-id t))
   "Get outputs."
-  (list (cons "outputs" (coerce outputs 'vector))))
+  (list (cons "outputs" (coerce outputs 'vector))
+        (cons "get_txid" (when get-transaction-id t))))
 
-(defbinrpc get-outs.bin ("get_outs.bin" outputs)
+(defbinrpc get-outs.bin ("get_outs.bin" outputs &key (get-transaction-id t))
   "Get outputs."
-  (list (cons "outputs" (coerce outputs 'vector)))
+  (list (cons "outputs" (coerce outputs 'vector))
+        (cons "get_txid" (when get-transaction-id t)))
   (lambda (result)
     (let ((outs (geta result :outs)))
       (dotimes (i (length outs))
