@@ -45,9 +45,11 @@
   "Look up a block's hash by its height."
   (vector block-height))
 
-(defjsonrpc get-block-header-by-hash ("get_block_header_by_hash" block-hash)
+(defjsonrpc get-block-header-by-hash ("get_block_header_by_hash" block-hash &key fill-pow-hash)
   "Look up a block's header by its hash."
-  (list (cons "hash" block-hash)))
+  (append (list (cons "hash" block-hash))
+          (when fill-pow-hash
+            (list (cons "fill_pow_hash" fill-pow-hash)))))
 
 (defjsonrpc get-block-header-by-height ("get_block_header_by_height" block-height)
   "Look up a block's header by its height."
