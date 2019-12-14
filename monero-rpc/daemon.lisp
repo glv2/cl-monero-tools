@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-daemon-rpc)
+(in-package :monero-daemon-rpc)
 
 
 ;;; Specs in https://getmonero.org/resources/developer-guides/daemon-rpc.html
@@ -158,60 +158,6 @@ at START-HEIGHT."
 (defrpc get-alt-blocks-hashes ("get_alt_blocks_hashes")
   "Get the known blocks hashes which are not on the main chain.")
 
-(defbinrpc get-blocks.bin ("get_blocks.bin" block-ids &key start-height prune no-miner-transaction)
-  "Get all blocks info."
-  (let ((hex-block-ids (with-output-to-string (s)
-                         (dolist (id (coerce block-ids 'list))
-                           (write-string id s)))))
-    (append (list (cons "block_ids" (bytes->string (hex-string->bytes hex-block-ids))))
-            (when start-height
-              (list (cons "start_height" start-height)))
-            (when prune
-              (list (cons "prune" t)))
-            (when no-miner-transaction
-              (list (cons "no_miner_tx" t)))))
-  (lambda (result)
-    (let ((blocks (geta result :blocks)))
-      (dotimes (i (length blocks))
-        (let ((b (aref blocks i)))
-          (setf (geta b :block) (string->bytes (geta b :block))))))
-    result))
-
-;; (get-blocks.bin (list "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148" "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"))
-
-(defbinrpc get-blocks-by-height.bin ("get_blocks_by_height.bin" heights)
-  "Get blocks by height."
-  (list (cons "heights" (coerce heights '(simple-array (unsigned-byte 64) (*)))))
-  (lambda (result)
-    (let ((blocks (geta result :blocks)))
-      (dotimes (i (length blocks))
-        (let ((b (aref blocks i)))
-          (setf (geta b :block) (string->bytes (geta b :block))))))
-    result))
-
-(defbinrpc get-hashes.bin ("get_hashes.bin" block-ids &key start-height)
-  "Get hashes."
-  (let ((hex-block-ids (with-output-to-string (s)
-                         (dolist (id (coerce block-ids 'list))
-                           (write-string id s)))))
-    (append (list (cons "block_ids" (bytes->string (hex-string->bytes hex-block-ids))))
-            (when start-height
-              (list (cons "start_height" start-height)))))
-  (lambda (result)
-    (let* ((data-string (geta result :m-block-ids))
-           (size (length data-string))
-           (key-length 32))
-      (unless (zerop (mod size key-length))
-        (error "Invalid length"))
-      (setf (geta result :m-block-ids)
-            (map 'vector
-                 #'string->bytes
-                 (loop for i from 0 below size by key-length
-                       collect (subseq data-string i (+ i key-length))))))
-    result))
-
-;; (get-hashes.bin (list "771fbcd656ec1464d3a02ead5e18644030007a0fc664c0a964d30922821a8148" "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"))
-
 (defrpc get-height ("get_height")
   "Get blockchain height.")
 
@@ -221,59 +167,13 @@ at START-HEIGHT."
 (defrpc get-net-stats ("get_net_stats")
   "Get network stastitics.")
 
-(defbinrpc get-o-indexes.bin ("get_o_indexes.bin" transaction-id)
-  "Get global output indexes of a transaction."
-  (list (cons "txid" (bytes->string (hex-string->bytes transaction-id)))))
-
 (defrpc get-outs ("get_outs" outputs &key (get-transaction-id t))
   "Get outputs."
   (list (cons "outputs" (coerce outputs 'vector))
         (cons "get_txid" (when get-transaction-id t))))
 
-(defbinrpc get-outs.bin ("get_outs.bin" outputs &key (get-transaction-id t))
-  "Get outputs."
-  (list (cons "outputs" (coerce outputs 'vector))
-        (cons "get_txid" (when get-transaction-id t)))
-  (lambda (result)
-    (let ((outs (geta result :outs)))
-      (dotimes (i (length outs))
-        (let ((out (aref outs i)))
-          (setf (geta out :key) (string->bytes (geta out :key)))
-          (setf (geta out :mask) (string->bytes (geta out :mask)))
-          (setf (geta out :txid) (string->bytes (geta out :txid))))))
-    result))
-
 (defrpc get-peer-list ("get_peer_list")
   "Get the known peers list.")
-
-(defbinrpc get-random-outs.bin ("get_random_outs.bin" amounts output-count)
-  "Get a list of random outputs for a specific list of amounts."
-  (list (cons "amounts" (coerce amounts 'vector))
-        (cons "outs_count" output-count))
-  (lambda (result)
-    (let ((outs (geta result :outs)))
-      (dotimes (i (length outs))
-        (let* ((x (aref outs i))
-               (y (string->bytes (geta x :outs)))
-               (z (loop for j from 0 below (length y) by 40
-                        collect (list (cons :amount-index (bytes->integer y :start j :end (+ j 8)))
-                                      (cons :output-key (subseq y (+ j 8) (+ j 40)))))))
-          (setf (geta x :outs) z))))
-    result))
-
-(defbinrpc get-random-rctouts.bin ("get_random_rctouts.bin" output-count)
-  "Get random RingCT outputs."
-  (list (cons "outs_count" output-count))
-  (lambda (result)
-    (let* ((outs (geta result :outs))
-           (x (string->bytes outs))
-           (y (loop for i from 0 below (length x) by 80
-                    collect (list (cons :amount (bytes->integer x :start i :end (+ i 8)))
-                                  (cons :amount-index (bytes->integer x :start (+ i 8) :end (+ i 16)))
-                                  (cons :output-key (subseq x (+ i 16) (+ i 48)))
-                                  (cons :commitment (subseq x (+ i 48) (+ i 80)))))))
-      (setf (geta result :outs) y))
-    result))
 
 (defrawrpc get-transaction-pool ("get_transaction_pool")
   "Show information about valid transactions seen by the node but not yet mined
@@ -290,22 +190,6 @@ at START-HEIGHT."
 
 (defrpc get-transaction-pool-hashes ("get_transaction_pool_hashes")
   "Get hashes from transaction pool.")
-
-(defrawrpc get-transaction-pool-hashes.bin ("get_transaction_pool_hashes.bin")
-  "Get hashes from transaction pool."
-  nil
-  (lambda (result)
-    (let* ((result (let ((json:*use-strict-json-rules* nil))
-                     (decode-json-from-string (bytes->string result))))
-           (data (geta result :tx-hashes))
-           (data-string (when data
-                          (string->bytes data)))
-           (transaction-hashes (when data-string
-                                 (loop for i from 0 below (length data-string) by 32
-                                       collect (subseq data-string i (+ i 32))))))
-      (when transaction-hashes
-        (setf (geta result :tx-hashes) transaction-hashes))
-      result)))
 
 (defrawrpc get-transaction-pool-stats ("get_transaction_pool_stats")
   "Get the transaction pool statistics."
@@ -405,76 +289,3 @@ at START-HEIGHT."
   (append (list (cons "command" command))
           (when path
             (list (cons "path" path)))))
-
-
-;;; Custom HTTP RPCs
-
-;; (defun get-block-data-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-;;   (let* ((parameters (list (cons (etypecase block-id
-;;                                    (integer "height")
-;;                                    (string "hash"))
-;;                                  block-id)))
-;;          (answer (json-rpc "getblock"
-;;                            :parameters parameters
-;;                            :rpc-host rpc-host
-;;                            :rpc-port rpc-port
-;;                            :rpc-user rpc-user
-;;                            :rpc-password rpc-password))
-;;          (data (geta answer :blob)))
-;;     (when data
-;;       (hex-string->bytes data))))
-
-;; (defun get-block-transaction-hashes-from-daemon (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-;;   (let* ((answer (get-block block-id
-;;                             :rpc-host rpc-host
-;;                             :rpc-port rpc-port
-;;                             :rpc-user rpc-user
-;;                             :rpc-password rpc-password))
-;;          (block-data (hex-string->bytes (geta answer :blob)))
-;;          (miner-transaction-hash (compute-miner-transaction-hash-from-data block-data))
-;;          (regular-transaction-hashes (geta answer :tx-hashes)))
-;;     (cons (bytes->hex-string miner-transaction-hash) regular-transaction-hashes)))
-
-
-;;; ZeroMQ RPCs
-
-(defun zmq-get-info (&key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (zmq-json-rpc "get_info"
-                :rpc-host rpc-host
-                :rpc-port rpc-port
-                :rpc-user rpc-user
-                :rpc-password rpc-password))
-
-(defun zmq-get-transactions (transaction-ids &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let ((parameters (list (cons "tx_hashes" (coerce transaction-ids 'vector)))))
-    (zmq-json-rpc "get_transactions"
-                  :parameters parameters
-                  :rpc-host rpc-host
-                  :rpc-port rpc-port
-                  :rpc-user rpc-user
-                  :rpc-password rpc-password)))
-
-(defun zmq-get-block (block-id &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((get-by-height (integerp block-id))
-         (parameters (list (cons (if get-by-height "height" "hash")
-                                 block-id))))
-    (zmq-json-rpc (if get-by-height "get_block_header_by_height" "get_block_header_by_hash")
-                  :parameters parameters
-                  :rpc-host rpc-host
-                  :rpc-port rpc-port
-                  :rpc-user rpc-user
-                  :rpc-password rpc-password)))
-
-(defun zmq-get-blocks (block-ids start-height prune &key (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
-  (let* ((block-ids block-ids)
-         (parameters (list (cons "block_ids" block-ids)
-                           (cons "prune" (when prune t))
-                           (cons "start_height" start-height))))
-    (zmq-json-rpc "get_blocks_fast"
-                  :parameters parameters
-                  :rpc-host rpc-host
-                  :rpc-port rpc-port
-                  :rpc-user rpc-user
-                  :rpc-password rpc-password)))
-
-;; (zmq-get-blocks (list "5a1125384b088dbeaaa6f61c39db0318e53732ffc927978a52e3b16553203138" "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b") 0 t) ; testnet

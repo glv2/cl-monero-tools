@@ -4,58 +4,24 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(defpackage :monero-tools-rpc
-  (:use :cl)
+(defpackage :monero-rpc
+  (:use :cl :monero-utils)
   (:import-from :base64
                 #:usb8-array-to-base64-string)
   (:import-from :ironclad
                 #:digest-sequence
                 #:random-data)
-  (:import-from :monero-tools
-                #:bytes->hex-string
-                #:decode-json-from-string
-                #:deserialize-from-binary-storage
-                #:encode-json-to-string
-                #:geta
-                #:serialize-to-binary-storage
-                #:string->bytes
-                #:utf-8-string->bytes)
   (:import-from :split-sequence
                 #:split-sequence)
   (:export
    #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
+   #:parse-digest-authentication-challenge
+   #:compute-digest-authentication-response
    #:rpc #:json-rpc
-   #:defrpc #:defbinrpc #:defrawrpc #:defjsonrpc
-   #:zmq-json-rpc))
+   #:defrpc #:defrawrpc #:defjsonrpc))
 
-(defpackage :monero-tools-daemon-rpc
-  (:use :cl :monero-tools-rpc)
-  (:import-from :bordeaux-threads
-                #:join-thread
-                #:make-lock
-                #:make-thread
-                #:with-lock-held)
-  (:import-from :monero-tools
-                #:*mine-lock*
-                #:bytes->hex-string
-                #:bytes->integer
-                #:bytes->string
-                #:compute-key-image
-                #:compute-miner-transaction-hash-from-data
-                #:decode-json-from-string
-                #:decrypt-amount
-                #:derive-key
-                #:derive-output-public-key
-                #:derive-output-secret-key
-                #:derive-output-secret-subkey
-                #:deserialize-block
-                #:deserialize-transaction
-                #:geta
-                #:hex-string->bytes
-                #:miner
-                #:output-public-key->public-spend-subkey
-                #:spent-key-images
-                #:string->bytes)
+(defpackage :monero-daemon-rpc
+  (:use :cl :monero-rpc :monero-utils)
   (:export
    #:flush-txpool
    #:generateblocks
@@ -85,21 +51,13 @@
    #:sync-info
 
    #:get-alt-blocks-hashes
-   #:get-blocks.bin
-   #:get-blocks-by-height.bin
-   #:get-hashes.bin
    #:get-height
    #:get-limit
    #:get-net-stats
-   #:get-o-indexes.bin
    #:get-outs
-   #:get-outs.bin
    #:get-peer-list
-   #:get-random-outs.bin
-   #:get-random-rctouts.bin
    #:get-transaction-pool
    #:get-transaction-pool-hashes
-   #:get-transaction-pool-hashes.bin
    #:get-transaction-pool-stats
    #:get-transactions
    #:in-peers
@@ -108,6 +66,7 @@
    #:out-peers
    #:pop-blocks
    #:save-bc
+   #:send-raw-transaction
    #:set-limit
    #:set-log-categories
    #:set-log-hashrate
@@ -117,20 +76,10 @@
    #:stop-daemon
    #:stop-mining
    #:stop-save-graph
-   #:update
+   #:update))
 
-   #:zmq-get-block
-   #:zmq-get-info
-   #:zmq-get-transactions
-
-   ;; history
-   #:transaction-history
-
-   ;; mine
-   #:mine-block))
-
-(defpackage :monero-tools-wallet-rpc
-  (:use :cl :monero-tools-rpc)
+(defpackage :monero-wallet-rpc
+  (:use :cl :monero-rpc :monero-utils)
   (:export
    #:add-address-book
    #:auto-refresh

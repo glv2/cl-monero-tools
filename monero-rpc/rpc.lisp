@@ -1,10 +1,10 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2019 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-rpc)
+(in-package :monero-rpc)
 
 
 (defparameter *rpc-host* "127.0.0.1"
@@ -60,14 +60,12 @@
                    ", response=\"" response "\""
                    ", algorithm=\"" algorithm "\""))))
 
-(defun rpc (method &key binary raw parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+(defun rpc (method &key raw parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   "Send a METHOD RPC request to the server at RPC-HOST:RPC-PORT with optional
 PARAMETERS."
   (let* ((page (format nil "/~(~a~)" method))
          (parameters (when parameters
-                       (if binary
-                           (serialize-to-binary-storage parameters)
-                           (encode-json-to-string parameters))))
+                       (encode-json-to-string parameters)))
          (server-uri (format nil "http://~a:~d~a" rpc-host rpc-port page))
          (auth (handler-case (progn (dex:head server-uri) nil)
                  (dex:http-request-unauthorized (e)
@@ -93,19 +91,12 @@ PARAMETERS."
         (dex:post server-uri
                   :headers (if auth
                                (list (cons "authorization" auth)
-                                     (cons "content-type" (if binary
-                                                              "application/octet-stream"
-                                                              "application/json")))
-                               (list (cons "content-type" (if binary
-                                                              "application/octet-stream"
-                                                              "application/json"))))
+                                     (cons "content-type" "application/json"))
+                               (list (cons "content-type" "application/json")))
                   :content parameters
                   :force-binary raw)
       (declare (ignore status response-headers uri stream))
-      (cond
-        (raw body)
-        (binary (deserialize-from-binary-storage body 0))
-        (t (decode-json-from-string body))))))
+      (if raw body (decode-json-from-string body)))))
 
 (defun json-rpc (method &key parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   "Send a METHOD JSON RPC request to RPC-HOST:RPC-PORT with optional
@@ -143,7 +134,6 @@ PARAMETERS."
                            (t 'rpc))
                        ,method
                        ,@(cond
-                           ((eql type :bin) (list :binary t))
                            ((eql type :raw) (list :raw t)))
                        :parameters parameters
                        :rpc-host rpc-host
@@ -165,9 +155,6 @@ PARAMETERS."
 
 (defmacro defrpc (name (method &rest args) &body body)
   `(defhttprpc :rpc ,name (,method ,@args) ,@body))
-
-(defmacro defbinrpc (name (method &rest args) &body body)
-  `(defhttprpc :bin ,name (,method ,@args) ,@body))
 
 (defmacro defrawrpc (name (method &rest args) &body body)
   `(defhttprpc :raw ,name (,method ,@args) ,@body))

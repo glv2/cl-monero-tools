@@ -2,9 +2,20 @@
 
 This is a Common Lisp toolbox to work with the Monero cryptocurrency.
 
-The *monero-tools* system contains basic tools that can be used offline. The
-*monero-tools-rpc* system contains tools requiring a running *monerod* or/and
-*monero-wallet-rpc* daemon to connect to.
+There are several systems:
+ - *monero-utils*: Basic utility functions (integer/bytes conversion, base58
+   encoding, etc...).
+ - *monero-tools*: Tools that can be used offline (crypto functions, address
+   generation, etc...).
+ - *monero-rpc*: HTTP RPCs to communicate with a running *monerod* or
+   *monero-wallet-rpc* daemon.
+ - *monero-binary-rpc*: Binary RPCs to communicate with a running *monerod*
+   daemon.
+ - *monero-zmq-rpc*: ZeroMQ RPCs to communicate with a running *monerod*
+   daemon.
+ - *monero-custom-rpc*: Some custom RPCs to communicate with a running
+   *monerod* daemon.
+ - *monero-p2p*: Tools to communicate with remote Monero nodes.
 
 This library is in alpha quality stage, so the API might change.
 
@@ -23,7 +34,48 @@ or
 (ql:quickload "monero-tools")
 #+END_SRC
 
-** *monero-tools* dependencies
+* monero-utils
+** Dependencies
+
+*monero-utils* requires the following libraries:
+ - alexandria
+ - babel
+ - cffi
+ - cl-json
+ - ironclad
+
+** API
+
+After loading the *monero-utils* system, the following functions and variables
+are in the *monero-utils* package.
+
+ - ~+base58-checksum-size+~
+ - base58-decode
+ - base58-decoded-length
+ - base58-encode
+ - base58-encoded-length
+ - bytes->hex-string
+ - bytes->integer
+ - bytes->string
+ - bytes->utf-8-string
+ - c-array->lisp-array
+ - decode-json-from-string
+ - encode-json-to-string
+ - format-float
+ - geta
+ - hex-string->bytes
+ - integer->bytes
+ - json-name->lisp-name
+ - lisp-array->c-array
+ - lisp-name->json-name
+ - octet-vector
+ - read-float
+ - string->bytes
+ - utf-8-string->bytes
+
+* monero-tools
+** Dependencies
+
 *monero-tools* requires the following libraries:
  - alexandria
  - babel
@@ -35,6 +87,7 @@ or
  - cl-qrencode
  - ieee-floats
  - ironclad
+ - monero-utils
  - png-read
  - split-sequence
 
@@ -45,24 +98,12 @@ Optional:
 If the optional C libraries are not available, the system should load
 successfully but some functions will not work.
 
-** *monero-tools-rpc* dependencies
-
-*monero-tools-rpc* requires the following libraries:
- - bordeaux-threads
- - cl-base64
- - cl-json
- - dexador
- - ironclad
- - monero-tools
- - pzmq
- - split-sequence
-
-* Basic tools
+** API
 
 After loading the *monero-tools* system, the following functions and variables
 are in the *monero-tools* package.
 
-** Blockchain
+*** Blockchain
 
  - acceptable-hash-p
  - compute-block-hash
@@ -73,7 +114,7 @@ are in the *monero-tools* package.
  - compute-transaction-hash-from-data
  - compute-transaction-tree-hash
 
-** Cryptography
+*** Cryptography
 
  - =*cryptonight-height*=
  - =*cryptonight-variant*=
@@ -111,12 +152,12 @@ are in the *monero-tools* package.
  - valid-ring-signature-p
  - valid-signature-p
 
-** Mining
+*** Mining
 
  - miner
  - mining-profitability
 
-** Mnemonic seed
+*** Mnemonic seed
 
  - available-mnemonic-seed-languages
  - decrypt-mnemonic-seed
@@ -124,13 +165,13 @@ are in the *monero-tools* package.
  - mnemonic-seed->secret-key
  - secret-key->mnemonic-seed
 
-** OpenAlias
+*** OpenAlias
 
  - =*dns-server*=
  - =*dnssec-trust-anchors*=
  - get-openalias-info
 
-** Serialization
+*** Serialization
 
  - deserialize-block
  - deserialize-block-header
@@ -143,25 +184,7 @@ are in the *monero-tools* package.
  - serialize-transaction
  - serialize-transaction-prefix
 
-** Utils
-
- - base58-decode
- - base58-encode
- - bytes->hex-string
- - bytes->integer
- - bytes->string
- - bytes->utf-8-string
- - decode-json-from-string
- - encode-json-to-string
- - format-float
- - geta
- - hex-string->bytes
- - integer->bytes
- - read-float
- - string->bytes
- - utf-8-string->bytes
-
-** Wallet
+*** Wallet
 
  - =+monero-unit+=
  - bruteforce-wallet-keys
@@ -202,34 +225,53 @@ are in the *monero-tools* package.
  - valid-outbound-transaction-proof-p
  - valid-payment-proof-p
 
-* RPC tools
+** Tests
 
-After loading the *monero-tools-rpc* system, the following functions and
-variables are available.
+The tests require the *fiveam* library.
 
-** Basic remote procedure call
+#+BEGIN_SRC lisp
+(asdf:test-system "monero-tools")
+#+END_SRC
 
-The basic RPC functions and variables are in the *monero-tools-rpc* package.
+* monero-rpc
+** Dependencies
+
+*monero-rpc* requires the following libraries:
+ - cl-base64
+ - cl-json
+ - dexador
+ - ironclad
+ - monero-utils
+ - split-sequence
+
+** API
+
+After loading the *monero-rpc* system, the following functions and variables
+are available in the *monero-rpc* package.
 
  - =*rpc-host*=
  - =*rpc-password*=
  - =*rpc-port*=
  - =*rpc-user*=
+ - compute-digest-authentication-response
+ - defjsonrpc
+ - defrawrpc
+ - defrpc
  - json-rpc
+ - parse-digest-authentication-challenge
  - rpc
- - zmq-json-rpc
 
-** Calling *monerod*
+*** Calling *monerod*
 
-The functions and variables for daemon RPCs are in the
-*monero-tools-daemon-rpc* package.
+After loading the *monero-rpc* system, the following functions and variables
+are available in the *monero-daemon-rpc* package.
 
-*** HTTP JSON RPCs
+**** HTTP JSON RPCs
 
 The following functions are thin wrappers for the HTTP JSON RPCs of *monerod*.
 They use alists instead of JSON objects, where a key named =some_key= in a JSON
-object becomes =:some-key= in the alist. The specifications of these RPCs can be
-found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
+object becomes =:some-key= in the alist. The specifications of these RPCs can
+be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 
  - flush-txpool
  - generateblocks
@@ -258,29 +300,21 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - submit-block
  - sync-info
 
-*** Other HTTP RPCs
+**** Other HTTP RPCs
 
-The following functions are thin wrappers for the HTTP RPCs of *monerod*.
-They use alists instead of JSON objects, where a key named =some_key= in a JSON
-object becomes =:some-key= in the alist. The specifications of these RPCs can be
-found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
+The following functions are thin wrappers for the HTTP RPCs of *monerod*. They
+use alists instead of JSON objects, where a key named =some_key= in a JSON
+object becomes =:some-key= in the alist. The specifications of these RPCs can
+be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 
  - get-alt-blocks-hashes
- - get-blocks.bin
- - get-blocks-by-height.bin
- - get-hashes.bin
  - get-height
  - get-limit
  - get-net-stats
- - get-o-indexes.bin
  - get-outs
- - get-outs.bin
  - get-peer-list
- - get-random-outs.bin
- - get-random-rctouts.bin
  - get-transaction-pool
  - get-transaction-pool-hashes
- - get-transaction-pool-hashes.bin
  - get-transaction-pool-stats
  - get-transactions
  - in-peers
@@ -289,6 +323,7 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - out-peers
  - pop-blocks
  - save-bc
+ - send-raw-transaction
  - set-limit
  - set-log-categories
  - set-log-hashrate
@@ -300,32 +335,15 @@ found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - stop-save-graph
  - update
 
-*** ZeroMQ RPCs
+*** Calling *monero-wallet-rpc*
 
- - zmq-get-block
- - zmq-get-info
- - zmq-get-transactions
-
-*** Custom RPCs
-**** Mining
-
- - mine-block
-
-**** Wallet
-
- - transaction-history
-
-** Calling *monero-wallet-rpc*
-
-The functions and variables for wallet RPCs are in the
-*monero-tools-wallet-rpc* package.
-
-*** HTTP JSON RPCs
+After loading the *monero-rpc* system, the following functions and variables
+are available in the *monero-wallet-rpc* package.
 
 The following functions are thin wrappers for the HTTP JSON RPCs of
 *monero-wallet-rpc*. They use alists instead of JSON objects, where a key named
-=some_key= in a JSON object becomes =:some-key= in the alist. The specifications
-of these RPCs can be found in
+=some_key= in a JSON object becomes =:some-key= in the alist. The
+specifications of these RPCs can be found in
 https://getmonero.org/resources/developer-guides/wallet-rpc.html.
 
  - add-address-book
@@ -411,10 +429,85 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
  - validate-address
  - verify
 
-* Tests
+* monero-binary-rpc
+** Dependencies
 
-The tests require the *fiveam* library.
+*monero-binary-rpc* requires the following libraries:
+ - dexador
+ - monero-rpc
+ - monero-tools
+ - monero-utils
 
-#+BEGIN_SRC lisp
-(asdf:test-system "monero-tools")
-#+END_SRC
+** API
+
+After loading the *monero-binary-rpc* system, the following functions and
+variables are available in the *monero-binary-rpc* package.
+
+ - binary-rpc
+ - defbinrpc
+ - get-blocks.bin
+ - get-blocks-by-height.bin
+ - get-hashes.bin
+ - get-o-indexes.bin
+ - get-outs.bin
+ - get-random-outs.bin
+ - get-random-rctouts.bin
+ - get-transaction-pool-hashes.bin
+
+* monero-zmq-rpc
+** Dependencies
+
+*monero-zmq-rpc* requires the following libraries:
+ - monero-rpc
+ - monero-utils
+ - pzmq
+
+** API
+
+After loading the *monero-zmq-rpc* system, the following functions and
+variables are available in the *monero-zmq-rpc* package.
+
+ - get-block
+ - get-blocks
+ - get-info
+ - get-transactions
+ - zmq-json-rpc
+
+* monero-custom-rpc
+** Dependencies
+
+*monero-custom-rpc* requires the following libraries:
+ - bordeaux-threads
+ - monero-binary-rpc
+ - monero-rpc
+ - monero-tools
+ - monero-utils
+
+** API
+
+After loading the *monero-custom-rpc* system, the following functions and
+variables are available in the *monero-custom-rpc* package.
+
+ - mine-block
+ - transaction-history
+
+* monero-p2p
+** Dependencies
+
+*monero-p2p* requires the following libraries:
+ - alexandria
+ - ironclad
+ - monero-tools
+ - monero-utils
+ - usocket
+
+** API
+
+After loading the *monero-p2p* system, the following functions and variables
+are available in the *monero-p2p* package.
+
+ - ~*network-id*~
+ - ~*p2p-port*~
+ - ~*peer-id*~
+ - close-connection
+ - open-connection

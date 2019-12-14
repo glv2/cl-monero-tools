@@ -5,7 +5,7 @@
 
 
 (defpackage :monero-tools
-  (:use :cl)
+  (:use :cl :monero-utils)
   (:import-from :alexandria
                 #:define-constant
                 #:hash-table-keys
@@ -143,16 +143,6 @@
    #:serialize-transaction #:deserialize-transaction
    #:serialize-transaction-prefix #:deserialize-transaction-prefix
    #:serialize-to-binary-storage #:deserialize-from-binary-storage
-
-   ;; utils
-   #:base58-encode #:base58-decode
-   #:integer->bytes #:bytes->integer
-   #:string->bytes #:bytes->string
-   #:utf-8-string->bytes #:bytes->utf-8-string
-   #:hex-string->bytes #:bytes->hex-string
-   #:geta
-   #:read-float #:format-float
-   #:decode-json-from-string #:encode-json-to-string
 
    ;; wallet
    #:+monero-unit+

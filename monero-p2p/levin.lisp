@@ -1,10 +1,10 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018 Guillaume LE VAILLANT
+;;;; Copyright 2018-2019 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-p2p)
+(in-package :monero-p2p)
 
 
 (defun write-levin-packet (stream return-data-p command return-code flags &optional payload)

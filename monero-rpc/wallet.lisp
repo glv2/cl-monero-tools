@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-wallet-rpc)
+(in-package :monero-wallet-rpc)
 
 
 ;;; Specs in https://getmonero.org/resources/developer-guides/wallet-rpc.html

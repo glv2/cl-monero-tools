@@ -1,10 +1,10 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018 Guillaume LE VAILLANT
+;;;; Copyright 2018-2019 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools-p2p)
+(in-package :monero-p2p)
 
 
 (defparameter *network-id* +p2p-network-id-mainnet+)
@@ -43,14 +43,14 @@
     (serialize-to-binary-storage payload)))
 
 (defun close-connection (socket)
-  (usocket:socket-close socket))
+  (socket-close socket))
 
 (defun open-connection (host port)
   (declare (optimize (debug 3)))
-  (let* ((socket (usocket:socket-connect host port
-                                         :protocol :stream
-                                         :element-type '(unsigned-byte 8)))
-         (stream (usocket:socket-stream socket)))
+  (let* ((socket (socket-connect host port
+                                 :protocol :stream
+                                 :element-type '(unsigned-byte 8)))
+         (stream (socket-stream socket)))
     (clear-input stream)
     (write-request stream +p2p-command-handshake+ (make-handshake-request-payload))
     (multiple-value-bind (return-data-p command return-code flags payload)
@@ -79,7 +79,7 @@
         (values socket payload)))))
 
 (defun handle-request (socket command payload)
-  (let ((stream (usocket:socket-stream socket)))
+  (let ((stream (socket-stream socket)))
     (case command
       ((+p2p-command-handshake+)
        ;; TODO
@@ -106,7 +106,7 @@
                        +levin-ok+)))))
 
 (defun handle-response (socket command payload)
-  (let ((stream (usocket:socket-stream socket)))
+  (let ((stream (socket-stream socket)))
     (case command
       ((+p2p-command-handshake+)
        (setf (geta payload :local-peerlist)
@@ -136,7 +136,7 @@
        ))))
 
 (defun read-and-handle-packet (socket)
-  (let ((stream (usocket:socket-stream socket)))
+  (let ((stream (socket-stream socket)))
     (when (listen socket)
       (multiple-value-bind (return-data-p command return-code flags payload)
           (read-levin-packet stream)

@@ -4,7 +4,7 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools/tests)
+(in-package :monero-tools-tests)
 
 
 (def-suite utils-tests

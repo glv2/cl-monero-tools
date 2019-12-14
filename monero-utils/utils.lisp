@@ -1,10 +1,10 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2019 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
-(in-package :monero-tools)
+(in-package :monero-utils)
 
 
 (deftype octet-vector (&optional size)
@@ -66,11 +66,11 @@ supplied, put the bytes in it starting at index START."
 
 (defun utf-8-string->bytes (string)
   "Convert a UTF-8 STRING to a sequence of bytes."
-  (babel:string-to-octets string :encoding :utf-8))
+  (string-to-octets string :encoding :utf-8))
 
 (defun bytes->utf-8-string (byte-vector &key (start 0) end)
   "Convert a sequence of bytes to a UTF-8 string."
-  (babel:octets-to-string byte-vector :start start :end end :encoding :utf-8))
+  (octets-to-string byte-vector :start start :end end :encoding :utf-8))
 
 (defun hex-string->bytes (hex-string &key (start 0) end)
   "Return the part of the HEX-STRING between START and END as a byte vector."
