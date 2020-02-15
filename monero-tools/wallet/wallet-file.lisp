@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -96,35 +96,34 @@ encrypted with chacha8 instead of chacha20."
                           (if (> len (- maximum-length (length prefix) (length suffix)))
                               (setf *bruteforce-stop* t)
                               (let ((charset-len (length characters)))
-                                (setf password (loop for i from 0 below len
-                                                     collect (aref characters (aref *bruteforce-state* (- len 1 i)))))
+                                (setf password (iter (for i from 0 below len)
+                                                     (collect (aref characters (aref *bruteforce-state* (- len 1 i))))))
                                 ;; Prepare next password
                                 (incf (aref *bruteforce-state* 0))
                                 (when (= (aref *bruteforce-state* 0) charset-len)
                                   (setf (aref *bruteforce-state* 0) 0))
-                                (loop with i = 0
-                                      while (and (< i len) (zerop (aref *bruteforce-state* i)))
-                                      do (progn
-                                           (incf i)
-                                           (incf (aref *bruteforce-state* i))
-                                           (when (= (aref *bruteforce-state* i) charset-len)
-                                             (setf (aref *bruteforce-state* i) 0))))
+                                (let ((i 0))
+                                  (iter (while (and (< i len) (zerop (aref *bruteforce-state* i))))
+                                        (incf i)
+                                        (incf (aref *bruteforce-state* i))
+                                        (when (= (aref *bruteforce-state* i) charset-len)
+                                          (setf (aref *bruteforce-state* i) 0))))
                                 (when (plusp (aref *bruteforce-state* len))
                                   (setf *bruteforce-state* (make-array (+ len 2) :initial-element 0)))))))
                       (when (plusp (length password))
                         (concatenate 'string prefix password suffix))))
 
                   (bruteforce ()
-                    (loop until *bruteforce-stop* do
-                      (let* ((password (if *bruteforce-dictionary*
-                                           (read-dictionary-line)
-                                           (generate-next-password)))
-                             (keys (handler-case (get-wallet-keys keys-file password :chacha8 chacha8)
-                                     (t () nil))))
-                        (when keys
-                          (with-lock-held (*bruteforce-lock*)
-                            (setf *bruteforce-stop* t)
-                            (setf *bruteforce-result* (acons :password password keys))))))))
+                    (iter (until *bruteforce-stop*)
+                          (let* ((password (if *bruteforce-dictionary*
+                                               (read-dictionary-line)
+                                               (generate-next-password)))
+                                 (keys (handler-case (get-wallet-keys keys-file password :chacha8 chacha8)
+                                         (t () nil))))
+                            (when keys
+                              (with-lock-held (*bruteforce-lock*)
+                                (setf *bruteforce-stop* t)
+                                (setf *bruteforce-result* (acons :password password keys))))))))
            (let ((thread-handles (make-array threads)))
              (dotimes (i threads)
                (setf (aref thread-handles i) (make-thread #'bruteforce)))

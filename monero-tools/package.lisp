@@ -1,11 +1,11 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
 (defpackage :monero-tools
-  (:use :cl :monero-utils)
+  (:use :cl :iterate :monero-utils)
   (:import-from :alexandria
                 #:define-constant
                 #:hash-table-keys

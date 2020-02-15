@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -32,16 +32,16 @@ a PNG-FILE."
                            :displaced-to array
                            :element-type (array-element-type array)))
              (convert-to-rgb3 (data bit-depth)
-               (loop with data-length = (length data)
-                     with shift = (- 8 bit-depth)
-                     with rgb-data = (make-array (* 3 data-length)
-                                                 :element-type '(unsigned-byte 8))
-                     for i from 0 below data-length
-                     do (let ((v (ash (aref data i) shift)))
-                          (setf (aref rgb-data (* 3 i)) v
-                                (aref rgb-data (+ (* 3 i) 1)) v
-                                (aref rgb-data (+ (* 3 i) 2)) v))
-                     finally (return rgb-data)))
+               (let* ((data-length (length data))
+                      (shift (- 8 bit-depth))
+                      (rgb-data (make-array (* 3 data-length)
+                                            :element-type '(unsigned-byte 8))))
+                 (iter (for i from 0 below data-length)
+                       (let ((v (ash (aref data i) shift)))
+                         (setf (aref rgb-data (* 3 i)) v
+                               (aref rgb-data (+ (* 3 i) 1)) v
+                               (aref rgb-data (+ (* 3 i) 2)) v))
+                       (finally (return rgb-data)))))
              (fourcc (fourcc)
                (logior (char-code (char fourcc 0))
                        (ash (char-code (char fourcc 1)) 8)

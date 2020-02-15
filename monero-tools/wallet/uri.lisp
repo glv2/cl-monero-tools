@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -49,10 +49,9 @@ URI."
                              (write-char (code-char (+ (* 16 x1) x2)) out)
                              (error "Invalid URI: ~a." uri))))))))
            (read-until (character)
-             (loop for c = (read-char in nil)
-                   until (or (null c) (char= c character))
-                   collect c into characters
-                   finally (return (coerce characters 'string))))
+             (iter (for c next (read-char in nil nil))
+                   (until (or (null c) (char= c character)))
+                   (collect c result-type 'string)))
            (get-parameter (parameters key)
              (car (geta parameters key :test #'string=))))
       (let ((header (make-string 7)))
@@ -60,11 +59,11 @@ URI."
         (unless (string= header "monero:")
           (error "Invalid URI: ~a." uri))
         (let ((address (read-until #\?))
-              (parameters (loop while (listen in)
-                                collect (read-until #\&) into parameters
-                                finally (return (mapcar (lambda (string)
-                                                          (split-sequence #\= string))
-                                                        parameters)))))
+              (parameters (iter (while (listen in))
+                                (collect (read-until #\&) into parameters)
+                                (finally (return (mapcar (lambda (string)
+                                                           (split-sequence #\= string))
+                                                         parameters))))))
           (unless (plusp (length address))
             (error "Invalid URI: ~a." uri))
           (append (list (cons :address address))

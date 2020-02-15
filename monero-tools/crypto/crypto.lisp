@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -123,18 +123,21 @@
                                :element-type '(unsigned-byte 8)
                                :initial-element 0)))
          (replace tmp data :end2 (* (- (* 2 cnt) count) +hash-length+))
-         (loop for i from (- (* 2 cnt) count) by 2
-               for j from (- (* 2 cnt) count)
-               while (< j cnt)
-               do (replace tmp (fast-hash data (* i +hash-length+) (* (+ i 2) +hash-length+))
-                           :start1 (* j +hash-length+) :end1 (* (1+ j) +hash-length+)))
-         (loop while (> cnt 2) do
+         (iter
+           (for i from (- (* 2 cnt) count) by 2)
+           (for j from (- (* 2 cnt) count))
+           (while (< j cnt))
+           (replace tmp (fast-hash data (* i +hash-length+) (* (+ i 2) +hash-length+))
+                    :start1 (* j +hash-length+) :end1 (* (1+ j) +hash-length+)))
+         (iter
+           (while (> cnt 2))
            (setf cnt (ash cnt -1))
-           (loop for i from 0 by 2
-                 for j from 0
-                 while (< j cnt)
-                 do (replace tmp (fast-hash tmp (* i +hash-length+) (* (+ i 2) +hash-length+))
-                             :start1 (* j +hash-length+) :end1 (* (1+ j) +hash-length+))))
+           (iter
+             (for i from 0 by 2)
+             (for j from 0)
+             (while (< j cnt))
+             (replace tmp (fast-hash tmp (* i +hash-length+) (* (+ i 2) +hash-length+))
+                      :start1 (* j +hash-length+) :end1 (* (1+ j) +hash-length+))))
          (fast-hash tmp 0 (* 2 +hash-length+)))))))
 
 (defun hash-to-scalar (data)

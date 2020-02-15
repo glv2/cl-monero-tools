@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2017 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -92,11 +92,11 @@ key made of bytes."
 
 (defun find-seed-language (seed)
   "Find which language the words from the SEED are from."
-  (loop for language in (available-mnemonic-seed-languages)
-        when (loop with word-list = (get-word-list (gethash language *word-lists*))
-                   for word across seed
-                   always (position word word-list :test #'string-equal))
-          do (return language)))
+  (iter (for language in (available-mnemonic-seed-languages))
+        (let ((word-list (get-word-list (gethash language *word-lists*))))
+          (when (iter (for word in-vector seed)
+                      (always (position word word-list :test #'string-equal)))
+            (return language)))))
 
 (defun secret-key->mnemonic-seed (secret-key language)
   "Convert a SECRET-KEY to a mnemonic seed."

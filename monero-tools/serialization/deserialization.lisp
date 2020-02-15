@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -8,45 +8,45 @@
 
 
 (defmacro deserialize (data offset specs)
-  (loop with result = (gensym)
-        with total-size = (gensym)
-        with object = (gensym)
-        with size = (gensym)
-        for spec in specs
-        for name = (car spec)
-        for reader = (cadr spec)
-        for reader-parameters = (cddr spec)
-        collect `(multiple-value-bind (,object ,size)
-                     (apply ,reader ,data (+ ,offset ,total-size) (list ,@reader-parameters))
-                   (push (cons ,(intern (string-upcase (symbol-name name)) :keyword)
-                               ,object)
-                         ,result)
-                   (incf ,total-size ,size))
-          into forms
-        finally (return `(let ((,result '())
-                               (,total-size 0))
-                           ,@forms
-                           (values (reverse ,result) ,total-size)))))
+  (let ((result (gensym))
+        (total-size (gensym))
+        (object (gensym))
+        (size (gensym)))
+    (iter (for spec in specs)
+          (for name next (car spec))
+          (for reader next (cadr spec))
+          (for reader-parameters next (cddr spec))
+          (collect `(multiple-value-bind (,object ,size)
+                        (apply ,reader ,data (+ ,offset ,total-size) (list ,@reader-parameters))
+                      (push (cons ,(intern (string-upcase (symbol-name name)) :keyword)
+                                  ,object)
+                            ,result)
+                      (incf ,total-size ,size))
+            into forms)
+          (finally (return `(let ((,result '())
+                                  (,total-size 0))
+                              ,@forms
+                              (values (reverse ,result) ,total-size)))))))
 
 (defmacro deserialize-variant (data offset specs)
-  (loop with type = (gensym)
-        with object = (gensym)
-        with size = (gensym)
-        for spec in specs
-        for name = (car spec)
-        for tag = (cadr spec)
-        for reader = (caddr spec)
-        for reader-parameters = (cdddr spec)
-        collect `((= ,type ,tag)
-                  (deserialize ,data (+ ,offset 1)
-                    ((,name ,reader ,@reader-parameters))))
-          into forms
-        finally (return `(let ((,type (aref ,data ,offset)))
-                           (multiple-value-bind (,object ,size)
-                               (cond ,@forms)
-                             (if ,object
-                                 (values ,object (+ 1 ,size))
-                                 (values nil 0)))))))
+  (let ((type (gensym))
+        (object (gensym))
+        (size (gensym)))
+    (iter (for spec in specs)
+          (for name next (car spec))
+          (for tag next (cadr spec))
+          (for reader next (caddr spec))
+          (for reader-parameters next (cdddr spec))
+          (collect `((= ,type ,tag)
+                     (deserialize ,data (+ ,offset 1)
+                       ((,name ,reader ,@reader-parameters))))
+            into forms)
+          (finally (return `(let ((,type (aref ,data ,offset)))
+                              (multiple-value-bind (,object ,size)
+                                  (cond ,@forms)
+                                (if ,object
+                                    (values ,object (+ 1 ,size))
+                                    (values nil 0)))))))))
 
 
 ;;; Basic types

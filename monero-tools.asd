@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -21,6 +21,7 @@
                "cl-ppcre"
                "cl-qrencode"
                "ieee-floats"
+               "iterate"
                "ironclad"
                "monero-utils"
                "png-read"

@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -99,12 +99,12 @@
              (type (simple-array (unsigned-byte 64) (25)) state)
              (type (simple-array (unsigned-byte 8) (144)) tmp)
              (dynamic-extent state tmp))
-    (loop until (< data-length 136) do
-      (dotimes-unrolled (i 17)
-        (setf (aref state i) (logxor (aref state i) (ub64ref/le data start)))
-        (incf start 8))
-      (decf data-length 136)
-      (keccakf state))
+    (iter (until (< data-length 136))
+          (dotimes-unrolled (i 17)
+            (setf (aref state i) (logxor (aref state i) (ub64ref/le data start)))
+            (incf start 8))
+          (decf data-length 136)
+          (keccakf state))
 
     ;; Last block and padding
     (replace tmp data :end1 data-length :start2 start)

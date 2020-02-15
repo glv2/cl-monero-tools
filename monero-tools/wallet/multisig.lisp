@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -68,8 +68,8 @@
           (if (not (and (zerop (mod keys-data-length +key-length+))
                         (valid-signature-p hash public-signer-key signature)))
               (error "Invalid multisig extra info.")
-              (let ((keys (loop for i from 0 below keys-data-length by +key-length+
-                                collect (subseq multisig-public-keys-data i (+ i +key-length+)))))
+              (let ((keys (iter (for i from 0 below keys-data-length by +key-length+)
+                                (collect (subseq multisig-public-keys-data i (+ i +key-length+))))))
                 (list (cons :public-signer-key public-signer-key)
                       (cons :multisig-public-keys (coerce keys 'vector)))))))))
 
@@ -105,12 +105,10 @@
                      (public-view-key (subseq seed offset (+ offset +key-length+)))
                      (offset (+ offset +key-length+))
                      (offset1 (+ offset (* multisig-keys-length +key-length+)))
-                     (multisig-keys (loop for i from offset below offset1 by +key-length+
-                                          collect (subseq seed i (+ i +key-length+))))
-                     (multisig-keys (coerce multisig-keys 'vector))
-                     (signers (loop for i from offset1 below (length seed) by +key-length+
-                                    collect (subseq seed i (+ i +key-length+))))
-                     (signers (coerce signers 'vector)))
+                     (multisig-keys (iter (for i from offset below offset1 by +key-length+)
+                                          (collect (subseq seed i (+ i +key-length+)) result-type 'vector)))
+                     (signers (iter (for i from offset1 below (length seed) by +key-length+)
+                                    (collect (subseq seed i (+ i +key-length+)) result-type 'vector))))
                 (if (not (and (equalp public-view-key (secret-key->public-key secret-view-key))
                               (find (secret-key->public-key secret-spend-key) signers :test #'equalp)
                               (equalp secret-spend-key

@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -8,41 +8,41 @@
 
 
 (defmacro serialize (stream object specs)
-  (loop with result = (gensym)
-        with id = (gensym)
-        for spec in specs
-        for name = (car spec)
-        for writer = (cadr spec)
-        for writer-parameters = (cddr spec)
-        collect `(let ((,id ,(intern (string-upcase (symbol-name name)) :keyword)))
-                   (apply ,writer ,result (geta ,object ,id) (list ,@writer-parameters)))
-          into forms
-        finally (return `(let ((,result (or ,stream (make-octet-output-stream))))
-                           ,@forms
-                           (unless ,stream
-                             (prog1 (get-output-stream-octets ,result)
-                               (close ,result)))))))
+  (let ((result (gensym))
+        (id (gensym)))
+    (iter (for spec in specs)
+          (for name next (car spec))
+          (for writer next (cadr spec))
+          (for writer-parameters next (cddr spec))
+          (collect `(let ((,id ,(intern (string-upcase (symbol-name name)) :keyword)))
+                      (apply ,writer ,result (geta ,object ,id) (list ,@writer-parameters)))
+            into forms)
+          (finally (return `(let ((,result (or ,stream (make-octet-output-stream))))
+                              ,@forms
+                              (unless ,stream
+                                (prog1 (get-output-stream-octets ,result)
+                                  (close ,result)))))))))
 
 (defmacro serialize-variant (stream object specs)
-  (loop with result = (gensym)
-        with type = (gensym)
-        with thing = (gensym)
-        for spec in specs
-        for id = (intern (string-upcase (symbol-name (car spec))) :keyword)
-        for tag = (cadr spec)
-        for writer = (caddr spec)
-        for writer-parameters = (cdddr spec)
-        collect `((eq ,type ,id)
-                  (write-byte ,tag ,result)
-                  (apply ,writer ,result ,thing (list ,@writer-parameters)))
-          into forms
-        finally (return `(let ((,result (or ,stream (make-octet-output-stream)))
-                               (,type (caar ,object))
-                               (,thing (cdar object)))
-                           (cond ,@forms)
-                           (unless ,stream
-                             (prog1 (get-output-stream-octets ,result)
-                               (close ,result)))))))
+  (let ((result  (gensym))
+        (type (gensym))
+        (thing (gensym)))
+    (iter (for spec in specs)
+          (for id next  (intern (string-upcase (symbol-name (car spec))) :keyword))
+          (for tag next (cadr spec))
+          (for writer next (caddr spec))
+          (for writer-parameters next (cdddr spec))
+          (collect `((eq ,type ,id)
+                     (write-byte ,tag ,result)
+                     (apply ,writer ,result ,thing (list ,@writer-parameters)))
+            into forms)
+          (finally (return `(let ((,result (or ,stream (make-octet-output-stream)))
+                                  (,type (caar ,object))
+                                  (,thing (cdar object)))
+                              (cond ,@forms)
+                              (unless ,stream
+                                (prog1 (get-output-stream-octets ,result)
+                                  (close ,result)))))))))
 
 
 ;;; Basic types
