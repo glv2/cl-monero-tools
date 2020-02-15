@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018-2019 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -13,11 +13,11 @@
          (key-images (or key-images (make-hash-table :test #'equalp)))
          (end-height (or end-height (geta (get-block-count) :count)))
          (history '()))
-    (loop while (<= start-height end-height) do
+    (iter (while (<= start-height end-height))
       (when verbose
         (format t "Block ~d~%" start-height))
-      (let* ((block-heights (loop for i from start-height to (min (+ start-height 99) end-height)
-                                  collect i))
+      (let* ((block-heights (iter (for i from start-height to (min (+ start-height 99) end-height))
+                                  (collect i)))
              (transaction-ids (apply #'concatenate
                                      'vector
                                      (map 'list
