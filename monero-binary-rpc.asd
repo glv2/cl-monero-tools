@@ -13,6 +13,7 @@
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
   :depends-on ("dexador"
+               "iterate"
                "monero-rpc"
                "monero-tools"
                "monero-utils")

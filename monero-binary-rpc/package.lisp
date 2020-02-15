@@ -1,11 +1,11 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018-2019 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
 (defpackage :monero-binary-rpc
-  (:use :cl :monero-rpc :monero-utils)
+  (:use :cl :iterate :monero-rpc :monero-utils)
   (:import-from :monero-tools
                 #:deserialize-from-binary-storage
                 #:serialize-to-binary-storage)
