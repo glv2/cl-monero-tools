@@ -1,11 +1,11 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018-2019 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
 (defpackage :monero-p2p
-  (:use :cl :monero-utils)
+  (:use :cl :iterate :monero-utils)
   (:import-from :alexandria
                 #:define-constant)
   (:import-from :ironclad

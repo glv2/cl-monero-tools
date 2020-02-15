@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018-2019 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -20,11 +20,9 @@
   (finish-output stream))
 
 (defun read-levin-packet (stream)
-  (let ((header (coerce (loop repeat 33
-                              for b = (read-byte stream nil nil)
-                              while b
-                              collect b)
-                        'octet-vector)))
+  (let ((header (iter (repeat 33)
+                      (for b in-stream stream using #'read-byte)
+                      (collect b result-type 'octet-vector))))
     (when (or (/= (length header) 33)
               (mismatch header +levin-signature+ :end1 8))
       (error "Bad packet header"))
@@ -37,11 +35,9 @@
       (unless (and (<= payload-length +levin-max-packet-size+)
                    (= protocol-version +levin-protocol-version-1+))
         (error "Bad packet"))
-      (let ((payload (coerce (loop repeat payload-length
-                                   for b = (read-byte stream nil nil)
-                                   while b
-                                   collect b)
-                             'octet-vector)))
+      (let ((payload (iter (repeat payload-length)
+                           (for b in-stream stream using #'read-byte)
+                           (collect b result-type 'octet-vector))))
         (values return-data-p command return-code flags payload)))))
 
 (defun write-request (stream command payload)
