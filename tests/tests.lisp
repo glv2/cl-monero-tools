@@ -1,11 +1,11 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
 
 (defpackage :monero-tools-tests
-  (:use :cl :fiveam :monero-tools :monero-utils))
+  (:use :cl :fiveam :iterate :monero-tools :monero-utils))
 
 (in-package :monero-tools-tests)
 

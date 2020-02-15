@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -665,11 +665,11 @@
            (ring-size (+ 3 (ironclad:strong-random 8)))
            (secret-index (ironclad:strong-random ring-size))
            (public-keys (concatenate 'vector
-                                     (loop repeat secret-index
-                                           collect (secret-key->public-key (generate-secret-key)))
+                                     (iter (repeat secret-index)
+                                           (collect (secret-key->public-key (generate-secret-key))))
                                      (vector public-key)
-                                     (loop repeat (- ring-size secret-index 1)
-                                           collect (secret-key->public-key (generate-secret-key))))))
+                                     (iter (repeat (- ring-size secret-index 1))
+                                           (collect (secret-key->public-key (generate-secret-key)))))))
       (is-true (valid-ring-signature-p data public-keys key-image (generate-ring-signature data public-keys secret-key secret-index))))))
 
 (test compute-multisig-blinded-secret
