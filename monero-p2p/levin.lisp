@@ -21,7 +21,8 @@
 
 (defun read-levin-packet (stream)
   (let ((header (iter (repeat 33)
-                      (for b in-stream stream using #'read-byte)
+                      (for b next (read-byte stream nil nil))
+                      (while b)
                       (collect b result-type 'octet-vector))))
     (when (or (/= (length header) 33)
               (mismatch header +levin-signature+ :end1 8))
@@ -36,7 +37,8 @@
                    (= protocol-version +levin-protocol-version-1+))
         (error "Bad packet"))
       (let ((payload (iter (repeat payload-length)
-                           (for b in-stream stream using #'read-byte)
+                           (for b next (read-byte stream nil nil))
+                           (while b)
                            (collect b result-type 'octet-vector))))
         (values return-data-p command return-code flags payload)))))
 
