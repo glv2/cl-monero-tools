@@ -300,6 +300,7 @@ be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - prune-blockchain
  - relay-tx
  - rpc-access-info
+ - rpc-access-submit-nonce
  - set-bans
  - submit-block
  - sync-info

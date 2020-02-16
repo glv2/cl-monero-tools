@@ -153,6 +153,11 @@ at START-HEIGHT."
 (defjsonrpc rpc-access-info ("rpc_access_info")
   "Get access info for the RPC payment system.")
 
+(defjsonrpc rpc-access-submit-nonce ("rpc_access_submit_nonce" nonce cookie)
+  "Send a nonce to the RPC payment system."
+  (list (cons "nonce" nonce)
+        (cons "cookie" cookie)))
+
 (defjsonrpc set-bans ("set_bans" bans)
   "Ban some nodes."
   (list (cons "bans" (coerce bans 'vector))))
