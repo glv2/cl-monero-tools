@@ -49,6 +49,7 @@
    #:prune-blockchain
    #:relay-tx
    #:rpc-access-info
+   #:rpc-access-pay
    #:rpc-access-submit-nonce
    #:set-bans
    #:submit-block

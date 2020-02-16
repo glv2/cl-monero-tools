@@ -153,6 +153,11 @@ at START-HEIGHT."
 (defjsonrpc rpc-access-info ("rpc_access_info")
   "Get access info for the RPC payment system.")
 
+(defjsonrpc rpc-access-pay ("rpc_access_pay" paying-for payment)
+  "Pay for RPC access."
+  (list (cons "paying_for" paying-for)
+        (cons "payment" payment)))
+
 (defjsonrpc rpc-access-submit-nonce ("rpc_access_submit_nonce" nonce cookie)
   "Send a nonce to the RPC payment system."
   (list (cons "nonce" nonce)
