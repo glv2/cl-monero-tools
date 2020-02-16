@@ -48,6 +48,7 @@
    #:hard-fork-info
    #:prune-blockchain
    #:relay-tx
+   #:rpc-access-account
    #:rpc-access-data
    #:rpc-access-info
    #:rpc-access-pay

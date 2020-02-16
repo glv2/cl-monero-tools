@@ -150,6 +150,11 @@ at START-HEIGHT."
   "Relay a list of transaction IDs."
   (list (cons "txids" (coerce transaction-ids 'vector))))
 
+(defjsonrpc rpc-access-account ("rpc_access_account" client &key (delta-balance 0))
+  "Get RPC access account info."
+  (list (cons "client" client)
+        (cons "delta_balance" delta-balance)))
+
 (defjsonrpc rpc-access-data ("rpc_access_data")
   "Get RPC access data.")
 
