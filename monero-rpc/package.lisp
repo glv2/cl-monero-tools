@@ -48,6 +48,7 @@
    #:hard-fork-info
    #:prune-blockchain
    #:relay-tx
+   #:rpc-access-info
    #:set-bans
    #:submit-block
    #:sync-info

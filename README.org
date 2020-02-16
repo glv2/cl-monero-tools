@@ -299,6 +299,7 @@ be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - hard-fork-info
  - prune-blockchain
  - relay-tx
+ - rpc-access-info
  - set-bans
  - submit-block
  - sync-info

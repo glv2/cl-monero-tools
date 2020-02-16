@@ -150,6 +150,9 @@ at START-HEIGHT."
   "Relay a list of transaction IDs."
   (list (cons "txids" (coerce transaction-ids 'vector))))
 
+(defjsonrpc rpc-access-info ("rpc_access_info")
+  "Get access info for the RPC payment system.")
+
 (defjsonrpc set-bans ("set_bans" bans)
   "Ban some nodes."
   (list (cons "bans" (coerce bans 'vector))))
