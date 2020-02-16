@@ -78,7 +78,7 @@ SECRET-INDEX in the PUBLIC-KEYS vector."
   (check-type public-keys (vector (octet-vector #.+key-length+)))
   (check-type secret-key (octet-vector #.+key-length+))
   (check-type secret-index (integer 0))
-  (let* ((public-key (secret-key->public-key secret-key))
+  (let* ((public-key (aref public-keys secret-index))
          (key-image (compute-key-image secret-key public-key))
          (ki (bytes->point key-image))
          (n (length public-keys))
