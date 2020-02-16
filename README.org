@@ -302,6 +302,7 @@ be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - rpc-access-info
  - rpc-access-pay
  - rpc-access-submit-nonce
+ - rpc-access-tracking
  - set-bans
  - submit-block
  - sync-info

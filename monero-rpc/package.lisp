@@ -51,6 +51,7 @@
    #:rpc-access-info
    #:rpc-access-pay
    #:rpc-access-submit-nonce
+   #:rpc-access-tracking
    #:set-bans
    #:submit-block
    #:sync-info

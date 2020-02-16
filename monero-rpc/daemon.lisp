@@ -163,6 +163,11 @@ at START-HEIGHT."
   (list (cons "nonce" nonce)
         (cons "cookie" cookie)))
 
+(defjsonrpc rpc-access-tracking ("rpc_access_tracking" &key clear)
+  "Get RPC access info."
+  (when clear
+    (list (cons "clear" t))))
+
 (defjsonrpc set-bans ("set_bans" bans)
   "Ban some nodes."
   (list (cons "bans" (coerce bans 'vector))))
