@@ -21,8 +21,8 @@
                "cl-ppcre"
                "cl-qrencode"
                "ieee-floats"
-               "iterate"
                "ironclad"
+               "iterate"
                "monero-utils"
                "png-read"
                "split-sequence")

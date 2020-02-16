@@ -86,6 +86,7 @@ are in the *monero-utils* package.
  - cl-ppcre
  - cl-qrencode
  - ieee-floats
+ - iterate
  - ironclad
  - monero-utils
  - png-read
@@ -434,6 +435,7 @@ https://getmonero.org/resources/developer-guides/wallet-rpc.html.
 
 *monero-binary-rpc* requires the following libraries:
  - dexador
+ - iterate
  - monero-rpc
  - monero-tools
  - monero-utils
@@ -478,6 +480,7 @@ variables are available in the *monero-zmq-rpc* package.
 
 *monero-custom-rpc* requires the following libraries:
  - bordeaux-threads
+ - iterate
  - monero-binary-rpc
  - monero-rpc
  - monero-tools
@@ -497,6 +500,7 @@ variables are available in the *monero-custom-rpc* package.
 *monero-p2p* requires the following libraries:
  - alexandria
  - ironclad
+ - iterate
  - monero-tools
  - monero-utils
  - usocket

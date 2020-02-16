@@ -13,9 +13,9 @@
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
   :depends-on ("alexandria"
-               "iterate"
                "dexador"
                "ironclad"
+               "iterate"
                "monero-tools"
                "monero-utils")
   :components ((:module "monero-p2p"
