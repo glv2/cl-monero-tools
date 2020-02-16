@@ -24,6 +24,7 @@
   (:use :cl :monero-rpc :monero-utils)
   (:export
    #:banned
+   #:flush-cache
    #:flush-txpool
    #:generateblocks
    #:get-alternate-chain

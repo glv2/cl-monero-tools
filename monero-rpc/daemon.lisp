@@ -16,6 +16,11 @@
   "Check if an address is banned."
   (list (cons "address" address)))
 
+(defjsonrpc flush-cache ("flush_cache" &key bad-transactions)
+  "Flush the transaction cache."
+  (when bad-transactions
+    (list (cons "bad_txs" t))))
+
 (defjsonrpc flush-txpool ("flush_txpool" &key transaction-ids)
   "Flush transaction ids from transaction pool."
   (when transaction-ids
