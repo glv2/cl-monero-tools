@@ -150,6 +150,9 @@ at START-HEIGHT."
   "Relay a list of transaction IDs."
   (list (cons "txids" (coerce transaction-ids 'vector))))
 
+(defjsonrpc rpc-access-data ("rpc_access_data")
+  "Get RPC access data.")
+
 (defjsonrpc rpc-access-info ("rpc_access_info")
   "Get access info for the RPC payment system.")
 
