@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -174,6 +174,11 @@ at START-HEIGHT."
 
 (defrpc get-peer-list ("get_peer_list")
   "Get the known peers list.")
+
+(defrpc get-public-nodes ("get_public_nodes" &key gray (white t))
+  "Get public nodes list."
+  (list (cons "gray" (when gray t))
+        (cons "white" (when white t))))
 
 (defrawrpc get-transaction-pool ("get_transaction_pool")
   "Show information about valid transactions seen by the node but not yet mined

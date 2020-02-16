@@ -314,6 +314,7 @@ be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
  - get-net-stats
  - get-outs
  - get-peer-list
+ - get-public-nodes
  - get-transaction-pool
  - get-transaction-pool-hashes
  - get-transaction-pool-stats

@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2018-2019 Guillaume LE VAILLANT
+;;;; Copyright 2018-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -56,6 +56,7 @@
    #:get-net-stats
    #:get-outs
    #:get-peer-list
+   #:get-public-nodes
    #:get-transaction-pool
    #:get-transaction-pool-hashes
    #:get-transaction-pool-stats
