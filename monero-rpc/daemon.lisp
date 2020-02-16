@@ -248,6 +248,14 @@ at START-HEIGHT."
             (list (cons "do_not_relay" t)))
           (list (cons "do_sanity_checks" do-sanity-checks))))
 
+(defrpc set-bootstrap-daemon ("set_bootstrap_daemon" address &key username password)
+  "Set the bootstrap daemon to use."
+  (append (list (cons "address" address))
+          (when username
+            (list (cons "username" username)))
+          (when password
+            (list (cons "password" password)))))
+
 (defrpc set-limit ("set_limit" download-limit upload-limit)
   "Set daemon bandwidth limits (kB/s)."
   (list (cons "limit_down" download-limit)

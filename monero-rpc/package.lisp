@@ -68,6 +68,7 @@
    #:pop-blocks
    #:save-bc
    #:send-raw-transaction
+   #:set-bootstrap-daemon
    #:set-limit
    #:set-log-categories
    #:set-log-hashrate
