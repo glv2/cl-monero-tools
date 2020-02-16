@@ -12,13 +12,17 @@
 
 ;;; HTTP JSON RPCs
 
+(defjsonrpc banned ("banned" address)
+  "Check if an address is banned."
+  (list (cons "address" address)))
+
 (defjsonrpc flush-txpool ("flush_txpool" &key transaction-ids)
   "Flush transaction ids from transaction pool."
   (when transaction-ids
     (list (cons "txids" (coerce transaction-ids 'vector)))))
 
 (defjsonrpc generateblocks ("generateblocks" amount-of-blocks wallet-address previous-block &key starting-nonce)
-  "Generate blocs."
+  "Generate blocks."
   (append (list (cons "amount_of_blocks" amount-of-blocks)
                 (cons "wallet_address" wallet-address)
                 (cons "prev_block" previous-block))

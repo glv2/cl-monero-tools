@@ -274,6 +274,7 @@ They use alists instead of JSON objects, where a key named =some_key= in a JSON
 object becomes =:some-key= in the alist. The specifications of these RPCs can
 be found in https://getmonero.org/resources/developer-guides/daemon-rpc.html.
 
+ - banned
  - flush-txpool
  - generateblocks
  - get-alternate-chain

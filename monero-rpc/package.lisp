@@ -23,6 +23,7 @@
 (defpackage :monero-daemon-rpc
   (:use :cl :monero-rpc :monero-utils)
   (:export
+   #:banned
    #:flush-txpool
    #:generateblocks
    #:get-alternate-chain
