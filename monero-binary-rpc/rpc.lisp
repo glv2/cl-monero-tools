@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -55,9 +55,12 @@ optional PARAMETERS."
          (postprocess (car body)))
     `(defun ,name (,@args ,@(unless key-args-p (list '&key))
                    (rpc-host *rpc-host*) (rpc-port *rpc-port*)
-                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+                   (rpc-user *rpc-user*) (rpc-password *rpc-password*)
+                   (rpc-client-secret-key (or *rpc-client-secret-key*
+                                              (generate-secret-key))))
        ,@(list docstring)
-       (let* ((parameters ,parameters)
+       (let* ((client (generate-rpc-payment-signature rpc-client-secret-key))
+              (parameters (acons "client" client ,parameters))
               (result (binary-rpc
                        ,method
                        :parameters parameters

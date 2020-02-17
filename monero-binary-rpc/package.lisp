@@ -8,6 +8,7 @@
   (:use :cl :iterate :monero-rpc :monero-utils)
   (:import-from :monero-tools
                 #:deserialize-from-binary-storage
+                #:generate-secret-key
                 #:serialize-to-binary-storage)
   (:export
    #:binary-rpc
