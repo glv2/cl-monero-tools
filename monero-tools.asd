@@ -20,6 +20,7 @@
                "cl-octet-streams"
                "cl-ppcre"
                "cl-qrencode"
+               "dexador"
                "ieee-floats"
                "ironclad"
                "iterate"
@@ -38,6 +39,7 @@
                                            (:file "pseudo-aes")
                                            (:file "random-math")
                                            (:file "cryptonight")
+                                           (:file "randomx-service")
                                            (:file "crypto")
                                            (:file "key")
                                            (:file "multisig")

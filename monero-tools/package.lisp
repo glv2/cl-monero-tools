@@ -87,6 +87,7 @@
   (:import-from :octet-streams
                 #:get-output-stream-octets
                 #:make-octet-output-stream
+                #:with-octet-input-stream
                 #:with-octet-output-stream)
   (:import-from :split-sequence
                 #:split-sequence)
@@ -100,6 +101,7 @@
 
    ;; crypto
    #:*cryptonight-variant* #:*cryptonight-height*
+   #:*random-service-host* #:*randomx-service-port*
    #:fast-hash #:slow-hash #:tree-hash
    #:chacha8 #:chacha20 #:generate-chacha-key
    #:generate-keys #:generate-secret-key
@@ -122,6 +124,10 @@
    #:compute-multisig-secret-spend-key
    #:compute-multisig-public-keys
    #:compute-multisig-public-spend-key
+   #:randomx-service-info
+   #:randomx-service-reseed
+   #:randomx-service-hash
+   #:randomx-service-hash-batch
 
    ;; mine
    #:miner
