@@ -65,7 +65,7 @@
 (defun generate-rpc-payment-signature (secret-key)
   "Make a signature of the current time with using a SECRET-KEY."
   (let* ((public-key (secret-key->public-key secret-key))
-         (timestamp (format nil "~16,'0x" (get-unix-time)))
+         (timestamp (format nil "~16,'0x" (* (get-unix-time) 1000000)))
          (hash (fast-hash (string->bytes timestamp)))
          (signature (generate-signature hash secret-key)))
     (concatenate 'string

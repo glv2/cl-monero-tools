@@ -182,5 +182,6 @@ is not specfied, a new LISP-ARRAY is created."
     (json:encode-json-to-string object)))
 
 (defun get-unix-time ()
+  "Get the number of seconds elapsed since epoch."
   (- (get-universal-time)
      #.(encode-universal-time 0 0 0 1 1 1970 0)))
