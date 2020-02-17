@@ -92,17 +92,25 @@
   (check-type data octet-vector)
   (subseq (keccak1600 data) 0 +hash-length+))
 
-(defparameter *cryptonight-variant* 0)
-(defparameter *cryptonight-height* 0)
+(defparameter *slow-hash-variant* :cryptonight)
+(defparameter *slow-hash-height* 0)
+(defparameter *slow-hash-seed* nil)
 
-(defun slow-hash (data &optional (variant *cryptonight-variant*) (height *cryptonight-height*))
-  "Slow hash function (CryptoNight) for the Cryptonote protocol."
+(defun slow-hash (data &optional (variant *slow-hash-variant*) (height *slow-hash-height*) (seed *slow-hash-seed*))
+  "Slow hash function for the Cryptonote protocol. The supported variants
+are :cryptonight, :cryptonight-variant-1, :cryptonight-variant-2,
+:cryptonight-r and :randomx."
   (check-type data octet-vector)
-  (check-type variant fixnum)
   (check-type height fixnum)
-  (unless (<= 0 variant 4)
-    (error "Only Cryptonight variants 0 to 4 are supported."))
-  (cryptonight data variant height))
+  (check-type seed (or null octet-vector))
+  (case variant
+    (:cryptonight (cryptonight data 0 0))
+    (:cryptonight-variant-1 (cryptonight data 1 0))
+    (:cryptonight-variant-2 (cryptonight data 2 0))
+    (:cryptonight-r (cryptonight data 4 height))
+    (:randomx (let ((seed (or seed))) ; TODO: (get-seed (randomx-seed-height height))
+                (randomx data seed)))
+    (t (error "Variant not supported."))))
 
 (defun tree-hash (data count)
   "Tree hash function for the transactions Merkle tree."

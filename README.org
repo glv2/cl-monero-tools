@@ -120,10 +120,11 @@ are in the *monero-tools* package.
 
 *** Cryptography
 
- - =*cryptonight-height*=
- - =*cryptonight-variant*=
  - =*randomx-service-host*=
  - =*randomx-service-port*=
+ - =*slow-hash-height*=
+ - =*slow-hash-seed*=
+ - =*slow-hash-variant*=
  - chacha8
  - chacha20
  - compute-key-image

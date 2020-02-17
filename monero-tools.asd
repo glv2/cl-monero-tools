@@ -40,6 +40,7 @@
                                            (:file "random-math")
                                            (:file "cryptonight")
                                            (:file "randomx-service")
+                                           (:file "randomx")
                                            (:file "crypto")
                                            (:file "key")
                                            (:file "multisig")

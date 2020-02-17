@@ -100,7 +100,7 @@
    #:compute-transaction-tree-hash
 
    ;; crypto
-   #:*cryptonight-variant* #:*cryptonight-height*
+   #:*slow-hash-variant* #:*slow-hash-height* #:*slow-hash-seed*
    #:*random-service-host* #:*randomx-service-port*
    #:fast-hash #:slow-hash #:tree-hash
    #:chacha8 #:chacha20 #:generate-chacha-key
