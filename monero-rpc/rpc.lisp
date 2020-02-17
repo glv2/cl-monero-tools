@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -15,6 +15,8 @@
   "Username to use to connect to the RPC server.")
 (defparameter *rpc-password* nil
   "Password to use to connect to the RPC server.")
+(defparameter *rpc-client-secret-key* nil
+  "Secret key used to identify a client on the RPC server.")
 
 (defun parse-digest-authentication-challenge (challenge)
   "Parse a 'Digest' authentication CHALLENGE received from a HTTP server."
@@ -59,6 +61,17 @@
                    ", qop=" qop
                    ", response=\"" response "\""
                    ", algorithm=\"" algorithm "\""))))
+
+(defun generate-rpc-payment-signature (secret-key)
+  "Make a signature of the current time with using a SECRET-KEY."
+  (let* ((public-key (secret-key->public-key secret-key))
+         (timestamp (format nil "~16,'0x" (get-unix-time)))
+         (hash (fast-hash (string->bytes timestamp)))
+         (signature (generate-signature hash secret-key)))
+    (concatenate 'string
+                 (bytes->hex-string public-key)
+                 timestamp
+                 (bytes->hex-string signature))))
 
 (defun rpc (method &key raw parameters (rpc-host *rpc-host*) (rpc-port *rpc-port*) (rpc-user *rpc-user*) (rpc-password *rpc-password*))
   "Send a METHOD RPC request to the server at RPC-HOST:RPC-PORT with optional
@@ -126,9 +139,12 @@ PARAMETERS."
          (postprocess (car body)))
     `(defun ,name (,@args ,@(unless key-args-p (list '&key))
                    (rpc-host *rpc-host*) (rpc-port *rpc-port*)
-                   (rpc-user *rpc-user*) (rpc-password *rpc-password*))
+                   (rpc-user *rpc-user*) (rpc-password *rpc-password*)
+                   (rpc-client-secret-key (or *rpc-client-secret-key*
+                                              (generate-secret-key))))
        ,@(list docstring)
-       (let* ((parameters ,parameters)
+       (let* ((client (generate-rpc-payment-signature rpc-client-secret-key))
+              (parameters (acons "client" client ,parameters))
               (result (,(case type
                            ((:json) 'json-rpc)
                            (t 'rpc))

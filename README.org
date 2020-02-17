@@ -63,6 +63,7 @@ are in the *monero-utils* package.
  - encode-json-to-string
  - format-float
  - geta
+ - get-unix-time
  - hex-string->bytes
  - integer->bytes
  - json-name->lisp-name
@@ -242,6 +243,7 @@ The tests require the *fiveam* library.
  - cl-json
  - dexador
  - ironclad
+ - monero-tools
  - monero-utils
  - split-sequence
 
@@ -250,6 +252,7 @@ The tests require the *fiveam* library.
 After loading the *monero-rpc* system, the following functions and variables
 are available in the *monero-rpc* package.
 
+ - =*rpc-client-secret-key*=
  - =*rpc-host*=
  - =*rpc-password*=
  - =*rpc-port*=

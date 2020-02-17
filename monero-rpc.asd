@@ -16,6 +16,7 @@
                "cl-json"
                "dexador"
                "ironclad"
+               "monero-tools"
                "monero-utils"
                "split-sequence")
   :components ((:module "monero-rpc"

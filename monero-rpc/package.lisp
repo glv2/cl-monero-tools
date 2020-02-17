@@ -11,10 +11,16 @@
   (:import-from :ironclad
                 #:digest-sequence
                 #:random-data)
+  (:import-from :monero-tools
+                #:fast-hash
+                #:generate-secret-key
+                #:generate-signature
+                #:secret-key->public-key)
   (:import-from :split-sequence
                 #:split-sequence)
   (:export
    #:*rpc-host* #:*rpc-port* #:*rpc-user* #:*rpc-password*
+   #:*rpc-client-secret-key*
    #:parse-digest-authentication-challenge
    #:compute-digest-authentication-response
    #:rpc #:json-rpc
