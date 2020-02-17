@@ -23,6 +23,7 @@
    #:*rpc-client-secret-key*
    #:parse-digest-authentication-challenge
    #:compute-digest-authentication-response
+   #:generate-rpc-payment-signature
    #:rpc #:json-rpc
    #:defrpc #:defrawrpc #:defjsonrpc))
 

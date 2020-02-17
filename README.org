@@ -261,6 +261,7 @@ are available in the *monero-rpc* package.
  - defjsonrpc
  - defrawrpc
  - defrpc
+ - generate-rpc-payment-signature
  - json-rpc
  - parse-digest-authentication-challenge
  - rpc
