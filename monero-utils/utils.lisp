@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -180,3 +180,7 @@ is not specfied, a new LISP-ARRAY is created."
   "Convert a Lisp object to a JSON object."
   (let ((json:*lisp-identifier-name-to-json* #'lisp-name->json-name))
     (json:encode-json-to-string object)))
+
+(defun get-unix-time ()
+  (- (get-universal-time)
+     #.(encode-universal-time 0 0 0 1 1 1970 0)))

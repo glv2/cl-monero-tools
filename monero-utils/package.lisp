@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -29,4 +29,5 @@
    #:read-float #:format-float
    #:lisp-array->c-array #:c-array->lisp-array
    #:json-name->lisp-name #:lisp-name->json-name
-   #:decode-json-from-string #:encode-json-to-string))
+   #:decode-json-from-string #:encode-json-to-string
+   #:get-unix-time))
