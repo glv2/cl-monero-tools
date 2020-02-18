@@ -151,6 +151,7 @@ are in the *monero-tools* package.
  - generate-signature
  - output-public-key->public-spend-subkey
  - public-spend-subkey->public-view-subkey
+ - randomx-seed-height
  - randomx-service-hash
  - randomx-service-hash-batch
  - randomx-service-info

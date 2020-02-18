@@ -93,23 +93,31 @@
   (subseq (keccak1600 data) 0 +hash-length+))
 
 (defparameter *slow-hash-variant* :cryptonight)
-(defparameter *slow-hash-height* 0)
+(defparameter *slow-hash-height* nil)
 (defparameter *slow-hash-seed* nil)
 
 (defun slow-hash (data &optional (variant *slow-hash-variant*) (height *slow-hash-height*) (seed *slow-hash-seed*))
   "Slow hash function for the Cryptonote protocol. The supported variants
 are :cryptonight, :cryptonight-variant-1, :cryptonight-variant-2,
-:cryptonight-r and :randomx."
+:cryptonight-r and :randomx.
+
+The :cryptonight-r variant requires a block HEIGHT.
+
+The :randomx variant requires a SEED, which is the ID of the block at
+height (randomx-seed-height current-block-height)."
   (check-type data octet-vector)
-  (check-type height fixnum)
+  (check-type height (or null fixnum))
   (check-type seed (or null octet-vector))
   (case variant
     (:cryptonight (cryptonight data 0 0))
     (:cryptonight-variant-1 (cryptonight data 1 0))
     (:cryptonight-variant-2 (cryptonight data 2 0))
-    (:cryptonight-r (cryptonight data 4 height))
-    (:randomx (let ((seed (or seed))) ; TODO: (get-seed (randomx-seed-height height))
-                (randomx data seed)))
+    (:cryptonight-r (if height
+                        (cryptonight data 4 height)
+                        (error "Cryptonight-R requires a block height.")))
+    (:randomx (if seed
+                  (randomx data seed)
+                  (error "RandomX requires a seed.")))
     (t (error "Variant not supported."))))
 
 (defun tree-hash (data count)

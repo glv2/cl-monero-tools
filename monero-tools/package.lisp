@@ -128,6 +128,7 @@
    #:randomx-service-reseed
    #:randomx-service-hash
    #:randomx-service-hash-batch
+   #:randomx-seed-height
 
    ;; mine
    #:miner
