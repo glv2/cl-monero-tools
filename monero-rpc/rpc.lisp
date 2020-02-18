@@ -15,7 +15,7 @@
   "Username to use to connect to the RPC server.")
 (defparameter *rpc-password* nil
   "Password to use to connect to the RPC server.")
-(defparameter *rpc-client-secret-key* nil
+(defparameter *rpc-client-secret-key* (generate-secret-key)
   "Secret key used to identify a client on the RPC server.")
 
 (defun parse-digest-authentication-challenge (challenge)
@@ -140,8 +140,7 @@ PARAMETERS."
     `(defun ,name (,@args ,@(unless key-args-p (list '&key))
                    (rpc-host *rpc-host*) (rpc-port *rpc-port*)
                    (rpc-user *rpc-user*) (rpc-password *rpc-password*)
-                   (rpc-client-secret-key (or *rpc-client-secret-key*
-                                              (generate-secret-key))))
+                   (rpc-client-secret-key *rpc-client-secret-key*))
        ,@(list docstring)
        (let* ((client (generate-rpc-payment-signature rpc-client-secret-key))
               (parameters (acons "client" client ,parameters))
