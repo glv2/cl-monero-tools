@@ -168,6 +168,7 @@ are in the *monero-tools* package.
 
  - miner
  - mining-profitability
+ - modify-block-template
 
 *** Mnemonic seed
 

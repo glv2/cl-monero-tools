@@ -11,21 +11,32 @@
 (defparameter *mine-result* nil)
 (defparameter *mine-lock* nil)
 
-(defun miner (block-template-data reserve-size reserve-offset difficulty)
-  "Given a block template represented by a BLOCK-TEMPLATE-DATA byte
-vector containing a reserved space of RESERVE-SIZE bytes starting at
-RESERVE-OFFSET in BLOCK-TEMPLATE-DATA in which an extra nonce can be
-put, find a nonce and an extra nonce allowing the hash of the
-resulting block (computed with slow-hash) to be acceptable for a given
-DIFFICULTY level.
+(defun modify-block-template (template nonce &key reserve-nonce reserve-offset in-place)
+  "Change the NONCE and the optional RESERVE-NONCE of a block TEMPLATE. If
+IN-PLACE is NIL a new template is created, if not the TEMPLATE passed in
+argument is modified."
+  (let ((nonce-offset (get-nonce-offset template))
+        (template (if in-place template (copy-seq template))))
+    (replace template nonce :start1 nonce-offset :end2 4)
+    (when (and reserve-nonce reserve-offset)
+      (replace template reserve-nonce
+               :start1 reserve-offset :end2 (length reserve-nonce)))
+    template))
+
+(defun miner (template reserve-size reserve-offset difficulty)
+  "Given a block TEMPLATE represented by a byte vector containing a reserved
+space of RESERVE-SIZE bytes starting at RESERVE-OFFSET in BLOCK-TEMPLATE-DATA
+in which an extra nonce can be put, find a nonce and an extra nonce allowing
+the hash of the resulting block (computed with slow-hash) to be acceptable for
+a given DIFFICULTY level.
 The returned value is the new block data containing the found nonces."
-  (let ((nonce-offset (get-nonce-offset block-template-data))
-        (template (copy-seq block-template-data)))
+  (let ((template (copy-seq template)))
     (iter (for hash next (compute-block-hash-from-data template t))
           (until (or *mine-stop* (acceptable-hash-p hash difficulty)))
-          (let ((random-data (random-data (+ 4 reserve-size))))
-            (replace template random-data :start1 nonce-offset :end2 4)
-            (replace template random-data :start1 reserve-offset :start2 4))
+          (modify-block-template template (random-data 4)
+                                 :reserve-nonce (random-data reserve-size)
+                                 :reserve-offset reserve-offset
+                                 :in-place t)
           (finally (return (when (acceptable-hash-p hash difficulty)
                              (if *mine-lock*
                                  (progn

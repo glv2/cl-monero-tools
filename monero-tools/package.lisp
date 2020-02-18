@@ -131,6 +131,7 @@
    #:randomx-seed-height
 
    ;; mine
+   #:modify-block-template
    #:miner
    #:mining-profitability
 
