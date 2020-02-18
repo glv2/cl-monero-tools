@@ -113,17 +113,37 @@
       (let ((*slow-hash-height* 1806269))
         (is (string-equal "75c6f2ae49a20521de97285b431e717125847fb8935ed84a61e7f8d36a2c3d8e"
                           (slow-hash/hex "73756e7420696e2063756c706120717569206f666669636961206465736572756e74206d6f6c6c697420616e696d20696420657374206c61626f72756d2e")))))
-    (let ((*slow-hash-variant* :randomx)
-          ;; (*slow-hash-height* 2035850)
-          (*slow-hash-seed* (hex-string->bytes "5a7f09e485cef6c38ed438c71352ec109d3a0abb429ffc799eb2772e51ae60d3")))
-      (is (string-equal "a81d071b7edcd999ffb2f8a85e4db6c532fda82b81540c6d85bb880200000000"
-                        (slow-hash/hex "0c0cbe84acf205f12c35c0b1b597192aa4e44d9507d61c1ffe3bebe0270c26dd23fcfe02b021dcebce0100cbbc6ec7fcbe51a2492b0194022410d82a736fe561aa4fd5ac29169193d15a8707")))
-      ;; Block 2035851
-      (is (string-equal "1f4aeadc0ae9663906f7bf947fa3d77c55f7b81a75de40a22838dc0400000000"
-                        (slow-hash/hex "0c0cfa84acf20513d7f2a00b37b3755acb0bd9ccebddc2e39bec67f18e8f5ba3cff4ea7b88e2e44d580500b1ea5eedf4b2e78b428564780a38357cf32aa7b3681602566d543937f9d6594807")))
-      ;; Block 2035851
-      (is (string-equal "4d77288859efca3c83f9e345acf384caf722a42991423845dc0a710000000000"
-                        (slow-hash/hex "0c0ca385acf2050399815d69b45b889d51ab72e616e220090438a6c5c52d4d0f4c16cf409db29b40ed088b482d11f3e4e8ae84af27ac01ac0c0a21aa01add4894e72fb4200e1b7d7fd5b7e04"))))))
+    (let ((*slow-hash-variant* :randomx))
+      (let ((*slow-hash-seed* (hex-string->bytes "154eb7a21cd32a597f985644187297607bad491650091620550877239c4178e1"))) ; Seed height 2031616
+        ;; Block 2033333
+        (is (string-equal "6d6999673d984343456db0c45d9397696f14fb0e4255effaed3d740500000000"
+                          (slow-hash/hex "0c0cebd599f205091810d1db0cf05c946b5d4201dfb84d39bc490df08c0b3da1afcbcdc454826652190d3968d76c0e37abe6fe996d7725c619b0f0029a72e036d7e34180a294bdd353e02006")))
+        ;; Block 2033334
+        (is (string-equal "2fe153aa7f180d43e8a60b1f58333c8ac8e1f9e8ab58445149d96a0500000000"
+                          (slow-hash/hex "0c0cb2d699f205d66a0d13b2c006ac8a455b793440802ebf9322a8770f4d1b203348d6ab6771e9ecb60100b5de0362c27369af70bc419fd11a1a09fe2b8a991075db2cd0b953c3cbc1e9e810")))
+        ;; Block 2033335
+        (is (string-equal "5001dadbb1e3f65a94cb395d49960f95be1cfa06dcee53b844aea90400000000"
+                          (slow-hash/hex "0c0cdad799f205dd2a430a4a433a15e16f81369277269873f8934d906f5f09523409651a4d6a3d4187037a7c2c9a7c34108285a15dab3653b2470b2d11063b1635df6583b34158e79d9ce51f"))))
+      (let ((*slow-hash-seed* (hex-string->bytes "2ad7b6b5509b48e823a0a3076eb6ed71d403cd717500a0e10719cdf3a7ae1165"))) ; Seed height 2033664
+        ;; Block 2035250
+        (is (string-equal "7842a365c54121eb2cf0f148de1f82b96e3ff8e71349cd61ca3e4a0600000000"
+                          (slow-hash/hex "0c0cebe9a7f20593ab9ac755786a4982ac0641a3439ff888a8c197cddc011c1cc4ca3111f6b169c7e40700a8883e1da616e90f5d1087154c1531a50e08bc82023d37c670c32ffb86b64f6a08")))
+        ;; Block 2035251
+        (is (string-equal "fefed055d5d187ec7a5fc66b818828d96de19522c2a7ca72ddc3570500000000"
+                          (slow-hash/hex "0c0cafeaa7f20582aae0b23f4e00e1cc9cf8fa165aa372540588967940271410f1ea2729184d8c62230400f84d3ad4d7747470da40be379d97a4179ac3276959c91ae6e2d387b182ff6d0c0a")))
+        ;; Block 2035252
+        (is (string-equal "99fc73be6d0c864a52779f3a00a257dca5148e9c44885ea83d47c60200000000"
+                          (slow-hash/hex "0c0cb2eba7f205e7b123381798d2a8e96949dc474fd419e11e2b8fc1d04b7ad6c59717bafdc104d20206008bb8cbd49777a3b4a448893c16215d767a41f964b3f60888925ddb2e2de496480f"))))
+      (let ((*slow-hash-seed* (hex-string->bytes "5a7f09e485cef6c38ed438c71352ec109d3a0abb429ffc799eb2772e51ae60d3"))) ; Seed height 2035712
+        ;; Block 2035850
+        (is (string-equal "a81d071b7edcd999ffb2f8a85e4db6c532fda82b81540c6d85bb880200000000"
+                          (slow-hash/hex "0c0cbe84acf205f12c35c0b1b597192aa4e44d9507d61c1ffe3bebe0270c26dd23fcfe02b021dcebce0100cbbc6ec7fcbe51a2492b0194022410d82a736fe561aa4fd5ac29169193d15a8707")))
+        ;; Block 2035851
+        (is (string-equal "1f4aeadc0ae9663906f7bf947fa3d77c55f7b81a75de40a22838dc0400000000"
+                          (slow-hash/hex "0c0cfa84acf20513d7f2a00b37b3755acb0bd9ccebddc2e39bec67f18e8f5ba3cff4ea7b88e2e44d580500b1ea5eedf4b2e78b428564780a38357cf32aa7b3681602566d543937f9d6594807")))
+        ;; Block 2035851
+        (is (string-equal "4d77288859efca3c83f9e345acf384caf722a42991423845dc0a710000000000"
+                          (slow-hash/hex "0c0ca385acf2050399815d69b45b889d51ab72e616e220090438a6c5c52d4d0f4c16cf409db29b40ed088b482d11f3e4e8ae84af27ac01ac0c0a21aa01add4894e72fb4200e1b7d7fd5b7e04")))))))
 
 (test tree-hash
   (flet ((tree-hash/hex (data)
