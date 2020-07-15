@@ -22,10 +22,10 @@
   "Parse a 'Digest' authentication CHALLENGE received from a HTTP server."
   (let* ((tmp (split-sequence #\space challenge))
          (authentication-type (first tmp))
-         (authenticatio-info (split-sequence #\, (second tmp))))
+         (authentication-info (split-sequence #\, (second tmp))))
     (unless (string-equal authentication-type "digest")
       (error "Bad digest authentication challenge."))
-    (do ((info authenticatio-info (cdr info))
+    (do ((info authentication-info (cdr info))
          (result '()))
         ((null info) result)
       (let* ((index (position #\= (car info)))
