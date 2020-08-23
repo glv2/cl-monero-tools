@@ -12,10 +12,10 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +key-length+ 32))
 
-(define-constant +one+ (vector 0 1 1 0) :test #'equalp)
+(define-constant +one+ +ed25519-point-at-infinity+ :test #'equalp)
 (define-constant +g+ +ed25519-b+ :test #'equalp)
 (let ((h (hex-string->bytes "8b655970153799af2aeadc9ff1add0ea6c7251d54154cfa92c173a0dd39c1f94")))
-  (define-constant +h+ (ed25519-decode-point h) :test #'equalp))
+  (define-constant +h+ (ec-decode-point :ed25519 h) :test #'equalp))
 (defconstant +q+ +ed25519-q+)
 (defconstant +l+ +ed25519-l+)
 (defconstant +i+ +ed25519-i+)
@@ -28,43 +28,49 @@
 (deftype point ()
   'ed25519-point)
 
+(defun make-point (x y z w)
+  "Make a point on Ed25519."
+  (check-type x integer)
+  (check-type y integer)
+  (check-type z integer)
+  (check-type w integer)
+  (make-instance 'ed25519-point :x x :y y :z z :w w))
+
 (defun point->bytes (point)
   "Convert an Ed25519 POINT to a sequence of bytes."
   (check-type point point)
-  (ed25519-encode-point point))
+  (ec-encode-point point))
 
 (defun bytes->point (bytes)
   "Convert a sequence of BYTES to an Ed25519 point."
   (check-type bytes (octet-vector #.+key-length+))
-  (ed25519-decode-point bytes))
+  (ec-decode-point :ed25519 bytes))
 
 (defun point+ (p1 p2)
   "Point addition on Ed25519."
   (check-type p1 point)
   (check-type p2 point)
-  (ed25519-edwards-add p1 p2))
+  (ec-add p1 p2))
 
 (defun point- (p1 p2)
   "Point subtraction on Ed25519."
   (check-type p1 point)
   (check-type p2 point)
-  (let ((inv-p2 (vector (- +q+ (aref p2 0))
-                        (aref p2 1)
-                        (aref p2 2)
-                        (- +q+ (aref p2 3)))))
-    (point+ p1 inv-p2)))
+  (with-slots ((x crypto::x) (y crypto::y) (z crypto::z) (w crypto::w)) p2
+    (let ((inv-p2 (make-point (- +q+ x) y z (- +q+ w))))
+      (point+ p1 inv-p2))))
 
 (defun point* (point n)
   "Scalar multiplication on Ed25519."
   (check-type point point)
   (check-type n (integer 0))
-  (ed25519-scalar-mult point n))
+  (ec-scalar-mult point n))
 
 (defun point= (p1 p2)
   "Point equality on Ed25519."
   (check-type p1 point)
   (check-type p2 point)
-  (ed25519-point-equal p1 p2))
+  (ec-point-equal p1 p2))
 
 (defun point*8 (point)
   "Multiply a POINT by 8."
@@ -186,9 +192,9 @@ as a byte vector."
              (let* ((pz (mod (+ z w) +q+))
                     (py (mod (- z w) +q+))
                     (px (mod (* x pz) +q+))
-                    (inv-pz (ed25519-inv pz))
+                    (inv-pz (ec-scalar-inv :ed25519 pz))
                     (pw (mod (* px py inv-pz) +q+))
-                    (point (vector px py pz pw)))
+                    (point (make-point px py pz pw)))
                (return-from hash-to-point (point->bytes (point*8 point))))))
       (if (zerop y)
           (setf res-x (mod (* res-x +fffb2+) +q+))

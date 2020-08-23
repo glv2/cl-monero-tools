@@ -50,17 +50,18 @@
                 #:+ed25519-i+
                 #:+ed25519-l+
                 #:+ed25519-q+
+                #:+ed25519-point-at-infinity+
                 #:aes-round-keys
                 #:allocate-round-keys
                 #:copy-block
                 #:dotimes-unrolled
-                #:ed25519-decode-point
-                #:ed25519-edwards-add
-                #:ed25519-encode-point
-                #:ed25519-inv
+                #:ec-add
+                #:ec-decode-point
+                #:ec-encode-point
+                #:ec-point-equal
+                #:ec-scalar-inv
+                #:ec-scalar-mult
                 #:ed25519-point
-                #:ed25519-point-equal
-                #:ed25519-scalar-mult
                 #:first-byte
                 #:fourth-byte
                 #:generate-round-keys-for-encryption
