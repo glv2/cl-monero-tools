@@ -228,6 +228,38 @@
           (prog1 (get-output-stream-octets result)
             (close result)))))))
 
+(defun serialize-rct-clsag (stream object)
+  (flet ((serialize-bulletproof (stream object)
+           (serialize stream object
+             ((a1 #'serialize-key)
+              (s #'serialize-key)
+              (t1 #'serialize-key)
+              (t2 #'serialize-key)
+              (taux #'serialize-key)
+              (mu #'serialize-key)
+              (l #'serialize-vector #'serialize-key)
+              (r #'serialize-vector #'serialize-key)
+              (a2 #'serialize-key)
+              (b #'serialize-key)
+              (t #'serialize-key))))
+
+         (serialize-clsag-signature (stream object)
+           (serialize stream object
+             ((s #'serialize-custom-vector #'serialize-key)
+              (c1 #'serialize-key)
+              (d #'serialize-key)))))
+    (when object
+      (let ((bulletproofs-size (length (geta object :bulletproofs)))
+            (result (or stream (make-octet-output-stream))))
+        (serialize-integer result bulletproofs-size)
+        (serialize result object
+          ((bulletproofs #'serialize-custom-vector #'serialize-bulletproof)
+           (clsag-signatures #'serialize-custom-vector #'serialize-clsag-signature)
+           (pseudo-outputs #'serialize-custom-vector #'serialize-key)))
+        (unless stream
+          (prog1 (get-output-stream-octets result)
+            (close result)))))))
+
 (defun serialize-rct-signature (stream object)
   (flet ((serialize-pseudo-outputs (stream object type)
            (when (= type +rct-type-simple+)
@@ -264,7 +296,14 @@
            ((fee #'serialize-integer)
             (ecdh-info #'serialize-custom-vector #'serialize-bytes)
             (output-public-keys #'serialize-custom-vector #'serialize-key)
-            (rct-signature-prunable #'serialize-rct-bulletproof type)))))
+            (rct-signature-prunable #'serialize-rct-bulletproof type))))
+
+        ((#.+rct-type-clsag+)
+         (serialize result object
+           ((fee #'serialize-integer)
+            (ecdh-info #'serialize-custom-vector #'serialize-bytes)
+            (output-public-keys #'serialize-custom-vector #'serialize-key)
+            (rct-signature-prunable #'serialize-rct-clsag)))))
       (unless stream
         (prog1 (get-output-stream-octets result)
           (close result))))))

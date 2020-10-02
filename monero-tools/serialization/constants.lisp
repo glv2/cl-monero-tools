@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -33,6 +33,7 @@
 (defconstant +rct-type-simple+ 2)
 (defconstant +rct-type-bulletproof+ 3)
 (defconstant +rct-type-bulletproof-2+ 4)
+(defconstant +rct-type-clsag+ 5)
 (defconstant +rct-key-tag+ 144)
 (defconstant +rct-key64-tag+ 145)
 (defconstant +rct-key-vector-tag+ 146)
