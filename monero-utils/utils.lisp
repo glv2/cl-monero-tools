@@ -97,6 +97,15 @@ supplied, put the bytes in it starting at index START."
       (let ((s (format nil "~(~2,'0x~)" (aref byte-vector index-bv))))
         (replace hex-string s :start1 index-hs)))))
 
+(defun join-bytes (byte-vectors)
+  "Return the concatenation of the BYTE-VECTORS."
+  (apply #'concatenate 'octet-vector byte-vectors))
+
+(defun split-bytes (byte-vector size)
+  "Split the BYTE-VECTOR in chunks of SIZE bytes and return them in a list."
+  (loop for i from 0 below (length byte-vector) by size
+        collect (subseq byte-vector i (+ i size))))
+
 (defun geta (alist key &key (test #'eql))
   "Return the element of the ALIST specified by the KEY. GETA is
 SETF-able, it is equivalent to (cdr (assoc key alist :test test))."

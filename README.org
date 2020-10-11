@@ -66,11 +66,13 @@ are in the *monero-utils* package.
  - get-unix-time
  - hex-string->bytes
  - integer->bytes
+ - join-bytes
  - json-name->lisp-name
  - lisp-array->c-array
  - lisp-name->json-name
  - octet-vector
  - read-float
+ - split-bytes
  - string->bytes
  - utf-8-string->bytes
 

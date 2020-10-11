@@ -25,6 +25,7 @@
    #:string->bytes #:bytes->string
    #:utf-8-string->bytes #:bytes->utf-8-string
    #:hex-string->bytes #:bytes->hex-string
+   #:join-bytes #:split-bytes
    #:geta
    #:read-float #:format-float
    #:lisp-array->c-array #:c-array->lisp-array
