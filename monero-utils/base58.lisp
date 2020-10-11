@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2019 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -28,7 +28,8 @@ N characters."
   (multiple-value-bind (full-encoded-block-count remaining-characters)
       (floor n +base58-full-encoded-block-size+)
     (+ (* full-encoded-block-count +base58-full-block-size+)
-       (position remaining-characters +base58-encoded-block-sizes+))))
+       (or (position remaining-characters +base58-encoded-block-sizes+)
+           (error "Invalid size.")))))
 
 (defun base58-encode (data)
   "Return the base58 encoding of the DATA byte sequence."
