@@ -58,5 +58,5 @@ by the BLOCK-DATA byte vector."
   "Return the root of the Merkle tree computed from a list of
 transaction HASHES."
   (let ((count (length hashes))
-        (data (apply #'concatenate 'octet-vector (coerce hashes 'list))))
+        (data (join-bytes (coerce hashes 'list))))
     (tree-hash data count)))

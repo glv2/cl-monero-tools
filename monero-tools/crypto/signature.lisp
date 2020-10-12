@@ -105,12 +105,10 @@ SECRET-INDEX in the PUBLIC-KEYS vector."
     (let ((h (bytes->integer (compute-non-interactive-challenge data a b))))
       (setf (aref c secret-index) (mod (- h sum) +l+)
             (aref r secret-index) (mod (- (aref r secret-index) (* (aref c secret-index) s)) +l+))
-      (apply #'concatenate
-             'octet-vector
-             (map 'list
-                  (lambda (x)
-                    (integer->bytes x :size +key-length+))
-                  (interleave-vectors c r))))))
+      (join-bytes (map 'list
+                       (lambda (x)
+                         (integer->bytes x :size +key-length+))
+                       (interleave-vectors c r))))))
 
 (defun valid-ring-signature-p (data public-keys key-image signature)
   "Return T if a ring SIGNATURE of DATA by the secret key matching
