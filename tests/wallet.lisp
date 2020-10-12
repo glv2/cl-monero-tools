@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -658,12 +658,26 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
         (transaction-hash "ae4671480fa0c139bfeea2913210dcb8130ae3eef688a707d91923528fee1c14")
         (message "message")
         (transaction-public-key "cebcf16a2a1e44a3204f502a6a979ba0d77b1be39859cab283df052c8f99da99")
+        (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
         (proof "InProofV11MFcTEcRh6rZf9boPNaShJDfYwGVeMNSjfNz9zFh8aVrBHBA94GbBcq35o2cVj1cUFEsAZ1HL59XK3PQtpgUePps6654CweyYaYKjVqhG7MAxDTa3A7Wx9T3gM3siXYrgFj2"))
     (is-true (valid-inbound-transaction-proof-p (hex-string->bytes transaction-hash)
                                                 address
                                                 (string->bytes message)
                                                 (hex-string->bytes transaction-public-key)
-                                                proof))))
+                                                proof
+                                                (hex-string->bytes secret-view-key))))
+  (let ((address "Bcni4ZAM42o4QcYG7fCFwX8GijijG43d5YnafUhSp7D8iXZ5K4Qxbr4SEKZiHqfFFnDbn6Eq5MDY6iMPhtDJb6sSEqxHNSV")
+        (transaction-hash "55b0833a74d6b933d3c97a74bebd2b2d0926e8a091a51e170fa5e7ae26019a9b")
+        (message "message")
+        (transaction-public-key "1d48faf3fd43351899103a192f617399777cbfd768a227efdfce9626e8dd675b39fef5b2ba92189413022274eabb80ae24e4fad30903faf52253c129f9ab7cb263dd76e8cb0b300cecc3166670715d7889eb209f2d3cf29bb355ea6c10570e579b33ff048a765f9c2147d8294b9423a49cca0481c1d160760c5dbfefaf3b7618")
+        (secret-view-key "fabfcc6b35389437dd69ace7d3280f794f4e27e993e1ada5726a3fd84c9bbb00")
+        (proof "InProofV2PmQpopZjo16YzqZtkQWaVFiUyQYm24JjJKpDimG9MUXdBjiJBpNWohiDSvmNg5htxQSErX4GdqhDhUAEHpBpSWvUC62w4QcLamm6wkRQa4YNwpPqK5xyhuibmNYnm7yNbjXxLNAqzp2T7pJhYvxNe4skYoBSztbxnEnME6MwUodJQYbh7xh3c6Demwo1CYsMnr9swaJp39hbTeXko9SzZ9F7QNLHcu7LYAHF1V7LCgh5r4kKR7NfENBCMuGSEQC6TzPuEDYCUQEevQKpMrca4UKgwsZqUPhhShAYLb5MngyGg1eXwmELj3Lqaz5T82EemNiVCfKhwzYSkduMoJb1sJZHdVKVZY45Pixqun2Jc8Z1d7uFY3Yh5o3pv8ytr877s1MLcPpVxro8A6DgeK7wbm7gCvDiHKJPNi3ax8hNKVg733CZNcU9BeKXf2iTzr1PC4tgopZ3J5CP9iZmwa5mZpgKvNMauuTrySRA6gcqf6fNrvvhsvB6Su9YjufKhnG33DqRpbFNJKSsmmKZ"))
+    (is-true (valid-inbound-transaction-proof-p (hex-string->bytes transaction-hash)
+                                                address
+                                                (string->bytes message)
+                                                (hex-string->bytes transaction-public-key)
+                                                proof
+                                                (hex-string->bytes secret-view-key)))))
 
 (test prove-inbound-transaction
   (let* ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")
@@ -680,19 +694,34 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
                                                 address
                                                 (string->bytes message)
                                                 (hex-string->bytes transaction-public-key)
-                                                proof))))
+                                                proof
+                                                (hex-string->bytes secret-view-key)))))
 
 (test valid-outbound-transaction-proof-p
   (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
         (transaction-hash "6761c0560ba5fab0ce37b51782cc6e03cd1f3ed8442faba726b444594b384baf")
         (message "message")
         (transaction-public-key "fe34e8abd3d1c39686f25f8b5975fa160ae77fda33e3a6183007cc4abaf5ec36")
+        (secret-view-key "6abd4dace0e11638d9a87ebd2e1b926d58716229691961515f4d4ba92c0dbc43")
         (proof "OutProofV12CsdHk19Joa4cWq2Romg32T9pRrMKYzEBK73rais2m9xKoqPftMzMCqP51pAd6nCJjKH7faHiTTJPL3r4VgpszVGdmLz5eCykuWJ1KfSCsgFbCfHuqDYykSN7YMgFYSZ9BXw"))
     (is-true (valid-outbound-transaction-proof-p (hex-string->bytes transaction-hash)
                                                  address
                                                  (string->bytes message)
                                                  (hex-string->bytes transaction-public-key)
-                                                 proof))))
+                                                 proof
+                                                 (hex-string->bytes secret-view-key))))
+  (let ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
+        (transaction-hash "6761c0560ba5fab0ce37b51782cc6e03cd1f3ed8442faba726b444594b384baf")
+        (message "message")
+        (transaction-public-key "fe34e8abd3d1c39686f25f8b5975fa160ae77fda33e3a6183007cc4abaf5ec36")
+        (secret-view-key "6abd4dace0e11638d9a87ebd2e1b926d58716229691961515f4d4ba92c0dbc43")
+        (proof "OutProofV22CsdHk19Joa4cWq2Romg32T9pRrMKYzEBK73rais2m9xZLvwUJ4ip52Hx1CiW1a8wsAmFWZk1q2AQASdhECn29poAK2q2iibWR88TLgkQMv6BSU9vg845fgZEQz7Jn68R47x"))
+    (is-true (valid-outbound-transaction-proof-p (hex-string->bytes transaction-hash)
+                                                 address
+                                                 (string->bytes message)
+                                                 (hex-string->bytes transaction-public-key)
+                                                 proof
+                                                 (hex-string->bytes secret-view-key)))))
 
 (test prove-outbound-transaction
   (let* ((address "9trf6E3P7r3asxsaoRFpW3RYJXBC4DWKKN9EN4oAif48SH4u4V57zKQMERtJ2KRxTpDJMnpkSKGs29PsoHMb8zgKLPfF1NQ")
@@ -700,6 +729,7 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
          (message "message")
          (transaction-public-key "fe34e8abd3d1c39686f25f8b5975fa160ae77fda33e3a6183007cc4abaf5ec36")
          (transaction-secret-key "6f7b540ee4423231136603e4918aa8afcf96eda25156d3d2e96519a9406e0a0c")
+         (secret-view-key "6abd4dace0e11638d9a87ebd2e1b926d58716229691961515f4d4ba92c0dbc43")
          (proof (prove-outbound-transaction (hex-string->bytes transaction-hash)
                                             address
                                             (string->bytes message)
@@ -708,7 +738,8 @@ multisig public view key: deba7c0440e2e7f7da4fa77470e98f339089d3fe0c609209b4a388
                                                  address
                                                  (string->bytes message)
                                                  (hex-string->bytes transaction-public-key)
-                                                 proof))))
+                                                 proof
+                                                 (hex-string->bytes secret-view-key)))))
 
 (test make-uri
   (let ((address "9zmzEX3Ux4wMWTHesGg7jW8J6y7T5vb45RH3DZk7yHRk8G8CqtirBpY9mj1fx9RFnXfdkuj87qoF1KeKQGe2Up311XbV1ao")

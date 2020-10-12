@@ -1,5 +1,5 @@
 ;;;; This file is part of monero-tools
-;;;; Copyright 2016-2018 Guillaume LE VAILLANT
+;;;; Copyright 2016-2020 Guillaume LE VAILLANT
 ;;;; Distributed under the GNU GPL v3 or later.
 ;;;; See the file LICENSE for terms of use and distribution.
 
@@ -9,8 +9,10 @@
 
 (defconstant +encrypted-payment-id-tail+ 141)
 (define-constant +payment-proof-header+ "ProofV1" :test #'string=)
-(define-constant +inbound-transaction-proof-header+ "InProofV1" :test #'string=)
-(define-constant +outbound-transaction-proof-header+ "OutProofV1" :test #'string=)
+(define-constant +inbound-transaction-proof-v1-header+ "InProofV1" :test #'string=)
+(define-constant +outbound-transaction-proof-v1-header+ "OutProofV1" :test #'string=)
+(define-constant +inbound-transaction-proof-v2-header+ "InProofV2" :test #'string=)
+(define-constant +outbound-transaction-proof-v2-header+ "OutProofV2" :test #'string=)
 
 (defun encrypt-payment-id (payment-id public-view-key transaction-secret-key)
   "Encrypt a PAYMENT-ID using a shared secret derived from
@@ -161,7 +163,7 @@ otherwise."
                                   transaction-public-key
                                   proof-data)))))
 
-(defun prove-inbound-transaction (transaction-hash address message transaction-public-key secret-view-key)
+(defun prove-inbound-transaction-v1 (transaction-hash address message transaction-public-key secret-view-key)
   "Prove that a transaction was received by an ADDRESS."
   (let* ((address-info (decode-address address))
          (subaddress (geta address-info :subaddress))
@@ -169,24 +171,50 @@ otherwise."
                                (geta address-info :public-spend-key)
                                (point->bytes +g+))))
     (multiple-value-bind (shared-secret proof)
-        (generate-inbound-transaction-proof transaction-hash
-                                            transaction-public-key
-                                            secret-view-key
-                                            public-spend-key
-                                            message)
+        (generate-inbound-transaction-proof-v1 transaction-hash
+                                               transaction-public-key
+                                               secret-view-key
+                                               public-spend-key
+                                               message)
       (concatenate 'string
-                   +inbound-transaction-proof-header+
+                   +inbound-transaction-proof-v1-header+
                    (base58-encode shared-secret)
                    (base58-encode proof)))))
 
-(defun valid-inbound-transaction-proof-p (transaction-hash address message transaction-public-key proof &optional transaction-secret-key)
+(defun prove-inbound-transaction-v2 (transaction-hash address message transaction-public-key secret-view-key)
+  "Prove that a transaction was received by an ADDRESS."
+  (let* ((address-info (decode-address address))
+         (subaddress-p (geta address-info :subaddress))
+         (public-view-key (geta address-info :public-view-key))
+         (public-spend-key (geta address-info :public-spend-key))
+         (transaction-public-keys (split-bytes transaction-public-key +key-length+))
+         (proof (generate-inbound-transaction-proof-v2 transaction-hash
+                                                       transaction-public-keys
+                                                       secret-view-key
+                                                       public-view-key
+                                                       public-spend-key
+                                                       subaddress-p
+                                                       message)))
+    (concatenate 'string
+                 +inbound-transaction-proof-v2-header+
+                 (base58-encode proof))))
+
+(defun prove-inbound-transaction (transaction-hash address message transaction-public-key secret-view-key)
+  "Prove that a transaction was received by an ADDRESS."
+  (prove-inbound-transaction-v2 transaction-hash
+                                address
+                                message
+                                transaction-public-key
+                                secret-view-key))
+
+(defun valid-inbound-transaction-proof-v1-p (transaction-hash address message transaction-public-key proof &optional transaction-secret-key)
   "Return T if a PROOF of inbound transaction for an ADDRESS is valid,
 and NIL otherwise."
-  (let ((header-length (length +inbound-transaction-proof-header+))
+  (let ((header-length (length +inbound-transaction-proof-v1-header+))
         (encoded-key-length (base58-encoded-length +key-length+))
         (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
     (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
-               (string= proof +inbound-transaction-proof-header+ :end1 header-length))
+               (string= proof +inbound-transaction-proof-v1-header+ :end1 header-length))
       (let* ((address-info (decode-address address))
              (subaddress (geta address-info :subaddress))
              (public-spend-key (if subaddress
@@ -197,16 +225,55 @@ and NIL otherwise."
                                                    header-length
                                                    (+ header-length encoded-key-length))))
              (signature (base58-decode (subseq proof (+ header-length encoded-key-length)))))
-        (verify-inbound-transaction-proof transaction-hash
-                                          transaction-public-key
-                                          public-view-key
-                                          public-spend-key
-                                          message
-                                          shared-secret
-                                          signature
-                                          transaction-secret-key)))))
+        (verify-inbound-transaction-proof-v1 transaction-hash
+                                             transaction-public-key
+                                             public-view-key
+                                             public-spend-key
+                                             message
+                                             shared-secret
+                                             signature
+                                             transaction-secret-key)))))
 
-(defun prove-outbound-transaction (transaction-hash address message transaction-secret-key)
+(defun valid-inbound-transaction-proof-v2-p (transaction-hash address message transaction-public-key proof secret-view-key)
+  "Return T if a PROOF of inbound transaction for an ADDRESS is valid, and NIL
+otherwise."
+  (let* ((header-length (length +inbound-transaction-proof-v2-header+))
+         (address-info (decode-address address))
+         (subaddress-p (geta address-info :subaddress))
+         (public-view-key (geta address-info :public-view-key))
+         (public-spend-key (geta address-info :public-spend-key))
+         (transaction-public-keys (split-bytes transaction-public-key +key-length+))
+         (proof (base58-decode (subseq proof header-length))))
+    (verify-inbound-transaction-proof-v2 transaction-hash
+                                         transaction-public-keys
+                                         secret-view-key
+                                         public-view-key
+                                         public-spend-key
+                                         subaddress-p
+                                         message
+                                         proof)))
+
+(defun valid-inbound-transaction-proof-p (transaction-hash address message transaction-public-key proof secret-view-key)
+  "Return T if a PROOF of inbound transaction for an ADDRESS is valid, and NIL
+otherwise."
+  (let ((header (subseq proof 0 (min (length +inbound-transaction-proof-v2-header+)
+                                     (length proof)))))
+    (cond
+      ((string= header +inbound-transaction-proof-v1-header+)
+       (valid-inbound-transaction-proof-v1-p transaction-hash
+                                             address
+                                             message
+                                             transaction-public-key
+                                             proof))
+      ((string= header +inbound-transaction-proof-v2-header+)
+       (valid-inbound-transaction-proof-v2-p transaction-hash
+                                             address
+                                             message
+                                             transaction-public-key
+                                             proof
+                                             secret-view-key)))))
+
+(defun prove-outbound-transaction-v1 (transaction-hash address message transaction-secret-key)
   "Prove that a transaction was send to an ADDRESS."
   (let* ((address-info (decode-address address))
          (subaddress (geta address-info :subaddress))
@@ -215,24 +282,48 @@ and NIL otherwise."
                                (point->bytes +g+)))
          (public-view-key (geta address-info :public-view-key)))
     (multiple-value-bind (shared-secret proof)
-        (generate-outbound-transaction-proof transaction-hash
-                                             transaction-secret-key
-                                             public-view-key
-                                             public-spend-key
-                                             message)
+        (generate-outbound-transaction-proof-v1 transaction-hash
+                                                transaction-secret-key
+                                                public-view-key
+                                                public-spend-key
+                                                message)
       (concatenate 'string
-                   +outbound-transaction-proof-header+
+                   +outbound-transaction-proof-v1-header+
                    (base58-encode shared-secret)
                    (base58-encode proof)))))
 
-(defun valid-outbound-transaction-proof-p (transaction-hash address message transaction-public-key proof &optional secret-view-key)
+(defun prove-outbound-transaction-v2 (transaction-hash address message transaction-secret-key)
+  "Prove that a transaction was send to an ADDRESS."
+  (let* ((address-info (decode-address address))
+         (subaddress-p (geta address-info :subaddress))
+         (public-view-key (geta address-info :public-view-key))
+         (public-spend-key (geta address-info :public-spend-key))
+         (transaction-secret-keys (split-bytes transaction-secret-key +key-length+))
+         (proof (generate-outbound-transaction-proof-v2 transaction-hash
+                                                        transaction-secret-keys
+                                                        public-view-key
+                                                        public-spend-key
+                                                        subaddress-p
+                                                        message)))
+    (concatenate 'string
+                 +outbound-transaction-proof-v2-header+
+                 (base58-encode proof))))
+
+(defun prove-outbound-transaction (transaction-hash address message transaction-secret-key)
+  "Prove that a transaction was send to an ADDRESS."
+  (prove-outbound-transaction-v2 transaction-hash
+                                 address
+                                 message
+                                 transaction-secret-key))
+
+(defun valid-outbound-transaction-proof-v1-p (transaction-hash address message transaction-public-key proof &optional secret-view-key)
   "Return T if a PROOF of outbound transaction for an ADDRESS is
 valid, and NIL otherwise."
-  (let ((header-length (length +outbound-transaction-proof-header+))
+  (let ((header-length (length +outbound-transaction-proof-v1-header+))
         (encoded-key-length (base58-encoded-length +key-length+))
         (encoded-signature-length (base58-encoded-length (* 2 +key-length+))))
     (when (and (= (length proof) (+ header-length encoded-key-length encoded-signature-length))
-               (string= proof +outbound-transaction-proof-header+ :end1 header-length))
+               (string= proof +outbound-transaction-proof-v1-header+ :end1 header-length))
       (let* ((address-info (decode-address address))
              (subaddress (geta address-info :subaddress))
              (public-spend-key (if subaddress
@@ -243,11 +334,51 @@ valid, and NIL otherwise."
                                                    header-length
                                                    (+ header-length encoded-key-length))))
              (signature (base58-decode (subseq proof (+ header-length encoded-key-length)))))
-        (verify-outbound-transaction-proof transaction-hash
-                                           transaction-public-key
-                                           public-view-key
-                                           public-spend-key
-                                           message
-                                           shared-secret
-                                           signature
-                                           secret-view-key)))))
+        (verify-outbound-transaction-proof-v1 transaction-hash
+                                              transaction-public-key
+                                              public-view-key
+                                              public-spend-key
+                                              message
+                                              shared-secret
+                                              signature
+                                              secret-view-key)))))
+
+(defun valid-outbound-transaction-proof-v2-p (transaction-hash address message transaction-public-key proof secret-view-key)
+  "Return T if a PROOF of outbound transaction for an ADDRESS is valid, and NIL
+otherwise."
+  (let* ((header-length (length +outbound-transaction-proof-v2-header+))
+         (address-info (decode-address address))
+         (subaddress-p (geta address-info :subaddress))
+         (public-view-key (geta address-info :public-view-key))
+         (public-spend-key (geta address-info :public-spend-key))
+         (transaction-public-keys (split-bytes transaction-public-key +key-length+))
+         (proof (base58-decode (subseq proof header-length))))
+    (verify-outbound-transaction-proof-v2 transaction-hash
+                                          transaction-public-keys
+                                          secret-view-key
+                                          public-view-key
+                                          public-spend-key
+                                          subaddress-p
+                                          message
+                                          proof)))
+
+(defun valid-outbound-transaction-proof-p (transaction-hash address message transaction-public-key proof secret-view-key)
+  "Return T if a PROOF of outbound transaction for an ADDRESS is valid, and NIL
+otherwise."
+  (let ((header (subseq proof 0 (min (length +outbound-transaction-proof-v2-header+)
+                                     (length proof)))))
+    (cond
+      ((string= header +outbound-transaction-proof-v1-header+)
+       (valid-outbound-transaction-proof-v1-p transaction-hash
+                                              address
+                                              message
+                                              transaction-public-key
+                                              proof
+                                              secret-view-key))
+      ((string= header +outbound-transaction-proof-v2-header+)
+       (valid-outbound-transaction-proof-v2-p transaction-hash
+                                              address
+                                              message
+                                              transaction-public-key
+                                              proof
+                                              secret-view-key)))))
