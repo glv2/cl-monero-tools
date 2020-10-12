@@ -63,12 +63,9 @@ and return the vector #(a1 b1 a2 b2 a3 b3...)."
   (check-type data octet-vector)
   (check-type a (vector point))
   (check-type b (vector point))
-  (hash-to-scalar (apply #'concatenate
-                         'octet-vector
-                         data
-                         (map 'list
-                              #'point->bytes
-                              (interleave-vectors a b)))))
+  (hash-to-scalar (join-bytes (cons data (map 'list
+                                              #'point->bytes
+                                              (interleave-vectors a b))))))
 
 (defun generate-ring-signature (data public-keys secret-key secret-index)
   "Return a ring signature of DATA by SECRET-KEY using a set of
