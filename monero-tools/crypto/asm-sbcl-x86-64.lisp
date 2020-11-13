@@ -29,7 +29,9 @@
                         :base base
                         :index index
                         :scale scale
-                        :disp (or displacement 0)))))
+                        :disp (or displacement 0))))
+  (when (crypto::aes-ni-supported-p)
+    (pushnew :aes-ni *features*)))
 
 #+(and sbcl x86-64 aes-ni)
 (defknown monero-tools::pseudo-aes-expand-key/aes-ni
