@@ -30,7 +30,7 @@
                         :index index
                         :scale scale
                         :disp (or displacement 0))))
-  (when (ironclad::aes-ni-support-p)
+  (when (crypto::aes-ni-supported-p)
     (pushnew :aes-ni *features*)))
 
 #+(and sbcl x86-64 aes-ni)
