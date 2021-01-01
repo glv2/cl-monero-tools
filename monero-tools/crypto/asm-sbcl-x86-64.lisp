@@ -19,17 +19,19 @@
 #+(and sbcl x86-64)
 (in-package :monero-tools-vm)
 
-
 #+(and sbcl x86-64)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (if (fboundp 'sb-vm::ea)
-      (setf (fdefinition 'ea) (fdefinition 'sb-vm::ea)) ; Newer SBCL (>= 1.4.11)
-      (defun ea (displacement &optional base index (scale 1)) ; Older SBCL (< 1.4.11)
-        (sb-vm::make-ea :qword
-                        :base base
-                        :index index
-                        :scale scale
-                        :disp (or displacement 0))))
+  ;; Newer SBCL (>= 1.4.11)
+  #+ironclad-sb-vm-ea
+  (setf (fdefinition 'ea) (fdefinition 'sb-vm::ea))
+  ;; Older SBCL (< 1.4.11)
+  #-ironclad-sb-vm-ea
+  (defun ea (displacement &optional base index (scale 1))
+    (sb-vm::make-ea :qword
+                    :base base
+                    :index index
+                    :scale scale
+                    :disp (or displacement 0)))
   (when (crypto::aes-ni-supported-p)
     (pushnew :aes-ni *features*)))
 
