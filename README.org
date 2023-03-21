@@ -1,5 +1,7 @@
 #+TITLE: Monero tools
 
+The active repository is at https://codeberg.org/glv/cl-monero-tools
+
 This is a Common Lisp toolbox to work with the Monero cryptocurrency.
 
 There are several systems:
